@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { Loader } from "@googlemaps/js-api-loader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,7 +11,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { CalendarIcon, MapPin, Minus, Plus, Users, Luggage, Loader2, Euro, Phone, Mail } from "lucide-react";
+import { CalendarIcon, MapPin, Minus, Plus, Users, Luggage, Loader2, Euro, Phone, Mail, Key } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
@@ -58,12 +59,12 @@ const locationSuggestions = [
 const BookingForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [estimatedPrice, setEstimatedPrice] = useState<number | null>(null);
-  const [fromSuggestions, setFromSuggestions] = useState<string[]>([]);
-  const [toSuggestions, setToSuggestions] = useState<string[]>([]);
-  const [showFromSuggestions, setShowFromSuggestions] = useState(false);
-  const [showToSuggestions, setShowToSuggestions] = useState(false);
+  const [googleApiKey, setGoogleApiKey] = useState("");
+  const [isGoogleLoaded, setIsGoogleLoaded] = useState(false);
   const fromInputRef = useRef<HTMLInputElement>(null);
   const toInputRef = useRef<HTMLInputElement>(null);
+  const fromAutocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+  const toAutocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
   const form = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
@@ -74,43 +75,85 @@ const BookingForm = () => {
     },
   });
 
+  // Initialize Google Places API
+  useEffect(() => {
+    if (!googleApiKey || isGoogleLoaded) return;
+
+    const initializeGooglePlaces = async () => {
+      try {
+        const loader = new Loader({
+          apiKey: googleApiKey,
+          version: "weekly",
+          libraries: ["places"],
+        });
+
+        await loader.load();
+        setIsGoogleLoaded(true);
+
+        // Initialize autocomplete for both inputs
+        if (fromInputRef.current) {
+          fromAutocompleteRef.current = new google.maps.places.Autocomplete(fromInputRef.current, {
+            types: ['address', 'establishment'],
+            componentRestrictions: { country: 'fr' },
+          });
+
+          fromAutocompleteRef.current.addListener('place_changed', () => {
+            const place = fromAutocompleteRef.current?.getPlace();
+            if (place?.formatted_address) {
+              form.setValue('fromLocation', place.formatted_address);
+            }
+          });
+        }
+
+        if (toInputRef.current) {
+          toAutocompleteRef.current = new google.maps.places.Autocomplete(toInputRef.current, {
+            types: ['address', 'establishment'],
+            componentRestrictions: { country: 'fr' },
+          });
+
+          toAutocompleteRef.current.addListener('place_changed', () => {
+            const place = toAutocompleteRef.current?.getPlace();
+            if (place?.formatted_address) {
+              form.setValue('toLocation', place.formatted_address);
+            }
+          });
+        }
+
+        toast({
+          title: "Google Places loaded!",
+          description: "Address autocomplete is now active.",
+        });
+
+      } catch (error) {
+        console.error('Error loading Google Places:', error);
+        toast({
+          title: "Google Places failed to load",
+          description: "Please check your API key and try again.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    initializeGooglePlaces();
+  }, [googleApiKey, form]);
+
+  // Cleanup autocomplete listeners
+  useEffect(() => {
+    return () => {
+      if (fromAutocompleteRef.current) {
+        google.maps.event.clearInstanceListeners(fromAutocompleteRef.current);
+      }
+      if (toAutocompleteRef.current) {
+        google.maps.event.clearInstanceListeners(toAutocompleteRef.current);
+      }
+    };
+  }, []);
+
   const times = Array.from({ length: 24 * 4 }, (_, i) => {
     const hours = Math.floor(i / 4);
     const minutes = (i % 4) * 15;
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
   });
-
-  // Helper functions for location filtering
-  const filterSuggestions = (input: string) => {
-    if (!input || input.length < 2) return [];
-    return locationSuggestions.filter(location =>
-      location.toLowerCase().includes(input.toLowerCase())
-    ).slice(0, 5);
-  };
-
-  const handleFromInput = (value: string) => {
-    form.setValue('fromLocation', value);
-    const suggestions = filterSuggestions(value);
-    setFromSuggestions(suggestions);
-    setShowFromSuggestions(suggestions.length > 0);
-  };
-
-  const handleToInput = (value: string) => {
-    form.setValue('toLocation', value);
-    const suggestions = filterSuggestions(value);
-    setToSuggestions(suggestions);
-    setShowToSuggestions(suggestions.length > 0);
-  };
-
-  const selectFromSuggestion = (suggestion: string) => {
-    form.setValue('fromLocation', suggestion);
-    setShowFromSuggestions(false);
-  };
-
-  const selectToSuggestion = (suggestion: string) => {
-    form.setValue('toLocation', suggestion);
-    setShowToSuggestions(false);
-  };
 
   // Calculate estimated price with special airport rules
   const calculatePrice = (from: string, to: string, passengers: number) => {
@@ -194,6 +237,29 @@ const BookingForm = () => {
         )}
       </CardHeader>
       <CardContent>
+        {!isGoogleLoaded && (
+          <div className="mb-4 p-4 bg-secondary/30 rounded-lg">
+            <div className="flex items-center gap-2 mb-2">
+              <Key className="h-4 w-4 text-muted-foreground" />
+              <Label htmlFor="googleApiKey" className="text-sm font-medium">Google Maps API Key</Label>
+            </div>
+            <Input
+              id="googleApiKey"
+              type="password"
+              placeholder="Enter your Google Maps API key"
+              value={googleApiKey}
+              onChange={(e) => setGoogleApiKey(e.target.value)}
+              className="mb-2"
+            />
+            <p className="text-xs text-muted-foreground">
+              Get your API key at{" "}
+              <a href="https://console.cloud.google.com/google/maps-apis" target="_blank" rel="noopener noreferrer" className="text-primary underline">
+                Google Cloud Console
+              </a>
+            </p>
+          </div>
+        )}
+        
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             {/* Location Fields */}
@@ -210,36 +276,9 @@ const BookingForm = () => {
                         ref={fromInputRef}
                         placeholder="From (airport, port, address)"
                         className="pl-10"
-                        value={field.value}
-                        onChange={(e) => handleFromInput(e.target.value)}
-                        onFocus={() => {
-                          if (field.value && field.value.length >= 2) {
-                            const suggestions = filterSuggestions(field.value);
-                            setFromSuggestions(suggestions);
-                            setShowFromSuggestions(suggestions.length > 0);
-                          }
-                        }}
-                        onBlur={() => {
-                          // Delay hiding to allow selection
-                          setTimeout(() => setShowFromSuggestions(false), 200);
-                        }}
+                        {...field}
+                        disabled={!isGoogleLoaded}
                       />
-                      {showFromSuggestions && fromSuggestions.length > 0 && (
-                        <div className="absolute top-full left-0 right-0 bg-background border border-border rounded-md shadow-lg z-50 max-h-48 overflow-y-auto">
-                          {fromSuggestions.map((suggestion, index) => (
-                            <div
-                              key={index}
-                              className="px-3 py-2 hover:bg-secondary cursor-pointer text-sm"
-                              onClick={() => selectFromSuggestion(suggestion)}
-                            >
-                              <div className="flex items-center gap-2">
-                                <MapPin className="h-3 w-3 text-muted-foreground" />
-                                {suggestion}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
                     </div>
                   </FormControl>
                   <FormMessage />
@@ -260,36 +299,9 @@ const BookingForm = () => {
                         ref={toInputRef}
                         placeholder="To (airport, port, address)"
                         className="pl-10"
-                        value={field.value}
-                        onChange={(e) => handleToInput(e.target.value)}
-                        onFocus={() => {
-                          if (field.value && field.value.length >= 2) {
-                            const suggestions = filterSuggestions(field.value);
-                            setToSuggestions(suggestions);
-                            setShowToSuggestions(suggestions.length > 0);
-                          }
-                        }}
-                        onBlur={() => {
-                          // Delay hiding to allow selection
-                          setTimeout(() => setShowToSuggestions(false), 200);
-                        }}
+                        {...field}
+                        disabled={!isGoogleLoaded}
                       />
-                      {showToSuggestions && toSuggestions.length > 0 && (
-                        <div className="absolute top-full left-0 right-0 bg-background border border-border rounded-md shadow-lg z-50 max-h-48 overflow-y-auto">
-                          {toSuggestions.map((suggestion, index) => (
-                            <div
-                              key={index}
-                              className="px-3 py-2 hover:bg-secondary cursor-pointer text-sm"
-                              onClick={() => selectToSuggestion(suggestion)}
-                            >
-                              <div className="flex items-center gap-2">
-                                <MapPin className="h-3 w-3 text-muted-foreground" />
-                                {suggestion}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
                     </div>
                   </FormControl>
                   <FormMessage />
