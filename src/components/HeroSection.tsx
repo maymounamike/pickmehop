@@ -23,7 +23,7 @@ const HeroSection = () => {
         {/* Hero Text */}
         <div className="flex-1 text-center lg:text-left max-w-2xl lg:max-w-none">
           <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold text-white mb-4 sm:mb-6 leading-tight">
-            Pick Me Hop Before We Go Go
+            Pick Me Hop Before<br />We Go Go
           </h1>
           <p className="text-base sm:text-lg lg:text-xl text-white/90 mb-6 sm:mb-8 max-w-2xl mx-auto lg:mx-0">
             Your friendly, reliable ride service - hop in and let us take you where you need to go!
@@ -31,7 +31,7 @@ const HeroSection = () => {
         </div>
         
         {/* Booking Form */}
-        <div className="flex-shrink-0 w-full max-w-md lg:max-w-none">
+        <div className="flex-shrink-0 w-full max-w-lg lg:max-w-xl">
           <BookingForm />
         </div>
       </div>

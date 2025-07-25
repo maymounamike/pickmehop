@@ -178,7 +178,7 @@ const BookingForm = () => {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto bg-white shadow-elegant border-0" role="form" aria-labelledby="booking-form-title">
+    <Card className="w-full max-w-lg mx-auto bg-white shadow-elegant border-0" role="form" aria-labelledby="booking-form-title">
       <CardHeader className="pb-4">
         <CardTitle id="booking-form-title" className="text-lg sm:text-xl font-semibold text-foreground text-center sm:text-left">
           Allez Hop ! Let&apos;s Book a Ride
