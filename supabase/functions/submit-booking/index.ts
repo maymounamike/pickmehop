@@ -107,7 +107,10 @@ serve(async (req) => {
       name: sanitizeString(requestData.name),
       email: sanitizeString(requestData.email),
       phone: sanitizeString(requestData.phone),
-      specialRequests: requestData.specialRequests ? sanitizeString(requestData.specialRequests) : ''
+      specialRequests: requestData.specialRequests ? sanitizeString(requestData.specialRequests) : '',
+      estimatedPrice: requestData.estimatedPrice || '0',
+      paymentMethod: requestData.paymentMethod || 'cash',
+      flightNumber: requestData.flightNumber ? sanitizeString(requestData.flightNumber) : ''
     }
 
     // Validate email format
@@ -141,12 +144,48 @@ serve(async (req) => {
       )
     }
 
-    // Here you would typically save to database or send to booking system
-    // For now, we'll simulate processing
+    // Create booking ID and simulate processing
+    const bookingId = `BK-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     console.log('Booking data validated and sanitized:', sanitizedData)
     
     // Simulate processing time
     await new Promise(resolve => setTimeout(resolve, 1000))
+
+    // Send confirmation emails
+    try {
+      const supabase = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+
+      const { error: emailError } = await supabase.functions.invoke('send-booking-confirmation', {
+        body: {
+          customerEmail: sanitizedData.email,
+          customerName: sanitizedData.name,
+          fromLocation: sanitizedData.fromLocation,
+          toLocation: sanitizedData.toLocation,
+          date: sanitizedData.date,
+          time: sanitizedData.time,
+          passengers: sanitizedData.passengers,
+          luggage: sanitizedData.luggage,
+          estimatedPrice: sanitizedData.estimatedPrice,
+          paymentMethod: sanitizedData.paymentMethod,
+          bookingId: bookingId,
+          phone: sanitizedData.phone,
+          flightNumber: sanitizedData.flightNumber,
+        },
+      });
+
+      if (emailError) {
+        console.error('Error sending confirmation emails:', emailError);
+        // Continue anyway as booking was successful
+      } else {
+        console.log('Confirmation emails sent successfully');
+      }
+    } catch (error) {
+      console.error('Error invoking email function:', error);
+      // Continue anyway as booking was successful
+    }
 
     console.log('Booking submission completed successfully')
     
@@ -154,7 +193,7 @@ serve(async (req) => {
       JSON.stringify({ 
         success: true, 
         message: 'Booking submitted successfully',
-        bookingId: `BK-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+        bookingId: bookingId
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
