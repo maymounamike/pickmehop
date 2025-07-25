@@ -8,7 +8,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Phone, Mail, MessageCircle } from "lucide-react";
+import { Mail, MessageCircle } from "lucide-react";
 
 interface HelpDialogProps {
   children: React.ReactNode;
@@ -35,31 +35,19 @@ const HelpDialog = ({ children }: HelpDialogProps) => {
             <Button 
               variant="outline" 
               className="flex items-center justify-start gap-3 h-auto p-4"
-              onClick={() => window.open('tel:+33123456789', '_self')}
-            >
-              <Phone className="w-5 h-5 text-primary" />
-              <div className="text-left">
-                <div className="font-medium">Call us</div>
-                <div className="text-sm text-muted-foreground">+33 1 23 45 67 89</div>
-              </div>
-            </Button>
-            
-            <Button 
-              variant="outline" 
-              className="flex items-center justify-start gap-3 h-auto p-4"
-              onClick={() => window.open('mailto:help@pickmehop.com', '_self')}
+              onClick={() => window.open('mailto:support@pickmehop.com', '_self')}
             >
               <Mail className="w-5 h-5 text-primary" />
               <div className="text-left">
                 <div className="font-medium">Email us</div>
-                <div className="text-sm text-muted-foreground">help@pickmehop.com</div>
+                <div className="text-sm text-muted-foreground">support@pickmehop.com</div>
               </div>
             </Button>
             
             <Button 
               variant="outline" 
               className="flex items-center justify-start gap-3 h-auto p-4"
-              onClick={() => window.open('https://wa.me/33123456789', '_blank')}
+              onClick={() => window.open('https://wa.me/33666357139', '_blank')}
             >
               <MessageCircle className="w-5 h-5 text-primary" />
               <div className="text-left">
