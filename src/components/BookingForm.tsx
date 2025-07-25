@@ -38,6 +38,10 @@ const BookingForm = () => {
   const [estimatedPrice, setEstimatedPrice] = useState<number | null>(null);
   const [formStartTime] = useState(Date.now());
   const [csrfToken] = useState(generateCSRFToken());
+  const [fromSuggestions, setFromSuggestions] = useState<string[]>([]);
+  const [toSuggestions, setToSuggestions] = useState<string[]>([]);
+  const [showFromSuggestions, setShowFromSuggestions] = useState(false);
+  const [showToSuggestions, setShowToSuggestions] = useState(false);
   const rateLimit = new ClientRateLimit();
 
   const form = useForm<BookingFormData>({
@@ -103,6 +107,65 @@ const BookingForm = () => {
     const price = calculatePrice(from, to, passengers);
     setEstimatedPrice(price);
   }, [watchedValues]);
+
+  // Address suggestion function using Nominatim (OpenStreetMap)
+  const fetchAddressSuggestions = async (query: string) => {
+    if (query.length < 3) return [];
+    
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}, France&limit=5&addressdetails=1`
+      );
+      const data = await response.json();
+      
+      return data.map((item: any) => {
+        const parts = [];
+        if (item.address?.house_number) parts.push(item.address.house_number);
+        if (item.address?.road) parts.push(item.address.road);
+        if (item.address?.postcode) parts.push(item.address.postcode);
+        if (item.address?.city || item.address?.town || item.address?.village) {
+          parts.push(item.address.city || item.address.town || item.address.village);
+        }
+        return parts.join(' ') || item.display_name;
+      }).filter((address: string) => address && address.length > 0);
+    } catch (error) {
+      console.error('Error fetching address suggestions:', error);
+      return [];
+    }
+  };
+
+  // Handle address input changes with suggestions
+  const handleFromLocationChange = async (value: string) => {
+    form.setValue('fromLocation', value);
+    if (value.length >= 3) {
+      const suggestions = await fetchAddressSuggestions(value);
+      setFromSuggestions(suggestions);
+      setShowFromSuggestions(true);
+    } else {
+      setShowFromSuggestions(false);
+    }
+  };
+
+  const handleToLocationChange = async (value: string) => {
+    form.setValue('toLocation', value);
+    if (value.length >= 3) {
+      const suggestions = await fetchAddressSuggestions(value);
+      setToSuggestions(suggestions);
+      setShowToSuggestions(true);
+    } else {
+      setShowToSuggestions(false);
+    }
+  };
+
+  const selectFromSuggestion = (suggestion: string) => {
+    form.setValue('fromLocation', suggestion);
+    setShowFromSuggestions(false);
+  };
+
+  const selectToSuggestion = (suggestion: string) => {
+    form.setValue('toLocation', suggestion);
+    setShowToSuggestions(false);
+  };
 
   // Validate step 1 fields
   const validateStep1 = () => {
@@ -237,11 +300,27 @@ const BookingForm = () => {
                             <Input
                               placeholder="From (airport, port, address)"
                               className="pl-10 h-10 text-sm"
-                              {...field}
                               value={field.value || ""}
+                              onChange={(e) => handleFromLocationChange(e.target.value)}
+                              onBlur={() => setTimeout(() => setShowFromSuggestions(false), 200)}
+                              onFocus={() => field.value && field.value.length >= 3 && setShowFromSuggestions(true)}
                               aria-describedby={field.name + "-error"}
                               aria-invalid={!!form.formState.errors.fromLocation}
                             />
+                            {showFromSuggestions && fromSuggestions.length > 0 && (
+                              <div className="absolute top-full left-0 right-0 z-50 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                                {fromSuggestions.map((suggestion, index) => (
+                                  <button
+                                    key={index}
+                                    type="button"
+                                    className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 border-b border-gray-100 last:border-b-0"
+                                    onClick={() => selectFromSuggestion(suggestion)}
+                                  >
+                                    {suggestion}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         </FormControl>
                         <FormMessage id={field.name + "-error"} />
@@ -260,11 +339,27 @@ const BookingForm = () => {
                             <Input
                               placeholder="To (airport, port, address)"
                               className="pl-10 h-10 text-sm"
-                              {...field}
                               value={field.value || ""}
+                              onChange={(e) => handleToLocationChange(e.target.value)}
+                              onBlur={() => setTimeout(() => setShowToSuggestions(false), 200)}
+                              onFocus={() => field.value && field.value.length >= 3 && setShowToSuggestions(true)}
                               aria-describedby={field.name + "-error"}
                               aria-invalid={!!form.formState.errors.toLocation}
                             />
+                            {showToSuggestions && toSuggestions.length > 0 && (
+                              <div className="absolute top-full left-0 right-0 z-50 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                                {toSuggestions.map((suggestion, index) => (
+                                  <button
+                                    key={index}
+                                    type="button"
+                                    className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 border-b border-gray-100 last:border-b-0"
+                                    onClick={() => selectToSuggestion(suggestion)}
+                                  >
+                                    {suggestion}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         </FormControl>
                         <FormMessage id={field.name + "-error"} />
