@@ -204,7 +204,7 @@ const BookingForm = () => {
     <Card className="w-full max-w-lg mx-auto bg-white shadow-elegant border-0" role="form" aria-labelledby="booking-form-title">
       <CardHeader className="pb-1 px-2 pt-2">
         <CardTitle id="booking-form-title" className="text-xs font-semibold text-foreground text-center">
-          {currentStep === 1 ? "Your route" : "Your details"}
+          {currentStep === 1 ? "Allez Hop ! Let's Book a Ride" : "Your details"}
         </CardTitle>
         {currentStep === 1 && estimatedPrice && (
           <div className="flex items-center gap-1 text-xs text-muted-foreground bg-secondary/50 p-1 rounded text-center justify-center" role="status" aria-live="polite">
