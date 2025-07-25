@@ -69,8 +69,13 @@ const BookingForm = () => {
   const form = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
     defaultValues: {
+      fromLocation: "",
+      toLocation: "",
       passengers: 1,
       luggage: 1,
+      name: "",
+      email: "",
+      phone: "",
       specialRequests: "",
     },
   });
@@ -95,41 +100,45 @@ const BookingForm = () => {
         });
 
         await loader.load();
-        setIsGoogleLoaded(true);
+        
+        // Small delay to ensure Google Maps is fully loaded
+        setTimeout(() => {
+          // Initialize autocomplete for both inputs
+          if (fromInputRef.current && !fromAutocompleteRef.current) {
+            fromAutocompleteRef.current = new google.maps.places.Autocomplete(fromInputRef.current, {
+              types: ['address', 'establishment'],
+              componentRestrictions: { country: 'fr' },
+            });
 
-        // Initialize autocomplete for both inputs
-        if (fromInputRef.current) {
-          fromAutocompleteRef.current = new google.maps.places.Autocomplete(fromInputRef.current, {
-            types: ['address', 'establishment'],
-            componentRestrictions: { country: 'fr' },
+            fromAutocompleteRef.current.addListener('place_changed', () => {
+              const place = fromAutocompleteRef.current?.getPlace();
+              if (place?.formatted_address) {
+                form.setValue('fromLocation', place.formatted_address, { shouldValidate: true });
+              }
+            });
+          }
+
+          if (toInputRef.current && !toAutocompleteRef.current) {
+            toAutocompleteRef.current = new google.maps.places.Autocomplete(toInputRef.current, {
+              types: ['address', 'establishment'],
+              componentRestrictions: { country: 'fr' },
+            });
+
+            toAutocompleteRef.current.addListener('place_changed', () => {
+              const place = toAutocompleteRef.current?.getPlace();
+              if (place?.formatted_address) {
+                form.setValue('toLocation', place.formatted_address, { shouldValidate: true });
+              }
+            });
+          }
+
+          setIsGoogleLoaded(true);
+          
+          toast({
+            title: "Google Places loaded!",
+            description: "Address autocomplete is now active.",
           });
-
-          fromAutocompleteRef.current.addListener('place_changed', () => {
-            const place = fromAutocompleteRef.current?.getPlace();
-            if (place?.formatted_address) {
-              form.setValue('fromLocation', place.formatted_address);
-            }
-          });
-        }
-
-        if (toInputRef.current) {
-          toAutocompleteRef.current = new google.maps.places.Autocomplete(toInputRef.current, {
-            types: ['address', 'establishment'],
-            componentRestrictions: { country: 'fr' },
-          });
-
-          toAutocompleteRef.current.addListener('place_changed', () => {
-            const place = toAutocompleteRef.current?.getPlace();
-            if (place?.formatted_address) {
-              form.setValue('toLocation', place.formatted_address);
-            }
-          });
-        }
-
-        toast({
-          title: "Google Places loaded!",
-          description: "Address autocomplete is now active.",
-        });
+        }, 500);
 
       } catch (error) {
         console.error('Error loading Google Places:', error);
@@ -273,7 +282,7 @@ const BookingForm = () => {
                         placeholder="From (airport, port, address)"
                         className="pl-10"
                         {...field}
-                        disabled={!isGoogleLoaded}
+                        value={field.value || ""}
                       />
                     </div>
                   </FormControl>
@@ -296,7 +305,7 @@ const BookingForm = () => {
                         placeholder="To (airport, port, address)"
                         className="pl-10"
                         {...field}
-                        disabled={!isGoogleLoaded}
+                        value={field.value || ""}
                       />
                     </div>
                   </FormControl>
