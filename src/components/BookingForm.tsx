@@ -27,9 +27,24 @@ const bookingSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters").max(100, "Name too long"),
   email: z.string().email("Please enter a valid email").refine(validateEmail, "Invalid email format"),
   phone: z.string().min(10, "Please enter a valid phone number").refine(validatePhone, "Invalid phone format"),
+  flightNumber: z.string().optional(),
   specialRequests: z.string().max(500, "Special requests too long").optional(),
   paymentMethod: z.enum(["cash", "card_onboard", "card_online", "paypal"]).optional(),
   honeypot: z.string().optional(), // Hidden field for bot detection
+}).refine((data) => {
+  // If from location is an airport, flight number is required
+  const isFromAirport = data.fromLocation.toLowerCase().includes('airport') || 
+                       data.fromLocation.toLowerCase().includes('cdg') ||
+                       data.fromLocation.toLowerCase().includes('orly') ||
+                       data.fromLocation.toLowerCase().includes('beauvais');
+  
+  if (isFromAirport && (!data.flightNumber || data.flightNumber.trim().length === 0)) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Flight number is required when pickup location is an airport",
+  path: ["flightNumber"]
 });
 
 type BookingFormData = z.infer<typeof bookingSchema>;
@@ -223,6 +238,18 @@ const BookingForm = () => {
     if (!values.toLocation || values.toLocation.length < 3) errors.push('toLocation');
     if (!values.time) errors.push('time');
     
+    // Check if flight number is required for airport pickup
+    const isFromAirport = values.fromLocation && (
+      values.fromLocation.toLowerCase().includes('airport') || 
+      values.fromLocation.toLowerCase().includes('cdg') ||
+      values.fromLocation.toLowerCase().includes('orly') ||
+      values.fromLocation.toLowerCase().includes('beauvais')
+    );
+    
+    if (isFromAirport && (!values.flightNumber || values.flightNumber.trim().length === 0)) {
+      errors.push('flightNumber');
+    }
+    
     return errors.length === 0;
   };
 
@@ -235,8 +262,21 @@ const BookingForm = () => {
       // Force form remount to ensure clean state
       setFormKey(prev => prev + 1);
     } else {
-      // Trigger validation for step 1 fields
-      form.trigger(['fromLocation', 'toLocation', 'time']);
+      // Trigger validation for step 1 fields, including flight number if airport is selected
+      const fieldsToValidate: (keyof BookingFormData)[] = ['fromLocation', 'toLocation', 'time'];
+      const values = form.getValues();
+      const isFromAirport = values.fromLocation && (
+        values.fromLocation.toLowerCase().includes('airport') || 
+        values.fromLocation.toLowerCase().includes('cdg') ||
+        values.fromLocation.toLowerCase().includes('orly') ||
+        values.fromLocation.toLowerCase().includes('beauvais')
+      );
+      
+      if (isFromAirport) {
+        fieldsToValidate.push('flightNumber');
+      }
+      
+      form.trigger(fieldsToValidate);
     }
   };
 
@@ -468,9 +508,46 @@ const BookingForm = () => {
                       </FormItem>
                     )}
                   />
-                </div>
+                 </div>
 
-                {/* Date and Time */}
+                 {/* Flight Number - shown only if from location is airport */}
+                 {(() => {
+                   const fromLocation = form.watch('fromLocation');
+                   const isFromAirport = fromLocation && (
+                     fromLocation.toLowerCase().includes('airport') || 
+                     fromLocation.toLowerCase().includes('cdg') ||
+                     fromLocation.toLowerCase().includes('orly') ||
+                     fromLocation.toLowerCase().includes('beauvais')
+                   );
+                   
+                   if (!isFromAirport) return null;
+                   
+                   return (
+                     <FormField
+                       control={form.control}
+                       name="flightNumber"
+                       render={({ field }) => (
+                         <FormItem>
+                           <FormLabel className="text-xs font-medium">
+                             Flight Number <span className="text-destructive" aria-label="required">*</span>
+                           </FormLabel>
+                           <FormControl>
+                             <Input
+                               placeholder="e.g., AF1234, BA456"
+                               className="h-10 text-sm"
+                               {...field}
+                               aria-describedby={field.name + "-error"}
+                               aria-invalid={!!form.formState.errors.flightNumber}
+                             />
+                           </FormControl>
+                           <FormMessage id={field.name + "-error"} />
+                         </FormItem>
+                       )}
+                     />
+                   );
+                 })()}
+
+                 {/* Date and Time */}
                 <div className="grid grid-cols-2 gap-2">
                   <FormField
                     control={form.control}
