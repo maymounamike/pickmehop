@@ -307,11 +307,14 @@ const BookingForm = () => {
                 control={form.control}
                 name="time"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="flex flex-col">
                     <FormLabel>Pickup time</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger className="bg-background">
+                        <SelectTrigger className={cn(
+                          "w-full justify-start text-left font-normal bg-background",
+                          !field.value && "text-muted-foreground"
+                        )}>
                           <SelectValue placeholder="Select time" />
                         </SelectTrigger>
                       </FormControl>
