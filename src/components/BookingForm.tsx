@@ -4,7 +4,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -33,31 +32,6 @@ const bookingSchema = z.object({
 
 type BookingFormData = z.infer<typeof bookingSchema>;
 
-// Common locations for autocomplete
-const locationSuggestions = [
-  "Charles de Gaulle Airport (CDG)",
-  "Orly Airport (ORY)",
-  "Gare du Nord",
-  "Gare de Lyon",
-  "Châtelet-Les Halles",
-  "République - 75003",
-  "Marais - 75004", 
-  "Latin Quarter - 75005",
-  "Saint-Germain - 75006",
-  "Eiffel Tower - 75007",
-  "Champs-Élysées - 75008",
-  "Opéra - 75009",
-  "République - 75010",
-  "Bastille - 75011",
-  "Montparnasse - 75014",
-  "Champ de Mars - 75015",
-  "Arc de Triomphe - 75016",
-  "Batignolles - 75017",
-  "Montmartre - 75018",
-  "Belleville - 75019",
-  "Père Lachaise - 75020"
-];
-
 const BookingForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [estimatedPrice, setEstimatedPrice] = useState<number | null>(null);
@@ -79,7 +53,6 @@ const BookingForm = () => {
       honeypot: "", // Hidden honeypot field
     },
   });
-
 
   const times = Array.from({ length: 24 * 4 }, (_, i) => {
     const hours = Math.floor(i / 4);
@@ -205,84 +178,103 @@ const BookingForm = () => {
   };
 
   return (
-    <Card className="w-full max-w-md bg-white shadow-elegant">
-      <CardHeader>
-        <CardTitle className="text-lg font-semibold text-foreground">Allez Hop ! Let&apos;s Book a Ride</CardTitle>
+    <Card className="w-full max-w-md mx-auto bg-white shadow-elegant border-0" role="form" aria-labelledby="booking-form-title">
+      <CardHeader className="pb-4">
+        <CardTitle id="booking-form-title" className="text-lg sm:text-xl font-semibold text-foreground text-center sm:text-left">
+          Allez Hop ! Let&apos;s Book a Ride
+        </CardTitle>
         {estimatedPrice && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-secondary/50 p-2 rounded-lg">
-            <Euro className="h-4 w-4" />
-            <span>Estimated price: <strong>€{estimatedPrice}</strong></span>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-secondary/50 p-3 rounded-lg" role="status" aria-live="polite">
+            <Euro className="h-4 w-4" aria-hidden="true" />
+            <span>Estimated price: <strong className="text-foreground">€{estimatedPrice}</strong></span>
           </div>
         )}
       </CardHeader>
-      <CardContent>
-        
+      <CardContent className="p-4 sm:p-6">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {/* Location Fields */}
-            <FormField
-              control={form.control}
-              name="fromLocation"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>From</FormLabel>
-                  <FormControl>
-                     <div className="relative">
-                       <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
-                       <Input
-                         placeholder="From (airport, port, address)"
-                         className="pl-10"
-                         {...field}
-                         value={field.value || ""}
-                       />
-                     </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6" noValidate>
+            <div className="sr-only">
+              <label htmlFor="form-instructions">Form instructions</label>
+              <div id="form-instructions">Fill out this form to book your ride. All fields marked with an asterisk are required.</div>
+            </div>
 
-            <FormField
-              control={form.control}
-              name="toLocation"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>To</FormLabel>
-                  <FormControl>
-                     <div className="relative">
-                       <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
-                       <Input
-                         placeholder="To (airport, port, address)"
-                         className="pl-10"
-                         {...field}
-                         value={field.value || ""}
-                       />
-                     </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* Location Fields */}
+            <div className="space-y-4">
+              <FormField
+                control={form.control}
+                name="fromLocation"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium">
+                      From <span className="text-destructive" aria-label="required">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground z-10 pointer-events-none" aria-hidden="true" />
+                        <Input
+                          placeholder="From (airport, port, address)"
+                          className="pl-10 h-12 text-base"
+                          {...field}
+                          value={field.value || ""}
+                          aria-describedby={field.name + "-error"}
+                          aria-invalid={!!form.formState.errors.fromLocation}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage id={field.name + "-error"} />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="toLocation"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium">
+                      To <span className="text-destructive" aria-label="required">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground z-10 pointer-events-none" aria-hidden="true" />
+                        <Input
+                          placeholder="To (airport, port, address)"
+                          className="pl-10 h-12 text-base"
+                          {...field}
+                          value={field.value || ""}
+                          aria-describedby={field.name + "-error"}
+                          aria-invalid={!!form.formState.errors.toLocation}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage id={field.name + "-error"} />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             {/* Date and Time */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="date"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>Pickup date</FormLabel>
+                    <FormLabel className="text-sm font-medium">Pickup date</FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
                             variant="outline"
                             className={cn(
-                              "w-full justify-start text-left font-normal",
+                              "w-full justify-start text-left font-normal h-12 text-base",
                               !field.value && "text-muted-foreground"
                             )}
+                            aria-haspopup="dialog"
+                            aria-expanded="false"
+                            aria-describedby={field.name + "-error"}
                           >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            <CalendarIcon className="mr-2 h-4 w-4" aria-hidden="true" />
                             {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
                           </Button>
                         </FormControl>
@@ -298,7 +290,7 @@ const BookingForm = () => {
                         />
                       </PopoverContent>
                     </Popover>
-                    <FormMessage />
+                    <FormMessage id={field.name + "-error"} />
                   </FormItem>
                 )}
               />
@@ -308,17 +300,23 @@ const BookingForm = () => {
                 name="time"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>Pickup time</FormLabel>
+                    <FormLabel className="text-sm font-medium">
+                      Pickup time <span className="text-destructive" aria-label="required">*</span>
+                    </FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger className={cn(
-                          "w-full justify-start text-left font-normal bg-background",
-                          !field.value && "text-muted-foreground"
-                        )}>
+                        <SelectTrigger 
+                          className={cn(
+                            "w-full justify-start text-left font-normal bg-background h-12 text-base",
+                            !field.value && "text-muted-foreground"
+                          )}
+                          aria-describedby={field.name + "-error"}
+                          aria-invalid={!!form.formState.errors.time}
+                        >
                           <SelectValue placeholder="Select time" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="bg-background border z-50">
+                      <SelectContent className="bg-background border z-50 max-h-60 overflow-y-auto" aria-label="Available pickup times">
                         {times.map((time) => (
                           <SelectItem key={time} value={time} className="hover:bg-secondary">
                             {time}
@@ -326,47 +324,53 @@ const BookingForm = () => {
                         ))}
                       </SelectContent>
                     </Select>
-                    <FormMessage />
+                    <FormMessage id={field.name + "-error"} />
                   </FormItem>
                 )}
               />
             </div>
 
             {/* Passengers and Luggage */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="passengers"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Passengers</FormLabel>
+                    <FormLabel className="text-sm font-medium">
+                      Passengers <span className="text-destructive" aria-label="required">*</span>
+                    </FormLabel>
                     <FormControl>
-                      <div className="flex items-center justify-between border rounded-lg p-2">
+                      <div className="flex items-center justify-between border rounded-lg p-3 h-12" role="group" aria-label="Number of passengers">
                         <Button
                           type="button"
                           variant="ghost"
                           size="sm"
                           onClick={() => field.onChange(Math.max(1, field.value - 1))}
-                          className="h-8 w-8 p-0"
+                          className="h-8 w-8 p-0 touch-manipulation"
+                          aria-label="Decrease passenger count"
+                          disabled={field.value <= 1}
                         >
-                          <Minus className="h-4 w-4" />
+                          <Minus className="h-4 w-4" aria-hidden="true" />
                         </Button>
-                        <div className="flex items-center space-x-2">
-                          <Users className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-medium">{field.value}</span>
+                        <div className="flex items-center space-x-2" aria-live="polite">
+                          <Users className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                          <span className="font-medium text-base" aria-label={`${field.value} passengers selected`}>{field.value}</span>
                         </div>
                         <Button
                           type="button"
                           variant="ghost"
                           size="sm"
                           onClick={() => field.onChange(Math.min(8, field.value + 1))}
-                          className="h-8 w-8 p-0"
+                          className="h-8 w-8 p-0 touch-manipulation"
+                          aria-label="Increase passenger count"
+                          disabled={field.value >= 8}
                         >
-                          <Plus className="h-4 w-4" />
+                          <Plus className="h-4 w-4" aria-hidden="true" />
                         </Button>
                       </div>
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage id={field.name + "-error"} />
                   </FormItem>
                 )}
               />
@@ -376,34 +380,38 @@ const BookingForm = () => {
                 name="luggage"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Luggage pieces</FormLabel>
+                    <FormLabel className="text-sm font-medium">Luggage pieces</FormLabel>
                     <FormControl>
-                      <div className="flex items-center justify-between border rounded-lg p-2">
+                      <div className="flex items-center justify-between border rounded-lg p-3 h-12" role="group" aria-label="Number of luggage pieces">
                         <Button
                           type="button"
                           variant="ghost"
                           size="sm"
                           onClick={() => field.onChange(Math.max(0, field.value - 1))}
-                          className="h-8 w-8 p-0"
+                          className="h-8 w-8 p-0 touch-manipulation"
+                          aria-label="Decrease luggage count"
+                          disabled={field.value <= 0}
                         >
-                          <Minus className="h-4 w-4" />
+                          <Minus className="h-4 w-4" aria-hidden="true" />
                         </Button>
-                        <div className="flex items-center space-x-2">
-                          <Luggage className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-medium">{field.value}</span>
+                        <div className="flex items-center space-x-2" aria-live="polite">
+                          <Luggage className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                          <span className="font-medium text-base" aria-label={`${field.value} luggage pieces selected`}>{field.value}</span>
                         </div>
                         <Button
                           type="button"
                           variant="ghost"
                           size="sm"
                           onClick={() => field.onChange(Math.min(10, field.value + 1))}
-                          className="h-8 w-8 p-0"
+                          className="h-8 w-8 p-0 touch-manipulation"
+                          aria-label="Increase luggage count"
+                          disabled={field.value >= 10}
                         >
-                          <Plus className="h-4 w-4" />
+                          <Plus className="h-4 w-4" aria-hidden="true" />
                         </Button>
                       </div>
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage id={field.name + "-error"} />
                   </FormItem>
                 )}
               />
@@ -415,34 +423,48 @@ const BookingForm = () => {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Full Name</FormLabel>
+                  <FormLabel className="text-sm font-medium">
+                    Full Name <span className="text-destructive" aria-label="required">*</span>
+                  </FormLabel>
                   <FormControl>
-                    <Input placeholder="Your full name" {...field} />
+                    <Input 
+                      placeholder="Your full name" 
+                      className="h-12 text-base"
+                      {...field} 
+                      aria-describedby={field.name + "-error"}
+                      aria-invalid={!!form.formState.errors.name}
+                      autoComplete="name"
+                    />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage id={field.name + "-error"} />
                 </FormItem>
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel className="text-sm font-medium">
+                      Email <span className="text-destructive" aria-label="required">*</span>
+                    </FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" aria-hidden="true" />
                         <Input
                           type="email"
                           placeholder="your@email.com"
-                          className="pl-10"
+                          className="pl-10 h-12 text-base"
                           {...field}
+                          aria-describedby={field.name + "-error"}
+                          aria-invalid={!!form.formState.errors.email}
+                          autoComplete="email"
                         />
                       </div>
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage id={field.name + "-error"} />
                   </FormItem>
                 )}
               />
@@ -452,19 +474,24 @@ const BookingForm = () => {
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Phone</FormLabel>
+                    <FormLabel className="text-sm font-medium">
+                      Phone <span className="text-destructive" aria-label="required">*</span>
+                    </FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" aria-hidden="true" />
                         <Input
                           type="tel"
                           placeholder="+33 6 12 34 56 78"
-                          className="pl-10"
+                          className="pl-10 h-12 text-base"
                           {...field}
+                          aria-describedby={field.name + "-error"}
+                          aria-invalid={!!form.formState.errors.phone}
+                          autoComplete="tel"
                         />
                       </div>
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage id={field.name + "-error"} />
                   </FormItem>
                 )}
               />
@@ -476,14 +503,17 @@ const BookingForm = () => {
               name="specialRequests"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Special Requests (Optional)</FormLabel>
+                  <FormLabel className="text-sm font-medium">Special Requests (Optional)</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="Child seat, wheelchair access, etc."
+                      className="h-12 text-base"
                       {...field}
+                      aria-describedby={field.name + "-error"}
+                      maxLength={500}
                     />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage id={field.name + "-error"} />
                 </FormItem>
               )}
             />
@@ -493,7 +523,7 @@ const BookingForm = () => {
               control={form.control}
               name="honeypot"
               render={({ field }) => (
-                <div style={{ display: 'none' }}>
+                <div style={{ display: 'none' }} aria-hidden="true">
                   <Input
                     {...field}
                     tabIndex={-1}
@@ -505,18 +535,22 @@ const BookingForm = () => {
 
             <Button 
               type="submit" 
-              className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
+              className="w-full bg-accent hover:bg-accent/90 text-accent-foreground h-12 text-base font-medium touch-manipulation"
               disabled={isSubmitting}
+              aria-describedby="submit-help"
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
                   Submitting Booking...
                 </>
               ) : (
                 "Continue Booking"
               )}
             </Button>
+            <div id="submit-help" className="sr-only">
+              Click to submit your booking request. You will receive a confirmation email shortly.
+            </div>
           </form>
         </Form>
       </CardContent>

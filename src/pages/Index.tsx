@@ -6,8 +6,10 @@ const Index = () => {
   return (
     <div className="min-h-screen">
       <Header />
-      <HeroSection />
-      <ReviewsSection />
+      <main id="main-content" role="main" tabIndex={-1}>
+        <HeroSection />
+        <ReviewsSection />
+      </main>
     </div>
   );
 };
