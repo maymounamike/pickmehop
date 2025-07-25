@@ -61,6 +61,8 @@ const BookingForm = () => {
   const [showFromSuggestions, setShowFromSuggestions] = useState(false);
   const [showToSuggestions, setShowToSuggestions] = useState(false);
   const [formKey, setFormKey] = useState(0); // Key to force form remount
+  const [user, setUser] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const rateLimit = new ClientRateLimit();
 
   const form = useForm<BookingFormData>({
@@ -77,6 +79,52 @@ const BookingForm = () => {
       honeypot: "", // Hidden honeypot field
     },
   });
+
+  // Load user profile for authenticated users
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setUser(session.user);
+        
+        // Fetch user profile
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+          
+        if (profile) {
+          setUserProfile(profile);
+          // Pre-fill form with user data
+          const fullName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+          if (fullName) {
+            form.setValue('name', fullName);
+          }
+          if (session.user.email) {
+            form.setValue('email', session.user.email);
+          }
+          if (profile.phone) {
+            form.setValue('phone', profile.phone);
+          }
+        }
+      }
+    };
+
+    loadUserProfile();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        setUser(session.user);
+        loadUserProfile();
+      } else {
+        setUser(null);
+        setUserProfile(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [form]);
 
   // Debug logging to understand the form state
   useEffect(() => {

@@ -1,7 +1,36 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { User, LogOut } from "lucide-react";
 import HelpDialog from "./HelpDialog";
 
 const Header = () => {
+  const [user, setUser] = useState<any>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Get initial session
+    const getSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user ?? null);
+    };
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    getSession();
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
+  };
+
   return (
     <header className="absolute top-0 left-0 right-0 z-50 bg-transparent">
       <div className="container mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
@@ -14,15 +43,43 @@ const Header = () => {
           <span className="text-white font-semibold text-base sm:text-lg">Pick Me Hop</span>
         </div>
         
-        <nav className="hidden md:flex items-center space-x-6">
-          {/* Navigation items removed as requested */}
-        </nav>
-
-        <HelpDialog>
-          <Button variant="ghost" className="text-white hover:text-accent hover:bg-white/10 text-sm sm:text-base min-h-[44px] px-3 sm:px-4">
-            Help
-          </Button>
-        </HelpDialog>
+        <div className="flex items-center space-x-3">
+          {user ? (
+            <>
+              <Button 
+                variant="ghost" 
+                className="text-white hover:text-accent hover:bg-white/10"
+                onClick={() => navigate("/dashboard")}
+              >
+                <User className="mr-2 h-4 w-4" />
+                My Bookings
+              </Button>
+              <Button 
+                variant="ghost" 
+                className="text-white hover:text-accent hover:bg-white/10"
+                onClick={handleSignOut}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign Out
+              </Button>
+            </>
+          ) : (
+            <Button 
+              variant="ghost" 
+              className="text-white hover:text-accent hover:bg-white/10"
+              onClick={() => navigate("/auth")}
+            >
+              <User className="mr-2 h-4 w-4" />
+              Sign In
+            </Button>
+          )}
+          
+          <HelpDialog>
+            <Button variant="ghost" className="text-white hover:text-accent hover:bg-white/10 text-sm sm:text-base min-h-[44px] px-3 sm:px-4">
+              Help
+            </Button>
+          </HelpDialog>
+        </div>
       </div>
     </header>
   );

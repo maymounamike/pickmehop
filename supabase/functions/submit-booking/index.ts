@@ -148,15 +148,60 @@ serve(async (req) => {
     const bookingId = `BK-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     console.log('Booking data validated and sanitized:', sanitizedData)
     
+    // Initialize Supabase client
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    // Extract user ID from authorization header if present
+    let userId = null;
+    const authHeader = req.headers.get('authorization');
+    if (authHeader) {
+      try {
+        const { data: { user } } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
+        userId = user?.id || null;
+      } catch (error) {
+        console.log('No valid user token found, proceeding as guest booking');
+      }
+    }
+
+    // Save booking to database
+    try {
+      const { error: bookingError } = await supabase
+        .from('bookings')
+        .insert({
+          user_id: userId,
+          booking_id: bookingId,
+          from_location: sanitizedData.fromLocation,
+          to_location: sanitizedData.toLocation,
+          date: sanitizedData.date,
+          time: sanitizedData.time,
+          passengers: sanitizedData.passengers,
+          estimated_price: sanitizedData.estimatedPrice,
+          customer_name: sanitizedData.name,
+          customer_email: sanitizedData.email,
+          customer_phone: sanitizedData.phone,
+          status: 'confirmed',
+          payment_status: sanitizedData.paymentMethod === 'card_online' ? 'pending' : 'paid'
+        });
+
+      if (bookingError) {
+        console.error('Error saving booking to database:', bookingError);
+        // Continue anyway as we still want to send confirmations
+      } else {
+        console.log('Booking saved to database successfully');
+      }
+    } catch (dbError) {
+      console.error('Database operation failed:', dbError);
+      // Continue anyway
+    }
+    
     // Simulate processing time
     await new Promise(resolve => setTimeout(resolve, 1000))
 
     // Send confirmation emails
     try {
-      const supabase = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-      );
 
       const { error: emailError } = await supabase.functions.invoke('send-booking-confirmation', {
         body: {
