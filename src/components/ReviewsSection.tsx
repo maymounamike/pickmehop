@@ -25,7 +25,7 @@ const ReviewsSection = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-foreground mb-2">
-            Travelers love Welcome Pickups
+            Travelers love Pick Me Hop
           </h2>
           <div className="flex items-center justify-center space-x-2">
             <div className="flex">

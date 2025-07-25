@@ -5,10 +5,12 @@ const Header = () => {
     <header className="absolute top-0 left-0 right-0 z-50 bg-transparent">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-            <span className="text-primary font-bold text-sm">W</span>
-          </div>
-          <span className="text-white font-semibold text-lg">Welcome Pickups</span>
+          <img 
+            src="/lovable-uploads/298c0d83-9fd2-4556-aeff-ab20854f90c7.png" 
+            alt="Pick Me Hop Logo" 
+            className="w-10 h-10 rounded-full"
+          />
+          <span className="text-white font-semibold text-lg">Pick Me Hop</span>
         </div>
         
         <nav className="hidden md:flex items-center space-x-6">

@@ -26,7 +26,7 @@ const BookingForm = () => {
   return (
     <Card className="w-full max-w-md bg-white shadow-elegant">
       <CardHeader>
-        <CardTitle className="text-lg font-semibold text-foreground">Your route</CardTitle>
+        <CardTitle className="text-lg font-semibold text-foreground">Allez Hop ! Let&apos;s Book a Ride</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
@@ -155,15 +155,9 @@ const BookingForm = () => {
           </div>
         </div>
 
-        <Button className="w-full bg-success hover:bg-success/90 text-success-foreground">
+        <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
           Continue booking
         </Button>
-
-        <div className="text-center pt-2">
-          <p className="text-sm text-muted-foreground">
-            <span className="font-semibold">18513</span> travelers in <span className="font-semibold">362</span> destinations booked a ride today
-          </p>
-        </div>
       </CardContent>
     </Card>
   );
