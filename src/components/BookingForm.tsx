@@ -1,8 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Loader } from "@googlemaps/js-api-loader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,7 +14,6 @@ import { CalendarIcon, MapPin, Minus, Plus, Users, Luggage, Loader2, Euro, Phone
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 
 const bookingSchema = z.object({
   fromLocation: z.string().min(3, "From location must be at least 3 characters"),
@@ -60,11 +58,6 @@ const locationSuggestions = [
 const BookingForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [estimatedPrice, setEstimatedPrice] = useState<number | null>(null);
-  const [isGoogleLoaded, setIsGoogleLoaded] = useState(false);
-  const fromInputRef = useRef<HTMLInputElement>(null);
-  const toInputRef = useRef<HTMLInputElement>(null);
-  const fromAutocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
-  const toAutocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
   const form = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
@@ -80,156 +73,6 @@ const BookingForm = () => {
     },
   });
 
-  // Initialize Google Places API
-  useEffect(() => {
-    if (isGoogleLoaded) return;
-
-    const initializeGooglePlaces = async () => {
-      try {
-        console.log('🚀 Starting Google Places initialization...');
-        
-        // Get the Google Maps API key from Supabase secrets
-        const { data, error } = await supabase.functions.invoke('get-google-maps-key');
-        
-        if (error) {
-          console.error('❌ Supabase function error:', error);
-          throw new Error(`Failed to get Google Maps API key: ${error.message}`);
-        }
-        
-        if (!data?.apiKey) {
-          console.error('❌ No API key in response:', data);
-          throw new Error('No API key returned from server');
-        }
-
-        console.log('✅ API key retrieved successfully, length:', data.apiKey.length);
-        console.log('✅ API key format check:', data.apiKey.startsWith('AIza') ? 'Valid' : 'Invalid');
-
-        const loader = new Loader({
-          apiKey: data.apiKey,
-          version: "weekly",
-          libraries: ["places"],
-        });
-
-        console.log('📡 Loading Google Maps API...');
-        await loader.load();
-        console.log('✅ Google Maps API loaded successfully');
-        
-        // Test if Google Places is available
-        if (typeof google === 'undefined' || !google.maps || !google.maps.places) {
-          throw new Error('Google Maps Places API not available after loading');
-        }
-        
-        console.log('✅ Google Places API confirmed available');
-        
-        // Initialize autocomplete with retry mechanism
-        const initAutocomplete = () => {
-          console.log('🔄 Initializing autocomplete...');
-          
-          if (!fromInputRef.current || !toInputRef.current) {
-            console.error('❌ Input refs not available');
-            return false;
-          }
-
-          try {
-            // Initialize autocomplete for FROM input
-            if (!fromAutocompleteRef.current) {
-              console.log('🔧 Creating FROM autocomplete');
-              fromAutocompleteRef.current = new google.maps.places.Autocomplete(fromInputRef.current, {
-                types: ['address', 'establishment'],
-                componentRestrictions: { country: 'fr' },
-                fields: ['formatted_address', 'geometry', 'place_id'],
-              });
-
-              fromAutocompleteRef.current.addListener('place_changed', () => {
-                const place = fromAutocompleteRef.current?.getPlace();
-                if (place?.formatted_address) {
-                  form.setValue('fromLocation', place.formatted_address, { shouldValidate: true });
-                }
-              });
-              console.log('✅ FROM autocomplete initialized');
-            }
-
-            // Initialize autocomplete for TO input
-            if (!toAutocompleteRef.current) {
-              console.log('🔧 Creating TO autocomplete');
-              toAutocompleteRef.current = new google.maps.places.Autocomplete(toInputRef.current, {
-                types: ['address', 'establishment'],
-                componentRestrictions: { country: 'fr' },
-                fields: ['formatted_address', 'geometry', 'place_id'],
-              });
-
-              toAutocompleteRef.current.addListener('place_changed', () => {
-                const place = toAutocompleteRef.current?.getPlace();
-                if (place?.formatted_address) {
-                  form.setValue('toLocation', place.formatted_address, { shouldValidate: true });
-                }
-              });
-              console.log('✅ TO autocomplete initialized');
-            }
-
-            return true;
-          } catch (error) {
-            console.error('❌ Error creating autocomplete:', error);
-            return false;
-          }
-        };
-
-        // Retry initialization with better timing
-        let attempts = 0;
-        const maxAttempts = 15;
-        
-        const tryInit = () => {
-          attempts++;
-          console.log(`🔄 Initialization attempt ${attempts}/${maxAttempts}`);
-          
-          if (initAutocomplete()) {
-            console.log('🎉 Autocomplete initialization successful!');
-            setIsGoogleLoaded(true);
-            
-            toast({
-              title: "Address autocomplete ready!",
-              description: "You can now search for addresses with suggestions.",
-            });
-          } else if (attempts < maxAttempts) {
-            console.log(`⏳ DOM not ready, retrying in 300ms...`);
-            setTimeout(tryInit, 300);
-          } else {
-            console.error('❌ Failed to initialize after', maxAttempts, 'attempts');
-            toast({
-              title: "Autocomplete setup failed",
-              description: "Could not initialize address suggestions. Please refresh the page.",
-              variant: "destructive",
-            });
-          }
-        };
-
-        // Start trying to initialize with a small delay
-        setTimeout(tryInit, 500);
-
-      } catch (error) {
-        console.error('❌ Error in Google Places initialization:', error);
-        toast({
-          title: "Autocomplete setup failed",
-          description: `Could not initialize address suggestions. Please refresh the page.`,
-          variant: "destructive",
-        });
-      }
-    };
-
-    initializeGooglePlaces();
-  }, [form]);
-
-  // Cleanup autocomplete listeners
-  useEffect(() => {
-    return () => {
-      if (fromAutocompleteRef.current) {
-        google.maps.event.clearInstanceListeners(fromAutocompleteRef.current);
-      }
-      if (toAutocompleteRef.current) {
-        google.maps.event.clearInstanceListeners(toAutocompleteRef.current);
-      }
-    };
-  }, []);
 
   const times = Array.from({ length: 24 * 4 }, (_, i) => {
     const hours = Math.floor(i / 4);
@@ -319,17 +162,6 @@ const BookingForm = () => {
         )}
       </CardHeader>
       <CardContent>
-        {!isGoogleLoaded && (
-          <div className="mb-4 p-4 bg-secondary/30 rounded-lg">
-            <div className="flex items-center gap-2 mb-2">
-              <MapPin className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Loading Google Maps...</span>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Initializing address autocomplete functionality.
-            </p>
-          </div>
-        )}
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -341,16 +173,15 @@ const BookingForm = () => {
                 <FormItem>
                   <FormLabel>From</FormLabel>
                   <FormControl>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
-                      <Input
-                        ref={fromInputRef}
-                        placeholder="From (airport, port, address)"
-                        className="pl-10"
-                        {...field}
-                        value={field.value || ""}
-                      />
-                    </div>
+                     <div className="relative">
+                       <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
+                       <Input
+                         placeholder="From (airport, port, address)"
+                         className="pl-10"
+                         {...field}
+                         value={field.value || ""}
+                       />
+                     </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -364,16 +195,15 @@ const BookingForm = () => {
                 <FormItem>
                   <FormLabel>To</FormLabel>
                   <FormControl>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
-                      <Input
-                        ref={toInputRef}
-                        placeholder="To (airport, port, address)"
-                        className="pl-10"
-                        {...field}
-                        value={field.value || ""}
-                      />
-                    </div>
+                     <div className="relative">
+                       <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
+                       <Input
+                         placeholder="To (airport, port, address)"
+                         className="pl-10"
+                         {...field}
+                         value={field.value || ""}
+                       />
+                     </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
