@@ -4,19 +4,19 @@ import heroBackground from "@/assets/hero-background.jpg";
 const HeroSection = () => {
   return (
     <section 
-      className="relative min-h-screen flex items-start justify-center overflow-hidden pt-16 sm:pt-24 pb-4 sm:pb-8"
+      className="relative min-h-screen flex items-start justify-center overflow-hidden pt-16 sm:pt-24 pb-4 sm:pb-8 bg-black lg:bg-transparent"
       aria-label="Book a ride service"
     >
-      {/* Background Image */}
+      {/* Background Image - Hidden on mobile/tablet, visible on desktop */}
       <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat hidden lg:block"
         style={{ backgroundImage: `url(${heroBackground})` }}
         role="img"
         aria-label="City landscape background"
       />
       
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-black/60" aria-hidden="true" />
+      {/* Overlay - Only visible on desktop when background image is shown */}
+      <div className="absolute inset-0 bg-black/60 hidden lg:block" aria-hidden="true" />
       
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4 py-4 sm:py-6 lg:py-8 flex flex-col lg:flex-row items-center justify-between gap-6 lg:gap-8 max-h-screen">
