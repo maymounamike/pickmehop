@@ -14,12 +14,7 @@ const Header = () => {
         </div>
         
         <nav className="hidden md:flex items-center space-x-6">
-          <a href="#" className="text-white hover:text-accent transition-colors">Transfers</a>
-          <a href="#" className="text-white hover:text-accent transition-colors">Sightseeing Rides</a>
-          <a href="#" className="text-white hover:text-accent transition-colors">Guides</a>
-          <a href="#" className="text-white hover:text-accent transition-colors">For Partners</a>
-          <a href="#" className="text-white hover:text-accent transition-colors">For Drivers</a>
-          <a href="#" className="text-white hover:text-accent transition-colors">Company</a>
+          {/* Navigation items removed as requested */}
         </nav>
 
         <Button variant="ghost" className="text-white hover:text-accent hover:bg-white/10 text-sm sm:text-base min-h-[44px] px-3 sm:px-4">
