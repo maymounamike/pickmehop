@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { Loader } from "@googlemaps/js-api-loader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -162,7 +163,7 @@ const BookingForm = () => {
     return presets;
   };
 
-  // Address suggestion function using Nominatim (OpenStreetMap)
+  // Address suggestion function using Google Places API
   const fetchAddressSuggestions = async (query: string) => {
     // First check for airport presets (minimum 2 characters)
     if (query.length >= 2) {
@@ -175,21 +176,41 @@ const BookingForm = () => {
     if (query.length < 3) return [];
     
     try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}, France&limit=5&addressdetails=1`
-      );
-      const data = await response.json();
+      // Get Google Maps API key from Supabase function
+      const { data: keyData, error: keyError } = await supabase.functions.invoke('get-google-maps-key');
       
-      return data.map((item: any) => {
-        const parts = [];
-        if (item.address?.house_number) parts.push(item.address.house_number);
-        if (item.address?.road) parts.push(item.address.road);
-        if (item.address?.postcode) parts.push(item.address.postcode);
-        if (item.address?.city || item.address?.town || item.address?.village) {
-          parts.push(item.address.city || item.address.town || item.address.village);
-        }
-        return parts.join(' ') || item.display_name;
-      }).filter((address: string) => address && address.length > 0);
+      if (keyError || !keyData?.apiKey) {
+        console.error('Failed to get Google Maps API key:', keyError);
+        return [];
+      }
+
+      // Load Google Maps API if not already loaded
+      const loader = new Loader({
+        apiKey: keyData.apiKey,
+        version: "weekly",
+        libraries: ["places"]
+      });
+
+      const google = await loader.load();
+      
+      // Create autocomplete service
+      const service = new google.maps.places.AutocompleteService();
+      
+      return new Promise<string[]>((resolve) => {
+        service.getPlacePredictions({
+          input: query,
+          componentRestrictions: { country: 'fr' }, // Restrict to France
+          types: ['address', 'establishment', 'geocode']
+        }, (predictions, status) => {
+          if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
+            const suggestions = predictions.map(prediction => prediction.description);
+            resolve(suggestions.slice(0, 5)); // Limit to 5 suggestions
+          } else {
+            console.error('Places service error:', status);
+            resolve([]);
+          }
+        });
+      });
     } catch (error) {
       console.error('Error fetching address suggestions:', error);
       return [];
