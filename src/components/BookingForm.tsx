@@ -59,6 +59,16 @@ const BookingForm = () => {
     },
   });
 
+  // Debug logging to understand the form state
+  useEffect(() => {
+    const subscription = form.watch((value, { name, type }) => {
+      if (name === 'email' || name === 'phone') {
+        console.log(`Field ${name} changed to:`, value[name], 'via', type);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form]);
+
   const times = Array.from({ length: 24 * 4 }, (_, i) => {
     const hours = Math.floor(i / 4);
     const minutes = (i % 4) * 15;
