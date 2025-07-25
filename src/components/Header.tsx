@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import HelpDialog from "./HelpDialog";
 
 const Header = () => {
   return (
@@ -17,9 +18,11 @@ const Header = () => {
           {/* Navigation items removed as requested */}
         </nav>
 
-        <Button variant="ghost" className="text-white hover:text-accent hover:bg-white/10 text-sm sm:text-base min-h-[44px] px-3 sm:px-4">
-          Help
-        </Button>
+        <HelpDialog>
+          <Button variant="ghost" className="text-white hover:text-accent hover:bg-white/10 text-sm sm:text-base min-h-[44px] px-3 sm:px-4">
+            Help
+          </Button>
+        </HelpDialog>
       </div>
     </header>
   );
