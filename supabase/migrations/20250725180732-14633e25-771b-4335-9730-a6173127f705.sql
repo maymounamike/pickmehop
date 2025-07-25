@@ -1,0 +1,3 @@
+-- Create a simple edge function to return the Google Maps API key
+-- This is handled through the edge function creation, not a database migration
+-- No database changes needed for this functionality
