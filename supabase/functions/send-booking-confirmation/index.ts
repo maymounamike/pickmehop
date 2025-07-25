@@ -63,43 +63,88 @@ const generateCustomerEmailHTML = (booking: BookingConfirmationRequest) => `
 <head>
   <meta charset="utf-8">
   <style>
-    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-    .header { background: #2563eb; color: white; padding: 20px; text-align: center; }
-    .content { padding: 20px; background: #f9f9f9; }
-    .booking-details { background: white; padding: 15px; margin: 15px 0; border-radius: 5px; }
-    .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: 0 auto; padding: 0; background: white; }
+    .header { background: linear-gradient(135deg, #2563eb, #1e40af); color: white; padding: 30px 20px; text-align: center; }
+    .logo { width: 60px; height: 60px; border-radius: 50%; margin: 0 auto 15px; display: block; border: 3px solid rgba(255,255,255,0.2); }
+    .header h1 { margin: 0; font-size: 24px; font-weight: bold; }
+    .header p { margin: 5px 0 0; opacity: 0.9; font-size: 16px; }
+    .content { padding: 30px 20px; background: #f8fafc; }
+    .greeting { font-size: 18px; margin-bottom: 20px; color: #1e293b; }
+    .booking-details { background: white; padding: 25px; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .booking-details h3 { color: #2563eb; margin-top: 0; margin-bottom: 15px; font-size: 18px; }
+    .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0; }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-label { font-weight: bold; color: #475569; }
+    .detail-value { color: #1e293b; }
+    .price-highlight { background: #fef3c7; padding: 10px; border-radius: 6px; margin: 15px 0; text-align: center; }
+    .price-highlight .price { font-size: 24px; font-weight: bold; color: #92400e; }
+    .contact-info { background: #eff6ff; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb; }
+    .footer { text-align: center; padding: 30px 20px; color: #64748b; font-size: 14px; background: #f1f5f9; }
+    .footer a { color: #2563eb; text-decoration: none; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <h1>Booking Confirmation - PickMeHop</h1>
+      <img src="https://nwctkeacagskeuavjrch.supabase.co/storage/v1/object/public/assets/lovable-uploads/298c0d83-9fd2-4556-aeff-ab20854f90c7.png" alt="PickMeHop Logo" class="logo">
+      <h1>PickMeHop</h1>
+      <p>Your Booking is Confirmed!</p>
     </div>
     <div class="content">
-      <h2>Dear ${booking.customerName},</h2>
-      <p>Thank you for choosing PickMeHop! Your booking has been confirmed.</p>
+      <div class="greeting">Dear ${booking.customerName},</div>
+      <p>Thank you for choosing PickMeHop! Your booking has been confirmed and we're excited to serve you.</p>
       
       <div class="booking-details">
-        <h3>Booking Details:</h3>
-        <p><strong>Booking ID:</strong> ${booking.bookingId}</p>
-        <p><strong>From:</strong> ${booking.fromLocation}</p>
-        <p><strong>To:</strong> ${booking.toLocation}</p>
-        <p><strong>Date:</strong> ${booking.date}</p>
-        <p><strong>Time:</strong> ${booking.time}</p>
-        <p><strong>Passengers:</strong> ${booking.passengers}</p>
-        <p><strong>Luggage:</strong> ${booking.luggage}</p>
-        <p><strong>Estimated Price:</strong> €${booking.estimatedPrice}</p>
-        <p><strong>Payment Method:</strong> ${booking.paymentMethod}</p>
-        ${booking.flightNumber ? `<p><strong>Flight Number:</strong> ${booking.flightNumber}</p>` : ''}
+        <h3>🚗 Booking Details</h3>
+        <div class="detail-row">
+          <span class="detail-label">Booking ID:</span>
+          <span class="detail-value">${booking.bookingId}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">From:</span>
+          <span class="detail-value">${booking.fromLocation}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">To:</span>
+          <span class="detail-value">${booking.toLocation}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Date & Time:</span>
+          <span class="detail-value">${booking.date} at ${booking.time}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Passengers:</span>
+          <span class="detail-value">${booking.passengers}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Luggage:</span>
+          <span class="detail-value">${booking.luggage} pieces</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Payment Method:</span>
+          <span class="detail-value">${booking.paymentMethod}</span>
+        </div>
+        ${booking.flightNumber ? `<div class="detail-row"><span class="detail-label">Flight Number:</span><span class="detail-value">${booking.flightNumber}</span></div>` : ''}
+        
+        <div class="price-highlight">
+          <div>Total Price</div>
+          <div class="price">€${booking.estimatedPrice}</div>
+        </div>
       </div>
       
-      <p>Our driver will contact you shortly to confirm the pickup details.</p>
-      <p>If you have any questions, please contact us at support@pickmehop.com or via WhatsApp at +33 6 66 35 71 39.</p>
+      <div class="contact-info">
+        <p><strong>📞 What's Next?</strong></p>
+        <p>Our driver will contact you shortly to confirm the pickup details. Please keep your phone nearby!</p>
+        <p>For immediate assistance, contact us:</p>
+        <p>📧 Email: support@pickmehop.com<br>
+        📱 WhatsApp: +33 6 66 35 71 39</p>
+      </div>
     </div>
     <div class="footer">
       <p>Thank you for choosing PickMeHop!</p>
-      <p>www.pickmehop.com</p>
+      <p><a href="https://www.pickmehop.com">www.pickmehop.com</a></p>
+      <p>Safe travels! 🚗✨</p>
     </div>
   </div>
 </body>
@@ -112,42 +157,86 @@ const generateBusinessEmailHTML = (booking: BookingConfirmationRequest) => `
 <head>
   <meta charset="utf-8">
   <style>
-    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-    .header { background: #dc2626; color: white; padding: 20px; text-align: center; }
-    .content { padding: 20px; background: #f9f9f9; }
-    .booking-details { background: white; padding: 15px; margin: 15px 0; border-radius: 5px; }
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: 0 auto; padding: 0; background: white; }
+    .header { background: linear-gradient(135deg, #dc2626, #b91c1c); color: white; padding: 30px 20px; text-align: center; }
+    .logo { width: 50px; height: 50px; border-radius: 50%; margin: 0 auto 15px; display: block; border: 2px solid rgba(255,255,255,0.3); }
+    .header h1 { margin: 0; font-size: 22px; font-weight: bold; }
+    .content { padding: 30px 20px; background: #f8fafc; }
+    .alert-badge { background: #fef2f2; color: #dc2626; padding: 8px 16px; border-radius: 20px; display: inline-block; font-weight: bold; margin-bottom: 20px; border: 1px solid #fecaca; }
+    .booking-details { background: white; padding: 25px; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .booking-details h3 { color: #dc2626; margin-top: 0; margin-bottom: 15px; font-size: 18px; border-bottom: 2px solid #fee2e2; padding-bottom: 10px; }
+    .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0; }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-label { font-weight: bold; color: #475569; }
+    .detail-value { color: #1e293b; }
+    .action-required { background: #fef3c7; border: 1px solid #fbbf24; color: #92400e; padding: 15px; border-radius: 8px; margin: 20px 0; }
+    .action-required strong { color: #b45309; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <h1>New Booking Received - PickMeHop</h1>
+      <img src="https://nwctkeacagskeuavjrch.supabase.co/storage/v1/object/public/assets/lovable-uploads/298c0d83-9fd2-4556-aeff-ab20854f90c7.png" alt="PickMeHop Logo" class="logo">
+      <h1>New Booking Alert - PickMeHop</h1>
     </div>
     <div class="content">
-      <h2>New Booking Alert</h2>
-      <p>A new booking has been confirmed and requires your attention.</p>
+      <div class="alert-badge">🚨 NEW BOOKING</div>
+      <p>A new booking has been confirmed and requires your immediate attention.</p>
       
       <div class="booking-details">
-        <h3>Customer Information:</h3>
-        <p><strong>Name:</strong> ${booking.customerName}</p>
-        <p><strong>Email:</strong> ${booking.customerEmail}</p>
-        ${booking.phone ? `<p><strong>Phone:</strong> ${booking.phone}</p>` : ''}
-        
-        <h3>Booking Details:</h3>
-        <p><strong>Booking ID:</strong> ${booking.bookingId}</p>
-        <p><strong>From:</strong> ${booking.fromLocation}</p>
-        <p><strong>To:</strong> ${booking.toLocation}</p>
-        <p><strong>Date:</strong> ${booking.date}</p>
-        <p><strong>Time:</strong> ${booking.time}</p>
-        <p><strong>Passengers:</strong> ${booking.passengers}</p>
-        <p><strong>Luggage:</strong> ${booking.luggage}</p>
-        <p><strong>Estimated Price:</strong> €${booking.estimatedPrice}</p>
-        <p><strong>Payment Method:</strong> ${booking.paymentMethod}</p>
-        ${booking.flightNumber ? `<p><strong>Flight Number:</strong> ${booking.flightNumber}</p>` : ''}
+        <h3>👤 Customer Information</h3>
+        <div class="detail-row">
+          <span class="detail-label">Name:</span>
+          <span class="detail-value">${booking.customerName}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Email:</span>
+          <span class="detail-value">${booking.customerEmail}</span>
+        </div>
+        ${booking.phone ? `<div class="detail-row"><span class="detail-label">Phone:</span><span class="detail-value">${booking.phone}</span></div>` : ''}
       </div>
       
-      <p><strong>Action Required:</strong> Please contact the customer to confirm pickup details and assign a driver.</p>
+      <div class="booking-details">
+        <h3>🚗 Booking Information</h3>
+        <div class="detail-row">
+          <span class="detail-label">Booking ID:</span>
+          <span class="detail-value">${booking.bookingId}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">From:</span>
+          <span class="detail-value">${booking.fromLocation}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">To:</span>
+          <span class="detail-value">${booking.toLocation}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Date & Time:</span>
+          <span class="detail-value">${booking.date} at ${booking.time}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Passengers:</span>
+          <span class="detail-value">${booking.passengers}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Luggage:</span>
+          <span class="detail-value">${booking.luggage} pieces</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Estimated Price:</span>
+          <span class="detail-value">€${booking.estimatedPrice}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Payment Method:</span>
+          <span class="detail-value">${booking.paymentMethod}</span>
+        </div>
+        ${booking.flightNumber ? `<div class="detail-row"><span class="detail-label">Flight Number:</span><span class="detail-value">${booking.flightNumber}</span></div>` : ''}
+      </div>
+      
+      <div class="action-required">
+        <strong>⚡ Action Required:</strong> Please contact the customer immediately to confirm pickup details and assign a driver for this booking.
+      </div>
     </div>
   </div>
 </body>
