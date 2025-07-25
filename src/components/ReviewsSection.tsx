@@ -4,19 +4,19 @@ import { Star } from "lucide-react";
 const ReviewsSection = () => {
   const reviews = [
     {
-      text: "I have used this service several times before for airport to Pireaus transfers and vice versa. Yesterday I booked them from Pireaus to a central Athens private address. The service is always great: yesterday my driver Mr Kontzialis was prompt,...",
-      author: "Jon O",
-      date: "May 2021"
+      text: "Michael was friendly and professional and we had a great ride to the airport. There was even great reading material supplied - a guide book to Paris written by Mike himself! Would definitely recommend a ride with Michael.",
+      author: "Jane O.",
+      date: "July 2025"
     },
     {
-      text: "I have used this service on two trips back and forth from the airport to central Athens in the last few months (and have another one booked for later this month). On each occasion, the taxi has been punctual to...",
-      author: "barryincrete",
-      date: "May 2021"
+      text: "The best welcome to Paris, professional personable and truly such an amazing person to meet anytime - especially straight off a flight! 100/10.",
+      author: "Kris W",
+      date: "June 2025"
     },
     {
-      text: "I booked airport transfers for my first visit to Athens. Booking was very easy and straightforward. As soon as I got to the airport arrivals hall, my driver Angelos Chronis was waiting for me with a warm welcome. In addition...",
-      author: "C2394ICtomw",
-      date: "December 2020"
+      text: "I had the pleasure of having Michael as my driver from the airport, and I couldn't be more impressed! Not only was he professional and friendly, but he also went above and beyond by acting as an impromptu tour guide. I felt welcomed and well taken care of throughout the trip in Paris.",
+      author: "Angielyn M",
+      date: "March 2025"
     }
   ];
 
@@ -33,7 +33,7 @@ const ReviewsSection = () => {
                 <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
               ))}
             </div>
-            <span className="text-lg font-semibold text-muted-foreground">4,144 reviews</span>
+            <span className="text-lg font-semibold text-muted-foreground">846 reviews</span>
           </div>
         </div>
 
