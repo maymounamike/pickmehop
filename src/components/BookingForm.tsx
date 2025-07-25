@@ -618,7 +618,10 @@ const BookingForm = () => {
                               type="email"
                               placeholder="your@email.com"
                               className="pl-10 h-10 text-sm"
-                              {...field}
+                              value={field.value || ""}
+                              onChange={field.onChange}
+                              onBlur={field.onBlur}
+                              name={field.name}
                               aria-describedby={field.name + "-error"}
                               aria-invalid={!!form.formState.errors.email}
                               autoComplete="email"
@@ -645,7 +648,10 @@ const BookingForm = () => {
                               type="tel"
                               placeholder="+33 6 12 34 56 78"
                               className="pl-10 h-10 text-sm"
-                              {...field}
+                              value={field.value || ""}
+                              onChange={field.onChange}
+                              onBlur={field.onBlur}
+                              name={field.name}
                               aria-describedby={field.name + "-error"}
                               aria-invalid={!!form.formState.errors.phone}
                               autoComplete="tel"
