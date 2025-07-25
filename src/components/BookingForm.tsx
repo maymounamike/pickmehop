@@ -86,12 +86,17 @@ const BookingForm = () => {
 
     const initializeGooglePlaces = async () => {
       try {
+        console.log('Starting Google Places initialization...');
+        
         // Get the Google Maps API key from Supabase secrets
         const { data, error } = await supabase.functions.invoke('get-google-maps-key');
         
         if (error || !data?.apiKey) {
+          console.error('Failed to get API key:', error);
           throw new Error('Failed to get Google Maps API key');
         }
+
+        console.log('API key retrieved successfully');
 
         const loader = new Loader({
           apiKey: data.apiKey,
@@ -99,37 +104,55 @@ const BookingForm = () => {
           libraries: ["places"],
         });
 
+        console.log('Loading Google Maps API...');
         await loader.load();
+        console.log('Google Maps API loaded');
         
-        // Small delay to ensure Google Maps is fully loaded
-        setTimeout(() => {
-          // Initialize autocomplete for both inputs
+        // Wait for DOM elements to be ready and ensure Google is fully loaded
+        const initAutocomplete = () => {
+          console.log('Initializing autocomplete...');
+          console.log('From input ref:', fromInputRef.current);
+          console.log('To input ref:', toInputRef.current);
+          console.log('Google places available:', typeof google !== 'undefined' && google.maps && google.maps.places);
+
+          // Initialize autocomplete for FROM input
           if (fromInputRef.current && !fromAutocompleteRef.current) {
+            console.log('Creating FROM autocomplete');
             fromAutocompleteRef.current = new google.maps.places.Autocomplete(fromInputRef.current, {
               types: ['address', 'establishment'],
               componentRestrictions: { country: 'fr' },
+              fields: ['formatted_address', 'geometry', 'place_id'],
             });
 
             fromAutocompleteRef.current.addListener('place_changed', () => {
+              console.log('FROM place changed');
               const place = fromAutocompleteRef.current?.getPlace();
+              console.log('FROM place:', place);
               if (place?.formatted_address) {
                 form.setValue('fromLocation', place.formatted_address, { shouldValidate: true });
               }
             });
+            console.log('FROM autocomplete initialized');
           }
 
+          // Initialize autocomplete for TO input
           if (toInputRef.current && !toAutocompleteRef.current) {
+            console.log('Creating TO autocomplete');
             toAutocompleteRef.current = new google.maps.places.Autocomplete(toInputRef.current, {
               types: ['address', 'establishment'],
               componentRestrictions: { country: 'fr' },
+              fields: ['formatted_address', 'geometry', 'place_id'],
             });
 
             toAutocompleteRef.current.addListener('place_changed', () => {
+              console.log('TO place changed');
               const place = toAutocompleteRef.current?.getPlace();
+              console.log('TO place:', place);
               if (place?.formatted_address) {
                 form.setValue('toLocation', place.formatted_address, { shouldValidate: true });
               }
             });
+            console.log('TO autocomplete initialized');
           }
 
           setIsGoogleLoaded(true);
@@ -138,7 +161,33 @@ const BookingForm = () => {
             title: "Google Places loaded!",
             description: "Address autocomplete is now active.",
           });
-        }, 500);
+        };
+
+        // Try multiple times to ensure DOM is ready
+        let attempts = 0;
+        const maxAttempts = 10;
+        
+        const tryInit = () => {
+          attempts++;
+          console.log(`Initialization attempt ${attempts}`);
+          
+          if (fromInputRef.current && toInputRef.current) {
+            initAutocomplete();
+          } else if (attempts < maxAttempts) {
+            console.log('DOM not ready, retrying in 200ms...');
+            setTimeout(tryInit, 200);
+          } else {
+            console.error('Failed to initialize - DOM elements not found after', maxAttempts, 'attempts');
+            toast({
+              title: "Autocomplete setup failed",
+              description: "Could not initialize address suggestions. Please refresh the page.",
+              variant: "destructive",
+            });
+          }
+        };
+
+        // Start trying to initialize
+        setTimeout(tryInit, 100);
 
       } catch (error) {
         console.error('Error loading Google Places:', error);

@@ -2,6 +2,48 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Google Places Autocomplete CSS */
+.pac-container {
+  background-color: hsl(var(--card)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  z-index: 9999 !important;
+  padding: 4px 0 !important;
+  margin-top: 2px !important;
+}
+
+.pac-item {
+  padding: 8px 16px !important;
+  color: hsl(var(--foreground)) !important;
+  cursor: pointer !important;
+  border: none !important;
+  font-size: 14px !important;
+}
+
+.pac-item:hover {
+  background-color: hsl(var(--accent)) !important;
+  color: hsl(var(--accent-foreground)) !important;
+}
+
+.pac-item-selected {
+  background-color: hsl(var(--accent)) !important;
+  color: hsl(var(--accent-foreground)) !important;
+}
+
+.pac-matched {
+  font-weight: 600 !important;
+  color: hsl(var(--primary)) !important;
+}
+
+.pac-item-query {
+  color: hsl(var(--foreground)) !important;
+}
+
+.pac-icon {
+  display: none !important;
+}
+
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
 */
