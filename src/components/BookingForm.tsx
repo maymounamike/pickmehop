@@ -14,18 +14,21 @@ import { CalendarIcon, MapPin, Minus, Plus, Users, Luggage, Loader2, Euro, Phone
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { sanitizeText, validateEmail, validatePhone, ClientRateLimit, detectBotBehavior, generateCSRFToken } from "@/lib/security";
 
 const bookingSchema = z.object({
-  fromLocation: z.string().min(3, "From location must be at least 3 characters"),
-  toLocation: z.string().min(3, "To location must be at least 3 characters"),
+  fromLocation: z.string().min(3, "From location must be at least 3 characters").max(200, "Location too long"),
+  toLocation: z.string().min(3, "To location must be at least 3 characters").max(200, "Location too long"),
   date: z.date().optional(),
   time: z.string().min(1, "Please select a pickup time"),
   passengers: z.number().min(1, "At least 1 passenger required").max(8, "Maximum 8 passengers"),
   luggage: z.number().min(0, "Luggage cannot be negative").max(10, "Maximum 10 luggage pieces"),
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Please enter a valid email"),
-  phone: z.string().min(10, "Please enter a valid phone number"),
-  specialRequests: z.string().optional(),
+  name: z.string().min(2, "Name must be at least 2 characters").max(100, "Name too long"),
+  email: z.string().email("Please enter a valid email").refine(validateEmail, "Invalid email format"),
+  phone: z.string().min(10, "Please enter a valid phone number").refine(validatePhone, "Invalid phone format"),
+  specialRequests: z.string().max(500, "Special requests too long").optional(),
+  honeypot: z.string().optional(), // Hidden field for bot detection
 });
 
 type BookingFormData = z.infer<typeof bookingSchema>;
@@ -58,6 +61,9 @@ const locationSuggestions = [
 const BookingForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [estimatedPrice, setEstimatedPrice] = useState<number | null>(null);
+  const [formStartTime] = useState(Date.now());
+  const [csrfToken] = useState(generateCSRFToken());
+  const rateLimit = new ClientRateLimit();
 
   const form = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
@@ -70,6 +76,7 @@ const BookingForm = () => {
       email: "",
       phone: "",
       specialRequests: "",
+      honeypot: "", // Hidden honeypot field
     },
   });
 
@@ -124,12 +131,57 @@ const BookingForm = () => {
   }, [watchedValues]);
 
   const onSubmit = async (data: BookingFormData) => {
+    // Rate limiting check
+    if (!rateLimit.check('booking-form', 3, 300000)) { // 3 attempts per 5 minutes
+      toast({
+        title: "Too many attempts",
+        description: "Please wait before submitting again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Bot detection
+    const formData = {
+      ...data,
+      fillTime: Date.now() - formStartTime,
+      csrfToken,
+    };
+
+    if (detectBotBehavior(formData)) {
+      console.log('Potential bot detected');
+      toast({
+        title: "Submission failed",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      // Sanitize inputs before sending
+      const sanitizedData = {
+        ...data,
+        fromLocation: sanitizeText(data.fromLocation),
+        toLocation: sanitizeText(data.toLocation),
+        name: sanitizeText(data.name),
+        email: sanitizeText(data.email),
+        phone: sanitizeText(data.phone),
+        specialRequests: data.specialRequests ? sanitizeText(data.specialRequests) : "",
+        csrfToken,
+      };
+
+      // Submit to secure edge function
+      const { data: result, error } = await supabase.functions.invoke('submit-booking', {
+        body: sanitizedData,
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
       toast({
         title: "Booking Submitted!",
         description: `Thank you ${data.name}! We'll contact you shortly to confirm your ride from ${data.fromLocation} to ${data.toLocation}.`,
@@ -138,8 +190,10 @@ const BookingForm = () => {
       // Reset form after successful submission
       form.reset();
       setEstimatedPrice(null);
+      rateLimit.reset('booking-form');
       
     } catch (error) {
+      console.error('Booking submission error:', error);
       toast({
         title: "Booking Failed",
         description: "There was an error submitting your booking. Please try again.",
@@ -428,6 +482,21 @@ const BookingForm = () => {
                   </FormControl>
                   <FormMessage />
                 </FormItem>
+              )}
+            />
+
+            {/* Hidden honeypot field for bot detection */}
+            <FormField
+              control={form.control}
+              name="honeypot"
+              render={({ field }) => (
+                <div style={{ display: 'none' }}>
+                  <Input
+                    {...field}
+                    tabIndex={-1}
+                    autoComplete="off"
+                  />
+                </div>
               )}
             />
 
