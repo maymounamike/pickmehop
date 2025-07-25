@@ -1,21 +1,47 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, MapPin, Minus, Plus, Users, Luggage } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { CalendarIcon, MapPin, Minus, Plus, Users, Luggage, Loader2, Euro, Phone, Mail } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { toast } from "@/hooks/use-toast";
+
+const bookingSchema = z.object({
+  fromLocation: z.string().min(3, "From location must be at least 3 characters"),
+  toLocation: z.string().min(3, "To location must be at least 3 characters"),
+  date: z.date().optional(),
+  time: z.string().min(1, "Please select a pickup time"),
+  passengers: z.number().min(1, "At least 1 passenger required").max(8, "Maximum 8 passengers"),
+  luggage: z.number().min(0, "Luggage cannot be negative").max(10, "Maximum 10 luggage pieces"),
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Please enter a valid email"),
+  phone: z.string().min(10, "Please enter a valid phone number"),
+  specialRequests: z.string().optional(),
+});
+
+type BookingFormData = z.infer<typeof bookingSchema>;
 
 const BookingForm = () => {
-  const [date, setDate] = useState<Date>();
-  const [passengers, setPassengers] = useState(1);
-  const [luggage, setLuggage] = useState(1);
-  const [fromLocation, setFromLocation] = useState("");
-  const [toLocation, setToLocation] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [estimatedPrice, setEstimatedPrice] = useState<number | null>(null);
+
+  const form = useForm<BookingFormData>({
+    resolver: zodResolver(bookingSchema),
+    defaultValues: {
+      passengers: 1,
+      luggage: 1,
+      specialRequests: "",
+    },
+  });
 
   const times = Array.from({ length: 24 * 4 }, (_, i) => {
     const hours = Math.floor(i / 4);
@@ -23,141 +49,352 @@ const BookingForm = () => {
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
   });
 
+  // Calculate estimated price based on distance (simplified calculation)
+  const calculatePrice = (from: string, to: string, passengers: number) => {
+    if (!from || !to) return null;
+    
+    // Simplified price calculation - in real app this would use a proper distance API
+    const basePrice = 25; // Base price in euros
+    const perKmRate = 1.5; // Rate per km
+    const passengerSurcharge = passengers > 4 ? (passengers - 4) * 5 : 0;
+    
+    // Estimate distance based on common routes (simplified)
+    const estimatedKm = from.toLowerCase().includes('airport') || to.toLowerCase().includes('airport') ? 35 : 20;
+    
+    return Math.round(basePrice + (estimatedKm * perKmRate) + passengerSurcharge);
+  };
+
+  // Watch form values to calculate price
+  const watchedValues = form.watch(['fromLocation', 'toLocation', 'passengers']);
+  
+  // Update price when form values change
+  useEffect(() => {
+    const [from, to, passengers] = watchedValues;
+    const price = calculatePrice(from, to, passengers);
+    setEstimatedPrice(price);
+  }, [watchedValues]);
+
+  const onSubmit = async (data: BookingFormData) => {
+    setIsSubmitting(true);
+    
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      toast({
+        title: "Booking Submitted!",
+        description: `Thank you ${data.name}! We'll contact you shortly to confirm your ride from ${data.fromLocation} to ${data.toLocation}.`,
+      });
+      
+      // Reset form after successful submission
+      form.reset();
+      setEstimatedPrice(null);
+      
+    } catch (error) {
+      toast({
+        title: "Booking Failed",
+        description: "There was an error submitting your booking. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <Card className="w-full max-w-md bg-white shadow-elegant">
       <CardHeader>
         <CardTitle className="text-lg font-semibold text-foreground">Allez Hop ! Let&apos;s Book a Ride</CardTitle>
+        {estimatedPrice && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-secondary/50 p-2 rounded-lg">
+            <Euro className="h-4 w-4" />
+            <span>Estimated price: <strong>€{estimatedPrice}</strong></span>
+          </div>
+        )}
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="from" className="text-sm font-medium text-muted-foreground">From</Label>
-          <div className="relative">
-            <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            <Input
-              id="from"
-              placeholder="From (airport, port, address)"
-              value={fromLocation}
-              onChange={(e) => setFromLocation(e.target.value)}
-              className="pl-10"
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {/* Location Fields */}
+            <FormField
+              control={form.control}
+              name="fromLocation"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>From</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="From (airport, port, address)"
+                        className="pl-10"
+                        {...field}
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-        </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="to" className="text-sm font-medium text-muted-foreground">To</Label>
-          <div className="relative">
-            <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            <Input
-              id="to"
-              placeholder="To (airport, port, address)"
-              value={toLocation}
-              onChange={(e) => setToLocation(e.target.value)}
-              className="pl-10"
+            <FormField
+              control={form.control}
+              name="toLocation"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>To</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="To (airport, port, address)"
+                        className="pl-10"
+                        {...field}
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-        </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label className="text-sm font-medium text-muted-foreground">Pickup date</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !date && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date ? format(date, "PPP") : <span>Pick a date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={setDate}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
+            {/* Date and Time */}
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="date"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Pickup date</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          disabled={(date) => date < new Date()}
+                          initialFocus
+                          className="pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-          <div className="space-y-2">
-            <Label className="text-sm font-medium text-muted-foreground">Pickup time</Label>
-            <Select>
-              <SelectTrigger>
-                <SelectValue placeholder="Select time" />
-              </SelectTrigger>
-              <SelectContent>
-                {times.map((time) => (
-                  <SelectItem key={time} value={time}>
-                    {time}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label className="text-sm font-medium text-muted-foreground">Passengers</Label>
-            <div className="flex items-center justify-between border rounded-lg p-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setPassengers(Math.max(1, passengers - 1))}
-                className="h-8 w-8 p-0"
-              >
-                <Minus className="h-4 w-4" />
-              </Button>
-              <div className="flex items-center space-x-2">
-                <Users className="h-4 w-4 text-muted-foreground" />
-                <span className="font-medium">{passengers}</span>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setPassengers(passengers + 1)}
-                className="h-8 w-8 p-0"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
+              <FormField
+                control={form.control}
+                name="time"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Pickup time</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="bg-background">
+                          <SelectValue placeholder="Select time" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="bg-background border z-50">
+                        {times.map((time) => (
+                          <SelectItem key={time} value={time} className="hover:bg-secondary">
+                            {time}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label className="text-sm font-medium text-muted-foreground">Luggage pieces</Label>
-            <div className="flex items-center justify-between border rounded-lg p-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setLuggage(Math.max(0, luggage - 1))}
-                className="h-8 w-8 p-0"
-              >
-                <Minus className="h-4 w-4" />
-              </Button>
-              <div className="flex items-center space-x-2">
-                <Luggage className="h-4 w-4 text-muted-foreground" />
-                <span className="font-medium">{luggage}</span>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setLuggage(luggage + 1)}
-                className="h-8 w-8 p-0"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
+            {/* Passengers and Luggage */}
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="passengers"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Passengers</FormLabel>
+                    <FormControl>
+                      <div className="flex items-center justify-between border rounded-lg p-2">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => field.onChange(Math.max(1, field.value - 1))}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                        <div className="flex items-center space-x-2">
+                          <Users className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium">{field.value}</span>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => field.onChange(Math.min(8, field.value + 1))}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="luggage"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Luggage pieces</FormLabel>
+                    <FormControl>
+                      <div className="flex items-center justify-between border rounded-lg p-2">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => field.onChange(Math.max(0, field.value - 1))}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                        <div className="flex items-center space-x-2">
+                          <Luggage className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium">{field.value}</span>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => field.onChange(Math.min(10, field.value + 1))}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
-          </div>
-        </div>
 
-        <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
-          Continue booking
-        </Button>
+            {/* Contact Information */}
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Full Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Your full name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          type="email"
+                          placeholder="your@email.com"
+                          className="pl-10"
+                          {...field}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          type="tel"
+                          placeholder="+33 6 12 34 56 78"
+                          className="pl-10"
+                          {...field}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Special Requests */}
+            <FormField
+              control={form.control}
+              name="specialRequests"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Special Requests (Optional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Child seat, wheelchair access, etc."
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <Button 
+              type="submit" 
+              className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Submitting Booking...
+                </>
+              ) : (
+                "Continue Booking"
+              )}
+            </Button>
+          </form>
+        </Form>
       </CardContent>
     </Card>
   );
