@@ -18,7 +18,7 @@ const HeroSection = () => {
         {/* Hero Text */}
         <div className="flex-1 text-center lg:text-left">
           <h1 className="text-4xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-            Hop on board with Pick Me Hop
+            Pick Me Hop Before We Go Go
           </h1>
           <p className="text-lg lg:text-xl text-white/90 mb-8 max-w-2xl">
             Your friendly, reliable ride service - hop in and let us take you where you need to go!
