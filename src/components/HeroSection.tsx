@@ -26,7 +26,7 @@ const HeroSection = () => {
             Pick Me Hop Before<br />We Go Go
           </h1>
           <p className="text-xs sm:text-sm lg:text-base xl:text-lg text-white/90 mb-3 sm:mb-4 lg:mb-6 max-w-2xl mx-auto lg:mx-0">
-            Your friendly, reliable ride service - hop in and let us take you where you need to go!
+            Friendly, experienced, reliable English-speaking drivers<br />just waiting for you to Hop On In
           </p>
         </div>
         
