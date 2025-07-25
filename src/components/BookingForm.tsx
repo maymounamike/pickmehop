@@ -179,33 +179,33 @@ const BookingForm = () => {
 
   return (
     <Card className="w-full max-w-lg mx-auto bg-white shadow-elegant border-0" role="form" aria-labelledby="booking-form-title">
-      <CardHeader className="pb-3">
-        <CardTitle id="booking-form-title" className="text-base sm:text-lg font-semibold text-foreground text-center sm:text-left">
+      <CardHeader className="pb-2">
+        <CardTitle id="booking-form-title" className="text-sm sm:text-base font-semibold text-foreground text-center sm:text-left">
           Allez Hop ! Let&apos;s Book a Ride
         </CardTitle>
         {estimatedPrice && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-secondary/50 p-2 rounded-lg" role="status" aria-live="polite">
-            <Euro className="h-4 w-4" aria-hidden="true" />
+          <div className="flex items-center gap-2 text-xs text-muted-foreground bg-secondary/50 p-2 rounded-lg" role="status" aria-live="polite">
+            <Euro className="h-3 w-3" aria-hidden="true" />
             <span>Estimated price: <strong className="text-foreground">€{estimatedPrice}</strong></span>
           </div>
         )}
       </CardHeader>
-      <CardContent className="p-3 sm:p-4">
+      <CardContent className="p-3">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4" noValidate>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2 sm:space-y-3" noValidate>
             <div className="sr-only">
               <label htmlFor="form-instructions">Form instructions</label>
               <div id="form-instructions">Fill out this form to book your ride. All fields marked with an asterisk are required.</div>
             </div>
 
             {/* Location Fields */}
-            <div className="space-y-3">
+            <div className="space-y-2">
               <FormField
                 control={form.control}
                 name="fromLocation"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium">
+                    <FormLabel className="text-xs font-medium">
                       From <span className="text-destructive" aria-label="required">*</span>
                     </FormLabel>
                     <FormControl>
@@ -213,7 +213,7 @@ const BookingForm = () => {
                         <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground z-10 pointer-events-none" aria-hidden="true" />
                         <Input
                           placeholder="From (airport, port, address)"
-                          className="pl-10 h-10 text-sm sm:text-base"
+                          className="pl-10 h-8 text-sm"
                           {...field}
                           value={field.value || ""}
                           aria-describedby={field.name + "-error"}
@@ -231,7 +231,7 @@ const BookingForm = () => {
                 name="toLocation"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium">
+                    <FormLabel className="text-xs font-medium">
                       To <span className="text-destructive" aria-label="required">*</span>
                     </FormLabel>
                     <FormControl>
@@ -239,7 +239,7 @@ const BookingForm = () => {
                         <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground z-10 pointer-events-none" aria-hidden="true" />
                         <Input
                           placeholder="To (airport, port, address)"
-                          className="pl-10 h-10 text-sm sm:text-base"
+                          className="pl-10 h-8 text-sm"
                           {...field}
                           value={field.value || ""}
                           aria-describedby={field.name + "-error"}
@@ -254,20 +254,20 @@ const BookingForm = () => {
             </div>
 
             {/* Date and Time */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <FormField
                 control={form.control}
                 name="date"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel className="text-sm font-medium">Pickup date</FormLabel>
+                    <FormLabel className="text-xs font-medium">Pickup date</FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
                             variant="outline"
                             className={cn(
-                              "w-full justify-start text-left font-normal h-10 text-sm sm:text-base",
+                              "w-full justify-start text-left font-normal h-8 text-sm",
                               !field.value && "text-muted-foreground"
                             )}
                             aria-haspopup="dialog"
@@ -300,14 +300,14 @@ const BookingForm = () => {
                 name="time"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel className="text-sm font-medium">
+                    <FormLabel className="text-xs font-medium">
                       Pickup time <span className="text-destructive" aria-label="required">*</span>
                     </FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger 
                           className={cn(
-                            "w-full justify-start text-left font-normal bg-background h-10 text-sm sm:text-base",
+                            "w-full justify-start text-left font-normal bg-background h-8 text-sm",
                             !field.value && "text-muted-foreground"
                           )}
                           aria-describedby={field.name + "-error"}
@@ -331,17 +331,17 @@ const BookingForm = () => {
             </div>
 
             {/* Passengers and Luggage */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <FormField
                 control={form.control}
                 name="passengers"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium">
+                    <FormLabel className="text-xs font-medium">
                       Passengers <span className="text-destructive" aria-label="required">*</span>
                     </FormLabel>
                     <FormControl>
-                      <div className="flex items-center justify-between border rounded-lg p-2 h-10" role="group" aria-label="Number of passengers">
+                      <div className="flex items-center justify-between border rounded-lg p-1 h-8" role="group" aria-label="Number of passengers">
                         <Button
                           type="button"
                           variant="ghost"
@@ -355,7 +355,7 @@ const BookingForm = () => {
                         </Button>
                         <div className="flex items-center space-x-2" aria-live="polite">
                           <Users className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                          <span className="font-medium text-sm sm:text-base" aria-label={`${field.value} passengers selected`}>{field.value}</span>
+                          <span className="font-medium text-sm" aria-label={`${field.value} passengers selected`}>{field.value}</span>
                         </div>
                         <Button
                           type="button"
@@ -380,9 +380,9 @@ const BookingForm = () => {
                 name="luggage"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium">Luggage pieces</FormLabel>
+                    <FormLabel className="text-xs font-medium">Luggage pieces</FormLabel>
                     <FormControl>
-                      <div className="flex items-center justify-between border rounded-lg p-2 h-10" role="group" aria-label="Number of luggage pieces">
+                      <div className="flex items-center justify-between border rounded-lg p-1 h-8" role="group" aria-label="Number of luggage pieces">
                         <Button
                           type="button"
                           variant="ghost"
@@ -396,7 +396,7 @@ const BookingForm = () => {
                         </Button>
                         <div className="flex items-center space-x-2" aria-live="polite">
                           <Luggage className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                          <span className="font-medium text-sm sm:text-base" aria-label={`${field.value} luggage pieces selected`}>{field.value}</span>
+                          <span className="font-medium text-sm" aria-label={`${field.value} luggage pieces selected`}>{field.value}</span>
                         </div>
                         <Button
                           type="button"
@@ -423,13 +423,13 @@ const BookingForm = () => {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm font-medium">
+                  <FormLabel className="text-xs font-medium">
                     Full Name <span className="text-destructive" aria-label="required">*</span>
                   </FormLabel>
                   <FormControl>
                     <Input 
                       placeholder="Your full name" 
-                      className="h-10 text-sm sm:text-base"
+                      className="h-8 text-sm"
                       {...field} 
                       aria-describedby={field.name + "-error"}
                       aria-invalid={!!form.formState.errors.name}
@@ -441,13 +441,13 @@ const BookingForm = () => {
               )}
             />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <FormField
                 control={form.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium">
+                    <FormLabel className="text-xs font-medium">
                       Email <span className="text-destructive" aria-label="required">*</span>
                     </FormLabel>
                     <FormControl>
@@ -456,7 +456,7 @@ const BookingForm = () => {
                         <Input
                           type="email"
                           placeholder="your@email.com"
-                          className="pl-10 h-10 text-sm sm:text-base"
+                          className="pl-10 h-8 text-sm"
                           {...field}
                           aria-describedby={field.name + "-error"}
                           aria-invalid={!!form.formState.errors.email}
@@ -474,7 +474,7 @@ const BookingForm = () => {
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium">
+                    <FormLabel className="text-xs font-medium">
                       Phone <span className="text-destructive" aria-label="required">*</span>
                     </FormLabel>
                     <FormControl>
@@ -483,7 +483,7 @@ const BookingForm = () => {
                         <Input
                           type="tel"
                           placeholder="+33 6 12 34 56 78"
-                          className="pl-10 h-10 text-sm sm:text-base"
+                          className="pl-10 h-8 text-sm"
                           {...field}
                           aria-describedby={field.name + "-error"}
                           aria-invalid={!!form.formState.errors.phone}
@@ -503,11 +503,11 @@ const BookingForm = () => {
               name="specialRequests"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm font-medium">Special Requests (Optional)</FormLabel>
+                  <FormLabel className="text-xs font-medium">Special Requests (Optional)</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="Child seat, wheelchair access, etc."
-                      className="h-10 text-sm sm:text-base"
+                      className="h-8 text-sm"
                       {...field}
                       aria-describedby={field.name + "-error"}
                       maxLength={500}
@@ -535,7 +535,7 @@ const BookingForm = () => {
 
             <Button 
               type="submit" 
-              className="w-full bg-accent hover:bg-accent/90 text-accent-foreground h-10 text-sm sm:text-base font-medium touch-manipulation"
+              className="w-full bg-accent hover:bg-accent/90 text-accent-foreground h-9 text-sm font-medium touch-manipulation"
               disabled={isSubmitting}
               aria-describedby="submit-help"
             >

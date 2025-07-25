@@ -19,13 +19,13 @@ const HeroSection = () => {
       <div className="absolute inset-0 bg-black/60" aria-hidden="true" />
       
       {/* Content */}
-      <div className="relative z-10 container mx-auto px-4 py-4 sm:py-8 lg:py-12 flex flex-col lg:flex-row items-center justify-between gap-6 lg:gap-8 max-h-screen">
+      <div className="relative z-10 container mx-auto px-4 py-2 sm:py-4 lg:py-8 flex flex-col lg:flex-row items-center justify-between gap-4 lg:gap-6 max-h-screen">
         {/* Hero Text */}
         <div className="flex-1 text-center lg:text-left max-w-2xl lg:max-w-none">
-          <h1 className="text-2xl sm:text-3xl lg:text-5xl xl:text-6xl font-bold text-white mb-3 sm:mb-4 lg:mb-6 leading-tight">
+          <h1 className="text-xl sm:text-2xl lg:text-4xl xl:text-5xl font-bold text-white mb-2 sm:mb-3 lg:mb-4 leading-tight">
             Pick Me Hop Before<br />We Go Go
           </h1>
-          <p className="text-sm sm:text-base lg:text-lg xl:text-xl text-white/90 mb-4 sm:mb-6 lg:mb-8 max-w-2xl mx-auto lg:mx-0">
+          <p className="text-xs sm:text-sm lg:text-base xl:text-lg text-white/90 mb-3 sm:mb-4 lg:mb-6 max-w-2xl mx-auto lg:mx-0">
             Your friendly, reliable ride service - hop in and let us take you where you need to go!
           </p>
         </div>
