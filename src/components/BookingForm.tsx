@@ -179,20 +179,20 @@ const BookingForm = () => {
 
   return (
     <Card className="w-full max-w-lg mx-auto bg-white shadow-elegant border-0" role="form" aria-labelledby="booking-form-title">
-      <CardHeader className="pb-2">
-        <CardTitle id="booking-form-title" className="text-sm sm:text-base font-semibold text-foreground text-center sm:text-left">
+      <CardHeader className="pb-1 px-3 pt-3">
+        <CardTitle id="booking-form-title" className="text-sm font-semibold text-foreground text-center sm:text-left">
           Allez Hop ! Let&apos;s Book a Ride
         </CardTitle>
         {estimatedPrice && (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground bg-secondary/50 p-2 rounded-lg" role="status" aria-live="polite">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground bg-secondary/50 p-1.5 rounded-lg" role="status" aria-live="polite">
             <Euro className="h-3 w-3" aria-hidden="true" />
             <span>Estimated price: <strong className="text-foreground">€{estimatedPrice}</strong></span>
           </div>
         )}
       </CardHeader>
-      <CardContent className="p-3">
+      <CardContent className="p-3 pt-2">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2 sm:space-y-3" noValidate>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-1.5" noValidate>
             <div className="sr-only">
               <label htmlFor="form-instructions">Form instructions</label>
               <div id="form-instructions">Fill out this form to book your ride. All fields marked with an asterisk are required.</div>
