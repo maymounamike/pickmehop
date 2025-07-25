@@ -108,8 +108,42 @@ const BookingForm = () => {
     setEstimatedPrice(price);
   }, [watchedValues]);
 
+  // Preset airport suggestions for common keywords
+  const getAirportPresets = (query: string): string[] => {
+    const queryLower = query.toLowerCase();
+    const presets: string[] = [];
+
+    // Charles de Gaulle Airport keywords
+    if (['cdg', 'charles', 'gaulle', 'roissy', 'airport'].some(keyword => 
+        queryLower.includes(keyword) || keyword.includes(queryLower))) {
+      presets.push('Charles de Gaulle International Airport, Tremblay-en-France 93290');
+    }
+
+    // Orly Airport keywords
+    if (['orly', 'ory', 'airport'].some(keyword => 
+        queryLower.includes(keyword) || keyword.includes(queryLower))) {
+      presets.push('Orly Airport, Orly 94390');
+    }
+
+    // Beauvais Airport keywords
+    if (['beauvais', 'bva', 'tillé', 'airport'].some(keyword => 
+        queryLower.includes(keyword) || keyword.includes(queryLower))) {
+      presets.push('Beauvais-Tillé Airport, Tillé 60000');
+    }
+
+    return presets;
+  };
+
   // Address suggestion function using Nominatim (OpenStreetMap)
   const fetchAddressSuggestions = async (query: string) => {
+    // First check for airport presets (minimum 2 characters)
+    if (query.length >= 2) {
+      const airportPresets = getAirportPresets(query);
+      if (airportPresets.length > 0) {
+        return airportPresets;
+      }
+    }
+
     if (query.length < 3) return [];
     
     try {
@@ -137,7 +171,7 @@ const BookingForm = () => {
   // Handle address input changes with suggestions
   const handleFromLocationChange = async (value: string) => {
     form.setValue('fromLocation', value);
-    if (value.length >= 3) {
+    if (value.length >= 2) {
       const suggestions = await fetchAddressSuggestions(value);
       setFromSuggestions(suggestions);
       setShowFromSuggestions(true);
@@ -148,7 +182,7 @@ const BookingForm = () => {
 
   const handleToLocationChange = async (value: string) => {
     form.setValue('toLocation', value);
-    if (value.length >= 3) {
+    if (value.length >= 2) {
       const suggestions = await fetchAddressSuggestions(value);
       setToSuggestions(suggestions);
       setShowToSuggestions(true);
