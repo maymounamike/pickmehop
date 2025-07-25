@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -30,9 +30,40 @@ const bookingSchema = z.object({
 
 type BookingFormData = z.infer<typeof bookingSchema>;
 
+// Common locations for autocomplete
+const locationSuggestions = [
+  "Charles de Gaulle Airport (CDG)",
+  "Orly Airport (ORY)",
+  "Gare du Nord",
+  "Gare de Lyon",
+  "Châtelet-Les Halles",
+  "République - 75003",
+  "Marais - 75004", 
+  "Latin Quarter - 75005",
+  "Saint-Germain - 75006",
+  "Eiffel Tower - 75007",
+  "Champs-Élysées - 75008",
+  "Opéra - 75009",
+  "République - 75010",
+  "Bastille - 75011",
+  "Montparnasse - 75014",
+  "Champ de Mars - 75015",
+  "Arc de Triomphe - 75016",
+  "Batignolles - 75017",
+  "Montmartre - 75018",
+  "Belleville - 75019",
+  "Père Lachaise - 75020"
+];
+
 const BookingForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [estimatedPrice, setEstimatedPrice] = useState<number | null>(null);
+  const [fromSuggestions, setFromSuggestions] = useState<string[]>([]);
+  const [toSuggestions, setToSuggestions] = useState<string[]>([]);
+  const [showFromSuggestions, setShowFromSuggestions] = useState(false);
+  const [showToSuggestions, setShowToSuggestions] = useState(false);
+  const fromInputRef = useRef<HTMLInputElement>(null);
+  const toInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
@@ -49,17 +80,67 @@ const BookingForm = () => {
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
   });
 
-  // Calculate estimated price based on distance (simplified calculation)
+  // Helper functions for location filtering
+  const filterSuggestions = (input: string) => {
+    if (!input || input.length < 2) return [];
+    return locationSuggestions.filter(location =>
+      location.toLowerCase().includes(input.toLowerCase())
+    ).slice(0, 5);
+  };
+
+  const handleFromInput = (value: string) => {
+    form.setValue('fromLocation', value);
+    const suggestions = filterSuggestions(value);
+    setFromSuggestions(suggestions);
+    setShowFromSuggestions(suggestions.length > 0);
+  };
+
+  const handleToInput = (value: string) => {
+    form.setValue('toLocation', value);
+    const suggestions = filterSuggestions(value);
+    setToSuggestions(suggestions);
+    setShowToSuggestions(suggestions.length > 0);
+  };
+
+  const selectFromSuggestion = (suggestion: string) => {
+    form.setValue('fromLocation', suggestion);
+    setShowFromSuggestions(false);
+  };
+
+  const selectToSuggestion = (suggestion: string) => {
+    form.setValue('toLocation', suggestion);
+    setShowToSuggestions(false);
+  };
+
+  // Calculate estimated price with special airport rules
   const calculatePrice = (from: string, to: string, passengers: number) => {
     if (!from || !to) return null;
     
-    // Simplified price calculation - in real app this would use a proper distance API
-    const basePrice = 25; // Base price in euros
-    const perKmRate = 1.5; // Rate per km
-    const passengerSurcharge = passengers > 4 ? (passengers - 4) * 5 : 0;
+    const fromLower = from.toLowerCase();
+    const toLower = to.toLowerCase();
     
-    // Estimate distance based on common routes (simplified)
-    const estimatedKm = from.toLowerCase().includes('airport') || to.toLowerCase().includes('airport') ? 35 : 20;
+    // Check for Charles de Gaulle Airport + Paris (75xxx) combination
+    const isCDGRoute = (fromLower.includes('charles de gaulle') || fromLower.includes('cdg')) ||
+                       (toLower.includes('charles de gaulle') || toLower.includes('cdg'));
+    const isParisAddress = from.includes('75') || to.includes('75');
+    
+    if (isCDGRoute && isParisAddress) {
+      return 75; // Fixed price for CDG + Paris
+    }
+    
+    // Check for Orly Airport + Paris (75xxx) combination
+    const isOrlyRoute = (fromLower.includes('orly') || fromLower.includes('ory')) ||
+                        (toLower.includes('orly') || toLower.includes('ory'));
+    
+    if (isOrlyRoute && isParisAddress) {
+      return 65; // Fixed price for Orly + Paris
+    }
+    
+    // Standard price calculation for other routes
+    const basePrice = 25;
+    const perKmRate = 1.5;
+    const passengerSurcharge = passengers > 4 ? (passengers - 4) * 5 : 0;
+    const estimatedKm = fromLower.includes('airport') || toLower.includes('airport') ? 35 : 20;
     
     return Math.round(basePrice + (estimatedKm * perKmRate) + passengerSurcharge);
   };
@@ -124,12 +205,41 @@ const BookingForm = () => {
                   <FormLabel>From</FormLabel>
                   <FormControl>
                     <div className="relative">
-                      <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
                       <Input
+                        ref={fromInputRef}
                         placeholder="From (airport, port, address)"
                         className="pl-10"
-                        {...field}
+                        value={field.value}
+                        onChange={(e) => handleFromInput(e.target.value)}
+                        onFocus={() => {
+                          if (field.value && field.value.length >= 2) {
+                            const suggestions = filterSuggestions(field.value);
+                            setFromSuggestions(suggestions);
+                            setShowFromSuggestions(suggestions.length > 0);
+                          }
+                        }}
+                        onBlur={() => {
+                          // Delay hiding to allow selection
+                          setTimeout(() => setShowFromSuggestions(false), 200);
+                        }}
                       />
+                      {showFromSuggestions && fromSuggestions.length > 0 && (
+                        <div className="absolute top-full left-0 right-0 bg-background border border-border rounded-md shadow-lg z-50 max-h-48 overflow-y-auto">
+                          {fromSuggestions.map((suggestion, index) => (
+                            <div
+                              key={index}
+                              className="px-3 py-2 hover:bg-secondary cursor-pointer text-sm"
+                              onClick={() => selectFromSuggestion(suggestion)}
+                            >
+                              <div className="flex items-center gap-2">
+                                <MapPin className="h-3 w-3 text-muted-foreground" />
+                                {suggestion}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </FormControl>
                   <FormMessage />
@@ -145,12 +255,41 @@ const BookingForm = () => {
                   <FormLabel>To</FormLabel>
                   <FormControl>
                     <div className="relative">
-                      <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
                       <Input
+                        ref={toInputRef}
                         placeholder="To (airport, port, address)"
                         className="pl-10"
-                        {...field}
+                        value={field.value}
+                        onChange={(e) => handleToInput(e.target.value)}
+                        onFocus={() => {
+                          if (field.value && field.value.length >= 2) {
+                            const suggestions = filterSuggestions(field.value);
+                            setToSuggestions(suggestions);
+                            setShowToSuggestions(suggestions.length > 0);
+                          }
+                        }}
+                        onBlur={() => {
+                          // Delay hiding to allow selection
+                          setTimeout(() => setShowToSuggestions(false), 200);
+                        }}
                       />
+                      {showToSuggestions && toSuggestions.length > 0 && (
+                        <div className="absolute top-full left-0 right-0 bg-background border border-border rounded-md shadow-lg z-50 max-h-48 overflow-y-auto">
+                          {toSuggestions.map((suggestion, index) => (
+                            <div
+                              key={index}
+                              className="px-3 py-2 hover:bg-secondary cursor-pointer text-sm"
+                              onClick={() => selectToSuggestion(suggestion)}
+                            >
+                              <div className="flex items-center gap-2">
+                                <MapPin className="h-3 w-3 text-muted-foreground" />
+                                {suggestion}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </FormControl>
                   <FormMessage />
