@@ -4,7 +4,7 @@ import heroBackground from "@/assets/hero-background.jpg";
 const HeroSection = () => {
   return (
     <section 
-      className="relative min-h-screen flex items-center justify-center overflow-hidden py-6 sm:py-8"
+      className="relative min-h-screen flex items-start sm:items-center justify-center overflow-hidden pt-20 sm:pt-24 pb-6 sm:pb-8"
       aria-label="Book a ride service"
     >
       {/* Background Image */}
