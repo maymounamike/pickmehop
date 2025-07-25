@@ -11,10 +11,11 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { CalendarIcon, MapPin, Minus, Plus, Users, Luggage, Loader2, Euro, Phone, Mail, Key } from "lucide-react";
+import { CalendarIcon, MapPin, Minus, Plus, Users, Luggage, Loader2, Euro, Phone, Mail } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const bookingSchema = z.object({
   fromLocation: z.string().min(3, "From location must be at least 3 characters"),
@@ -59,7 +60,6 @@ const locationSuggestions = [
 const BookingForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [estimatedPrice, setEstimatedPrice] = useState<number | null>(null);
-  const [googleApiKey, setGoogleApiKey] = useState("");
   const [isGoogleLoaded, setIsGoogleLoaded] = useState(false);
   const fromInputRef = useRef<HTMLInputElement>(null);
   const toInputRef = useRef<HTMLInputElement>(null);
@@ -77,12 +77,19 @@ const BookingForm = () => {
 
   // Initialize Google Places API
   useEffect(() => {
-    if (!googleApiKey || isGoogleLoaded) return;
+    if (isGoogleLoaded) return;
 
     const initializeGooglePlaces = async () => {
       try {
+        // Get the Google Maps API key from Supabase secrets
+        const { data, error } = await supabase.functions.invoke('get-google-maps-key');
+        
+        if (error || !data?.apiKey) {
+          throw new Error('Failed to get Google Maps API key');
+        }
+
         const loader = new Loader({
-          apiKey: googleApiKey,
+          apiKey: data.apiKey,
           version: "weekly",
           libraries: ["places"],
         });
@@ -128,14 +135,14 @@ const BookingForm = () => {
         console.error('Error loading Google Places:', error);
         toast({
           title: "Google Places failed to load",
-          description: "Please check your API key and try again.",
+          description: "Unable to load address autocomplete. Please try refreshing the page.",
           variant: "destructive",
         });
       }
     };
 
     initializeGooglePlaces();
-  }, [googleApiKey, form]);
+  }, [form]);
 
   // Cleanup autocomplete listeners
   useEffect(() => {
@@ -240,22 +247,11 @@ const BookingForm = () => {
         {!isGoogleLoaded && (
           <div className="mb-4 p-4 bg-secondary/30 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
-              <Key className="h-4 w-4 text-muted-foreground" />
-              <Label htmlFor="googleApiKey" className="text-sm font-medium">Google Maps API Key</Label>
+              <MapPin className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium">Loading Google Maps...</span>
             </div>
-            <Input
-              id="googleApiKey"
-              type="password"
-              placeholder="Enter your Google Maps API key"
-              value={googleApiKey}
-              onChange={(e) => setGoogleApiKey(e.target.value)}
-              className="mb-2"
-            />
             <p className="text-xs text-muted-foreground">
-              Get your API key at{" "}
-              <a href="https://console.cloud.google.com/google/maps-apis" target="_blank" rel="noopener noreferrer" className="text-primary underline">
-                Google Cloud Console
-              </a>
+              Initializing address autocomplete functionality.
             </p>
           </div>
         )}
