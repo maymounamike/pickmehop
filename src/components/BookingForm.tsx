@@ -42,6 +42,7 @@ const BookingForm = () => {
   const [toSuggestions, setToSuggestions] = useState<string[]>([]);
   const [showFromSuggestions, setShowFromSuggestions] = useState(false);
   const [showToSuggestions, setShowToSuggestions] = useState(false);
+  const [formKey, setFormKey] = useState(0); // Key to force form remount
   const rateLimit = new ClientRateLimit();
 
   const form = useForm<BookingFormData>({
@@ -225,7 +226,12 @@ const BookingForm = () => {
 
   const handleContinueToStep2 = () => {
     if (validateStep1()) {
+      // Force clear email and phone fields before going to step 2
+      form.setValue('email', '');
+      form.setValue('phone', '');
       setCurrentStep(2);
+      // Force form remount to ensure clean state
+      setFormKey(prev => prev + 1);
     } else {
       // Trigger validation for step 1 fields
       form.trigger(['fromLocation', 'toLocation', 'time']);
@@ -322,7 +328,7 @@ const BookingForm = () => {
       </CardHeader>
       <CardContent className="p-2">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-1" noValidate>
+          <form key={formKey} onSubmit={form.handleSubmit(onSubmit)} className="space-y-1" noValidate>
             <div className="sr-only">
               <label htmlFor="form-instructions">Form instructions</label>
               <div id="form-instructions">Fill out this form to book your ride. All fields marked with an asterisk are required.</div>
