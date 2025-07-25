@@ -144,7 +144,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Send notification email to business
     const businessEmailResponse = await resend.emails.send({
       from: "PickMeHop <support@pickmehop.com>",
-      to: ["support@pickmehop.com"],
+      to: ["noreply@pickmehop.com"],
       subject: `New Booking Alert #${booking.bookingId} - Action Required`,
       html: generateBusinessEmailHTML(booking),
     });
