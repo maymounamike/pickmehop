@@ -3,6 +3,39 @@ import { Resend } from "npm:resend@2.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
+// Twilio configuration
+const TWILIO_ACCOUNT_SID = Deno.env.get("TWILIO_ACCOUNT_SID");
+const TWILIO_AUTH_TOKEN = Deno.env.get("TWILIO_AUTH_TOKEN");
+const TWILIO_PHONE_NUMBER = Deno.env.get("TWILIO_PHONE_NUMBER");
+
+// Function to send SMS using Twilio
+const sendSMS = async (to: string, message: string) => {
+  const auth = btoa(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`);
+  
+  const response = await fetch(
+    `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`,
+    {
+      method: "POST",
+      headers: {
+        "Authorization": `Basic ${auth}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        From: TWILIO_PHONE_NUMBER!,
+        To: to,
+        Body: message,
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Twilio SMS failed: ${error}`);
+  }
+
+  return await response.json();
+};
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -129,7 +162,7 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const booking: BookingConfirmationRequest = await req.json();
-    console.log("Sending booking confirmation emails for:", booking.bookingId);
+    console.log("Sending booking confirmation emails and SMS for:", booking.bookingId);
 
     // Send confirmation email to customer
     const customerEmailResponse = await resend.emails.send({
@@ -151,11 +184,37 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Business email sent:", businessEmailResponse);
 
+    // Send SMS confirmation to customer if phone number is provided
+    let smsResponse = null;
+    if (booking.phone && TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN && TWILIO_PHONE_NUMBER) {
+      try {
+        const smsMessage = `PickMeHop Booking Confirmed! 
+        
+Booking ID: ${booking.bookingId}
+From: ${booking.fromLocation}
+To: ${booking.toLocation}
+Date: ${booking.date} at ${booking.time}
+Passengers: ${booking.passengers}
+Price: €${booking.estimatedPrice}
+
+Our driver will contact you shortly. For questions: +33 6 66 35 71 39
+
+Thank you for choosing PickMeHop!`;
+
+        smsResponse = await sendSMS(booking.phone, smsMessage);
+        console.log("SMS sent successfully:", smsResponse);
+      } catch (smsError) {
+        console.error("SMS sending failed:", smsError);
+        // Don't fail the whole process if SMS fails
+      }
+    }
+
     return new Response(
       JSON.stringify({ 
         success: true, 
         customerEmailId: customerEmailResponse.data?.id,
-        businessEmailId: businessEmailResponse.data?.id 
+        businessEmailId: businessEmailResponse.data?.id,
+        smsId: smsResponse?.sid || null
       }), 
       {
         status: 200,
