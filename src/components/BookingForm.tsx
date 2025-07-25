@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { CalendarIcon, MapPin, Minus, Plus, Users, Luggage, Loader2, Euro, Phone, Mail } from "lucide-react";
+import { CalendarIcon, MapPin, Minus, Plus, Users, Luggage, Loader2, Euro, Phone, Mail, CreditCard, DollarSign, Wallet } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
@@ -27,6 +28,7 @@ const bookingSchema = z.object({
   email: z.string().email("Please enter a valid email").refine(validateEmail, "Invalid email format"),
   phone: z.string().min(10, "Please enter a valid phone number").refine(validatePhone, "Invalid phone format"),
   specialRequests: z.string().max(500, "Special requests too long").optional(),
+  paymentMethod: z.enum(["cash", "card_onboard", "card_online", "paypal"]).optional(),
   honeypot: z.string().optional(), // Hidden field for bot detection
 });
 
@@ -238,6 +240,26 @@ const BookingForm = () => {
     }
   };
 
+  const validateStep2 = () => {
+    const values = form.getValues();
+    const errors = [];
+    
+    if (!values.name || values.name.length < 2) errors.push('name');
+    if (!values.email || !validateEmail(values.email)) errors.push('email');
+    if (!values.phone || !validatePhone(values.phone)) errors.push('phone');
+    
+    return errors.length === 0;
+  };
+
+  const handleContinueToStep3 = () => {
+    if (validateStep2()) {
+      setCurrentStep(3);
+    } else {
+      // Trigger validation for step 2 fields
+      form.trigger(['name', 'email', 'phone']);
+    }
+  };
+
   const onSubmit = async (data: BookingFormData) => {
     // Rate limiting check
     if (!rateLimit.check('booking-form', 3, 300000)) { // 3 attempts per 5 minutes
@@ -278,34 +300,64 @@ const BookingForm = () => {
         email: sanitizeText(data.email),
         phone: sanitizeText(data.phone),
         specialRequests: data.specialRequests ? sanitizeText(data.specialRequests) : "",
+        estimatedPrice,
         csrfToken,
       };
 
-      // Submit to secure edge function
-      const { data: result, error } = await supabase.functions.invoke('submit-booking', {
-        body: sanitizedData,
-      });
+      // Handle different payment methods
+      if (data.paymentMethod === 'cash' || data.paymentMethod === 'card_onboard') {
+        // Direct booking for cash or card on board
+        const { data: result, error } = await supabase.functions.invoke('submit-booking', {
+          body: sanitizedData,
+        });
 
-      if (error) {
-        throw new Error(error.message);
+        if (error) {
+          throw new Error(error.message);
+        }
+
+        toast({
+          title: "Booking Confirmed!",
+          description: `Thank you ${data.name}! Your booking is confirmed. We'll contact you shortly to arrange your ride from ${data.fromLocation} to ${data.toLocation}.`,
+        });
+        
+        // Reset form after successful submission
+        form.reset();
+        setEstimatedPrice(null);
+        setCurrentStep(1);
+        rateLimit.reset('booking-form');
+        
+      } else if (data.paymentMethod === 'card_online' || data.paymentMethod === 'paypal') {
+        // Create payment gateway session for online payments
+        const { data: paymentResult, error: paymentError } = await supabase.functions.invoke('create-payment', {
+          body: {
+            ...sanitizedData,
+            amount: estimatedPrice ? estimatedPrice * 100 : 5000, // Convert to cents
+            paymentMethod: data.paymentMethod,
+          },
+        });
+
+        if (paymentError) {
+          throw new Error(paymentError.message);
+        }
+
+        if (paymentResult?.url) {
+          // Redirect to payment gateway
+          window.open(paymentResult.url, '_blank');
+          
+          toast({
+            title: "Redirecting to Payment",
+            description: "Please complete your payment in the new tab. Your booking will be confirmed once payment is processed.",
+          });
+        } else {
+          throw new Error("Payment session could not be created");
+        }
       }
-
-      toast({
-        title: "Booking Submitted!",
-        description: `Thank you ${data.name}! We'll contact you shortly to confirm your ride from ${data.fromLocation} to ${data.toLocation}.`,
-      });
-      
-      // Reset form after successful submission
-      form.reset();
-      setEstimatedPrice(null);
-      setCurrentStep(1);
-      rateLimit.reset('booking-form');
       
     } catch (error) {
       console.error('Booking submission error:', error);
       toast({
         title: "Booking Failed",
-        description: "There was an error submitting your booking. Please try again.",
+        description: "There was an error processing your booking. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -317,7 +369,7 @@ const BookingForm = () => {
     <Card className="w-full max-w-lg mx-auto bg-white shadow-elegant border-0" role="form" aria-labelledby="booking-form-title">
       <CardHeader className="pb-1 px-2 pt-2">
         <CardTitle id="booking-form-title" className="text-xs font-semibold text-foreground text-center">
-          {currentStep === 1 ? "Allez Hop ! Let's Book a Ride" : "Your details"}
+          {currentStep === 1 ? "Allez Hop ! Let's Book a Ride" : currentStep === 2 ? "Your details" : "Payment Method"}
         </CardTitle>
         {currentStep === 1 && estimatedPrice && (
           <div className="flex items-center gap-1 text-xs text-muted-foreground bg-secondary/50 p-1 rounded text-center justify-center" role="status" aria-live="polite">
@@ -586,7 +638,7 @@ const BookingForm = () => {
                   Continue booking
                 </Button>
               </>
-            ) : (
+            ) : currentStep === 2 ? (
               // Step 2: Contact Information
               <>
                 <div className="mb-3 text-xs text-muted-foreground text-center">
@@ -711,14 +763,92 @@ const BookingForm = () => {
                     Back
                   </Button>
                   <Button 
+                    type="button"
+                    onClick={handleContinueToStep3}
+                    className="flex-1 bg-accent hover:bg-accent/90 text-accent-foreground h-12 text-sm font-medium touch-manipulation"
+                  >
+                    Continue to Payment
+                  </Button>
+                </div>
+              </>
+            ) : (
+              // Step 3: Payment Method
+              <>
+                <div className="mb-3 text-xs text-muted-foreground text-center">
+                  {form.getValues('fromLocation')} → {form.getValues('toLocation')}
+                  {estimatedPrice && <span className="block">€{estimatedPrice}</span>}
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="paymentMethod"
+                  render={({ field }) => (
+                    <FormItem className="space-y-3">
+                      <FormLabel className="text-xs font-medium">
+                        Payment Method <span className="text-destructive" aria-label="required">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          value={field.value}
+                          className="grid gap-3"
+                        >
+                          <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-secondary/50 transition-colors">
+                            <RadioGroupItem value="cash" id="cash" />
+                            <label htmlFor="cash" className="flex items-center gap-2 text-sm font-medium cursor-pointer flex-1">
+                              <DollarSign className="h-4 w-4 text-muted-foreground" />
+                              Cash (Pay the driver)
+                            </label>
+                          </div>
+                          
+                          <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-secondary/50 transition-colors">
+                            <RadioGroupItem value="card_onboard" id="card_onboard" />
+                            <label htmlFor="card_onboard" className="flex items-center gap-2 text-sm font-medium cursor-pointer flex-1">
+                              <CreditCard className="h-4 w-4 text-muted-foreground" />
+                              Card on board (Pay in vehicle)
+                            </label>
+                          </div>
+                          
+                          <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-secondary/50 transition-colors">
+                            <RadioGroupItem value="card_online" id="card_online" />
+                            <label htmlFor="card_online" className="flex items-center gap-2 text-sm font-medium cursor-pointer flex-1">
+                              <CreditCard className="h-4 w-4 text-muted-foreground" />
+                              Card online (Pay now)
+                            </label>
+                          </div>
+                          
+                          <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-secondary/50 transition-colors">
+                            <RadioGroupItem value="paypal" id="paypal" />
+                            <label htmlFor="paypal" className="flex items-center gap-2 text-sm font-medium cursor-pointer flex-1">
+                              <Wallet className="h-4 w-4 text-muted-foreground" />
+                              PayPal (Pay now)
+                            </label>
+                          </div>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="flex gap-2 mt-4">
+                  <Button 
+                    type="button"
+                    variant="outline"
+                    onClick={() => setCurrentStep(2)}
+                    className="flex-1 h-12 text-sm"
+                  >
+                    Back
+                  </Button>
+                  <Button 
                     type="submit" 
                     className="flex-1 bg-accent hover:bg-accent/90 text-accent-foreground h-12 text-sm font-medium touch-manipulation"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || !form.getValues('paymentMethod')}
                   >
                     {isSubmitting ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
-                        Booking...
+                        Processing...
                       </>
                     ) : (
                       "Complete Booking"
