@@ -181,9 +181,9 @@ const BookingForm = () => {
     
     // Standard price calculation for other routes or when fixed pricing doesn't apply
     const basePrice = 25;
-    const perKmRate = 1.5;
-    const passengerSurcharge = passengers > 4 ? (passengers - 4) * 5 : 0;
-    const luggageSurcharge = luggage > 4 ? (luggage - 4) * 3 : 0;
+    const perKmRate = 2.5;
+    const passengerSurcharge = passengers > 4 ? (passengers - 4) * 15 : 0;
+    const luggageSurcharge = luggage > 4 ? (luggage - 4) * 8 : 0;
     
     // Estimate distance based on route type
     let estimatedKm = 20; // Default city distance
