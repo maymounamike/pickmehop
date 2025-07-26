@@ -58,12 +58,6 @@ const AdminDashboard = () => {
   const [newDriverData, setNewDriverData] = useState({
     email: "",
     password: "",
-    license_number: "",
-    vehicle_make: "",
-    vehicle_model: "",
-    vehicle_year: "",
-    vehicle_license_plate: "",
-    phone: "",
   });
   const navigate = useNavigate();
 
@@ -201,12 +195,12 @@ const AdminDashboard = () => {
         .from('drivers')
         .insert({
           user_id: authData.user.id,
-          license_number: newDriverData.license_number || '',
-          vehicle_make: newDriverData.vehicle_make || '',
-          vehicle_model: newDriverData.vehicle_model || '',
-          vehicle_year: newDriverData.vehicle_year ? parseInt(newDriverData.vehicle_year) : null,
-          vehicle_license_plate: newDriverData.vehicle_license_plate || '',
-          phone: newDriverData.phone || '',
+          license_number: '',
+          vehicle_make: '',
+          vehicle_model: '',
+          vehicle_year: null,
+          vehicle_license_plate: '',
+          phone: '',
           is_active: false // Start as inactive until profile is complete
         });
 
@@ -257,12 +251,6 @@ const AdminDashboard = () => {
       setNewDriverData({
         email: "",
         password: "",
-        license_number: "",
-        vehicle_make: "",
-        vehicle_model: "",
-        vehicle_year: "",
-        vehicle_license_plate: "",
-        phone: "",
       });
 
       await checkUserAndLoadData();
@@ -313,79 +301,29 @@ const AdminDashboard = () => {
                   <DialogTitle>Create New Driver</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={newDriverData.email}
-                        onChange={(e) => setNewDriverData({...newDriverData, email: e.target.value})}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="password">Password</Label>
-                      <Input
-                        id="password"
-                        type="password"
-                        value={newDriverData.password}
-                        onChange={(e) => setNewDriverData({...newDriverData, password: e.target.value})}
-                      />
-                    </div>
-                  </div>
                   <div>
-                    <Label htmlFor="license">License Number</Label>
+                    <Label htmlFor="email">Email</Label>
                     <Input
-                      id="license"
-                      value={newDriverData.license_number}
-                      onChange={(e) => setNewDriverData({...newDriverData, license_number: e.target.value})}
+                      id="email"
+                      type="email"
+                      value={newDriverData.email}
+                      onChange={(e) => setNewDriverData({...newDriverData, email: e.target.value})}
+                      placeholder="driver@example.com"
                     />
                   </div>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <Label htmlFor="make">Vehicle Make</Label>
-                      <Input
-                        id="make"
-                        value={newDriverData.vehicle_make}
-                        onChange={(e) => setNewDriverData({...newDriverData, vehicle_make: e.target.value})}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="model">Model</Label>
-                      <Input
-                        id="model"
-                        value={newDriverData.vehicle_model}
-                        onChange={(e) => setNewDriverData({...newDriverData, vehicle_model: e.target.value})}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="year">Year</Label>
-                      <Input
-                        id="year"
-                        type="number"
-                        value={newDriverData.vehicle_year}
-                        onChange={(e) => setNewDriverData({...newDriverData, vehicle_year: e.target.value})}
-                      />
-                    </div>
+                  <div>
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={newDriverData.password}
+                      onChange={(e) => setNewDriverData({...newDriverData, password: e.target.value})}
+                      placeholder="Temporary password"
+                    />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="plate">License Plate</Label>
-                      <Input
-                        id="plate"
-                        value={newDriverData.vehicle_license_plate}
-                        onChange={(e) => setNewDriverData({...newDriverData, vehicle_license_plate: e.target.value})}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="phone">Phone</Label>
-                      <Input
-                        id="phone"
-                        value={newDriverData.phone}
-                        onChange={(e) => setNewDriverData({...newDriverData, phone: e.target.value})}
-                      />
-                    </div>
-                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    The driver will complete their profile details (license, vehicle info, etc.) after first login.
+                  </p>
                   <Button onClick={createNewDriver} className="w-full">
                     Create Driver
                   </Button>
