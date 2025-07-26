@@ -4,7 +4,7 @@ import heroBackground from "@/assets/hero-background.jpg";
 const HeroSection = () => {
   return (
     <section 
-      className="relative min-h-screen flex items-start justify-center overflow-hidden pt-16 sm:pt-24 pb-4 sm:pb-8 bg-black lg:bg-transparent"
+      className="relative min-h-[120vh] flex items-start justify-center overflow-hidden pt-16 sm:pt-24 pb-8 sm:pb-12 bg-black lg:bg-transparent"
       aria-label="Book a ride service"
     >
       {/* Background Image - Hidden on mobile/tablet, visible on desktop */}

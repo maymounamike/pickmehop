@@ -14,7 +14,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { CalendarIcon, MapPin, Minus, Plus, Users, Luggage, Loader2, Euro, Phone, Mail, CreditCard, DollarSign, Wallet, Baby, Accessibility, FileText } from "lucide-react";
+import { CalendarIcon, MapPin, Minus, Plus, Users, Luggage, Loader2, Euro, Phone, Mail, CreditCard, DollarSign, Wallet, Baby, Accessibility, FileText, Car, Shield } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
@@ -1176,7 +1176,10 @@ const BookingForm = () => {
                         render={({ field }) => (
                            <FormItem className="py-1">
                              <div className="flex items-center justify-between">
-                               <FormLabel className="text-xs">Infant (0-6m)</FormLabel>
+                               <FormLabel className="flex items-center gap-1 text-xs">
+                                 <Baby className="h-3 w-3" />
+                                 Infant carrier (0-6 months)
+                               </FormLabel>
                                <div className="flex items-center gap-1">
                                  <Button
                                    type="button"
@@ -1213,7 +1216,10 @@ const BookingForm = () => {
                          render={({ field }) => (
                            <FormItem className="py-1">
                              <div className="flex items-center justify-between">
-                               <FormLabel className="text-xs">Child (6m-3y)</FormLabel>
+                               <FormLabel className="flex items-center gap-1 text-xs">
+                                 <Car className="h-3 w-3" />
+                                 Child seat (6 months - 3 years)
+                               </FormLabel>
                                <div className="flex items-center gap-1">
                                  <Button
                                    type="button"
@@ -1250,7 +1256,10 @@ const BookingForm = () => {
                          render={({ field }) => (
                            <FormItem className="py-1">
                              <div className="flex items-center justify-between">
-                               <FormLabel className="text-xs">Booster (3-12y)</FormLabel>
+                               <FormLabel className="flex items-center gap-1 text-xs">
+                                 <Shield className="h-3 w-3" />
+                                 Booster (3-12 years)
+                               </FormLabel>
                                <div className="flex items-center gap-1">
                                  <Button
                                    type="button"
