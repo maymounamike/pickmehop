@@ -16,12 +16,15 @@ export type Database = {
     Tables: {
       bookings: {
         Row: {
+          assigned_at: string | null
+          assigned_by: string | null
           booking_id: string
           created_at: string
           customer_email: string
           customer_name: string
           customer_phone: string | null
           date: string
+          driver_id: string | null
           estimated_price: number
           from_location: string
           id: string
@@ -34,12 +37,15 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          assigned_at?: string | null
+          assigned_by?: string | null
           booking_id: string
           created_at?: string
           customer_email: string
           customer_name: string
           customer_phone?: string | null
           date: string
+          driver_id?: string | null
           estimated_price: number
           from_location: string
           id?: string
@@ -52,12 +58,15 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          assigned_at?: string | null
+          assigned_by?: string | null
           booking_id?: string
           created_at?: string
           customer_email?: string
           customer_name?: string
           customer_phone?: string | null
           date?: string
+          driver_id?: string | null
           estimated_price?: number
           from_location?: string
           id?: string
@@ -68,6 +77,56 @@ export type Database = {
           to_location?: string
           updated_at?: string
           user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      drivers: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean | null
+          license_number: string | null
+          phone: string | null
+          updated_at: string
+          user_id: string
+          vehicle_license_plate: string | null
+          vehicle_make: string | null
+          vehicle_model: string | null
+          vehicle_year: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          license_number?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+          vehicle_license_plate?: string | null
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_year?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          license_number?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+          vehicle_license_plate?: string | null
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_year?: number | null
         }
         Relationships: []
       }
@@ -98,15 +157,46 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      has_role: {
+        Args: {
+          _user_id: string
+          _role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "driver" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -233,6 +323,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "driver", "user"],
+    },
   },
 } as const

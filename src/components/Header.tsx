@@ -7,21 +7,46 @@ import HelpDialog from "./HelpDialog";
 
 const Header = () => {
   const [user, setUser] = useState<any>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Get initial session
-    const getSession = async () => {
+    // Get initial session and role
+    const getSessionAndRole = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        const { data: roleData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', session.user.id)
+          .single();
+        
+        setUserRole(roleData?.role || 'user');
+      } else {
+        setUserRole(null);
+      }
     };
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        const { data: roleData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', session.user.id)
+          .single();
+        
+        setUserRole(roleData?.role || 'user');
+      } else {
+        setUserRole(null);
+      }
     });
 
-    getSession();
+    getSessionAndRole();
 
     return () => subscription.unsubscribe();
   }, []);
@@ -46,14 +71,36 @@ const Header = () => {
         <div className="flex items-center space-x-3">
           {user ? (
             <>
-              <Button 
-                variant="ghost" 
-                className="text-white hover:text-accent hover:bg-white/10"
-                onClick={() => navigate("/dashboard")}
-              >
-                <User className="mr-2 h-4 w-4" />
-                My Bookings
-              </Button>
+              {userRole === 'admin' && (
+                <Button 
+                  variant="ghost" 
+                  className="text-white hover:text-accent hover:bg-white/10"
+                  onClick={() => navigate("/admin")}
+                >
+                  <User className="mr-2 h-4 w-4" />
+                  Admin Panel
+                </Button>
+              )}
+              {userRole === 'driver' && (
+                <Button 
+                  variant="ghost" 
+                  className="text-white hover:text-accent hover:bg-white/10"
+                  onClick={() => navigate("/driver")}
+                >
+                  <User className="mr-2 h-4 w-4" />
+                  Driver Dashboard
+                </Button>
+              )}
+              {(userRole === 'user' || !userRole) && (
+                <Button 
+                  variant="ghost" 
+                  className="text-white hover:text-accent hover:bg-white/10"
+                  onClick={() => navigate("/dashboard")}
+                >
+                  <User className="mr-2 h-4 w-4" />
+                  My Bookings
+                </Button>
+              )}
               <Button 
                 variant="ghost" 
                 className="text-white hover:text-accent hover:bg-white/10"
