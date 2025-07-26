@@ -59,7 +59,10 @@ const Header = () => {
   return (
     <header className="absolute top-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-sm border-b border-white/10">
       <div className="container mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
+        <div 
+          className="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-opacity"
+          onClick={() => navigate("/")}
+        >
           <img 
             src="/lovable-uploads/fd647c9d-74ed-4206-99d0-9b04a8f86b41.png" 
             alt="Pick Me Hop Logo" 
