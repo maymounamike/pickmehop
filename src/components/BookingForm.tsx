@@ -1390,7 +1390,7 @@ const BookingForm = () => {
                   {estimatedPrice && <span className="block">€{estimatedPrice}</span>}
                 </div>
 
-                {/* Payment Category Selection */}
+                {/* Payment Method Selection */}
                 <FormField
                   control={form.control}
                   name="paymentCategory"
@@ -1405,20 +1405,102 @@ const BookingForm = () => {
                           value={field.value}
                           className="grid gap-3"
                         >
-                          <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-secondary/50 transition-colors">
-                            <RadioGroupItem value="driver_direct" id="driver_direct" />
-                            <label htmlFor="driver_direct" className="flex items-center gap-2 text-sm font-medium cursor-pointer flex-1">
-                              <Car className="h-4 w-4 text-muted-foreground" />
-                              Pay Driver Directly
-                            </label>
+                          {/* Pay Driver Directly */}
+                          <div className="border rounded-lg">
+                            <div className="flex items-center space-x-3 p-3 hover:bg-secondary/50 transition-colors">
+                              <RadioGroupItem value="driver_direct" id="driver_direct" />
+                              <label htmlFor="driver_direct" className="flex items-center gap-2 text-sm font-medium cursor-pointer flex-1">
+                                <Car className="h-4 w-4 text-muted-foreground" />
+                                Pay Driver Directly
+                              </label>
+                            </div>
+                            
+                            {/* Driver Direct Sub-options */}
+                            {form.watch("paymentCategory") === "driver_direct" && (
+                              <div className="px-3 pb-3 ml-6 space-y-2 border-t bg-secondary/20">
+                                <div className="text-xs text-muted-foreground pt-2 mb-2">Choose payment option:</div>
+                                <FormField
+                                  control={form.control}
+                                  name="paymentMethod"
+                                  render={({ field: subField }) => (
+                                    <RadioGroup
+                                      onValueChange={subField.onChange}
+                                      value={subField.value}
+                                      className="space-y-2"
+                                    >
+                                      <div className="flex items-center space-x-2 p-2 border rounded hover:bg-background transition-colors">
+                                        <RadioGroupItem value="cash" id="cash_driver" />
+                                        <label htmlFor="cash_driver" className="flex items-center gap-2 text-sm cursor-pointer flex-1">
+                                          <DollarSign className="h-3 w-3 text-muted-foreground" />
+                                          Cash
+                                        </label>
+                                      </div>
+                                      
+                                      <div className="flex items-center space-x-2 p-2 border rounded hover:bg-background transition-colors">
+                                        <RadioGroupItem value="card" id="card_driver" />
+                                        <label htmlFor="card_driver" className="flex items-center gap-2 text-sm cursor-pointer flex-1">
+                                          <CreditCard className="h-3 w-3 text-muted-foreground" />
+                                          Card
+                                        </label>
+                                      </div>
+                                    </RadioGroup>
+                                  )}
+                                />
+                              </div>
+                            )}
                           </div>
-                          
-                          <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-secondary/50 transition-colors">
-                            <RadioGroupItem value="online" id="online" />
-                            <label htmlFor="online" className="flex items-center gap-2 text-sm font-medium cursor-pointer flex-1">
-                              <Globe className="h-4 w-4 text-muted-foreground" />
-                              Pay Online
-                            </label>
+
+                          {/* Pay Online */}
+                          <div className="border rounded-lg">
+                            <div className="flex items-center space-x-3 p-3 hover:bg-secondary/50 transition-colors">
+                              <RadioGroupItem value="online" id="online" />
+                              <label htmlFor="online" className="flex items-center gap-2 text-sm font-medium cursor-pointer flex-1">
+                                <Globe className="h-4 w-4 text-muted-foreground" />
+                                Pay Online
+                              </label>
+                            </div>
+                            
+                            {/* Online Payment Sub-options */}
+                            {form.watch("paymentCategory") === "online" && (
+                              <div className="px-3 pb-3 ml-6 space-y-2 border-t bg-secondary/20">
+                                <div className="text-xs text-muted-foreground pt-2 mb-2">Choose payment option:</div>
+                                <FormField
+                                  control={form.control}
+                                  name="paymentMethod"
+                                  render={({ field: subField }) => (
+                                    <RadioGroup
+                                      onValueChange={subField.onChange}
+                                      value={subField.value}
+                                      className="space-y-2"
+                                    >
+                                      <div className="flex items-center space-x-2 p-2 border rounded hover:bg-background transition-colors">
+                                        <RadioGroupItem value="cash" id="cash_online" />
+                                        <label htmlFor="cash_online" className="flex items-center gap-2 text-sm cursor-pointer flex-1">
+                                          <DollarSign className="h-3 w-3 text-muted-foreground" />
+                                          Cash
+                                        </label>
+                                      </div>
+                                      
+                                      <div className="flex items-center space-x-2 p-2 border rounded hover:bg-background transition-colors">
+                                        <RadioGroupItem value="card" id="card_online" />
+                                        <label htmlFor="card_online" className="flex items-center gap-2 text-sm cursor-pointer flex-1">
+                                          <CreditCard className="h-3 w-3 text-muted-foreground" />
+                                          Card
+                                        </label>
+                                      </div>
+                                      
+                                      <div className="flex items-center space-x-2 p-2 border rounded hover:bg-background transition-colors">
+                                        <RadioGroupItem value="paypal" id="paypal_online" />
+                                        <label htmlFor="paypal_online" className="flex items-center gap-2 text-sm cursor-pointer flex-1">
+                                          <Wallet className="h-3 w-3 text-muted-foreground" />
+                                          PayPal
+                                        </label>
+                                      </div>
+                                    </RadioGroup>
+                                  )}
+                                />
+                              </div>
+                            )}
                           </div>
                         </RadioGroup>
                       </FormControl>
@@ -1426,79 +1508,6 @@ const BookingForm = () => {
                     </FormItem>
                   )}
                 />
-
-                {/* Payment Method Selection - Show when category is selected */}
-                {form.watch("paymentCategory") && (
-                  <FormField
-                    control={form.control}
-                    name="paymentMethod"
-                    render={({ field }) => (
-                      <FormItem className="space-y-3">
-                        <FormLabel className="text-xs font-medium">
-                          Choose payment option <span className="text-destructive" aria-label="required">*</span>
-                        </FormLabel>
-                        <FormControl>
-                          <RadioGroup
-                            onValueChange={field.onChange}
-                            value={field.value}
-                            className="grid gap-2 ml-4"
-                          >
-                            {/* Driver Direct Payment Options */}
-                            {form.watch("paymentCategory") === "driver_direct" && (
-                              <>
-                                <div className="flex items-center space-x-3 p-2 border rounded-lg hover:bg-secondary/50 transition-colors">
-                                  <RadioGroupItem value="cash" id="cash_driver" />
-                                  <label htmlFor="cash_driver" className="flex items-center gap-2 text-sm cursor-pointer flex-1">
-                                    <DollarSign className="h-3 w-3 text-muted-foreground" />
-                                    Cash
-                                  </label>
-                                </div>
-                                
-                                <div className="flex items-center space-x-3 p-2 border rounded-lg hover:bg-secondary/50 transition-colors">
-                                  <RadioGroupItem value="card" id="card_driver" />
-                                  <label htmlFor="card_driver" className="flex items-center gap-2 text-sm cursor-pointer flex-1">
-                                    <CreditCard className="h-3 w-3 text-muted-foreground" />
-                                    Card
-                                  </label>
-                                </div>
-                              </>
-                            )}
-
-                            {/* Online Payment Options */}
-                            {form.watch("paymentCategory") === "online" && (
-                              <>
-                                <div className="flex items-center space-x-3 p-2 border rounded-lg hover:bg-secondary/50 transition-colors">
-                                  <RadioGroupItem value="cash" id="cash_online" />
-                                  <label htmlFor="cash_online" className="flex items-center gap-2 text-sm cursor-pointer flex-1">
-                                    <DollarSign className="h-3 w-3 text-muted-foreground" />
-                                    Cash
-                                  </label>
-                                </div>
-                                
-                                <div className="flex items-center space-x-3 p-2 border rounded-lg hover:bg-secondary/50 transition-colors">
-                                  <RadioGroupItem value="card" id="card_online" />
-                                  <label htmlFor="card_online" className="flex items-center gap-2 text-sm cursor-pointer flex-1">
-                                    <CreditCard className="h-3 w-3 text-muted-foreground" />
-                                    Card
-                                  </label>
-                                </div>
-                                
-                                <div className="flex items-center space-x-3 p-2 border rounded-lg hover:bg-secondary/50 transition-colors">
-                                  <RadioGroupItem value="paypal" id="paypal_online" />
-                                  <label htmlFor="paypal_online" className="flex items-center gap-2 text-sm cursor-pointer flex-1">
-                                    <Wallet className="h-3 w-3 text-muted-foreground" />
-                                    PayPal
-                                  </label>
-                                </div>
-                              </>
-                            )}
-                          </RadioGroup>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                )}
 
                 <div className="flex gap-2 mt-4">
                   <Button 
