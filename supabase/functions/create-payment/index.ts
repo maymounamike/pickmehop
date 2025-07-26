@@ -86,27 +86,6 @@ serve(async (req) => {
 
     console.log('Stripe session created:', session.id);
 
-    // Store pending booking in database with payment session ID
-    const supabaseService = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-      { auth: { persistSession: false } }
-    );
-
-    // Store the booking with pending payment status
-    const { error: bookingError } = await supabaseService.functions.invoke('submit-booking', {
-      body: {
-        ...requestBody,
-        paymentSessionId: session.id,
-        paymentStatus: 'pending',
-      },
-    });
-
-    if (bookingError) {
-      console.error('Error storing booking:', bookingError);
-      // Continue anyway, as the payment session is created
-    }
-
     return new Response(
       JSON.stringify({ 
         url: session.url,
