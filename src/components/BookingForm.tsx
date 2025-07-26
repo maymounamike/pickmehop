@@ -321,64 +321,60 @@ const BookingForm = () => {
       suggestions.push(...hotelSuggestions);
     }
 
-    // Return combined suggestions if we have any
+    // ALWAYS get Google Maps suggestions for general addresses (minimum 2 characters)
+    if (query.length >= 2) {
+      try {
+        // Get Google Maps API key from Supabase function
+        const { data: keyData, error: keyError } = await supabase.functions.invoke('get-google-maps-key');
+        
+        if (keyError || !keyData?.apiKey) {
+          console.error('Failed to get Google Maps API key:', keyError);
+        } else {
+          // Load Google Maps API if not already loaded
+          const loader = new Loader({
+            apiKey: keyData.apiKey,
+            version: "weekly",
+            libraries: ["places"]
+          });
+
+          const google = await loader.load();
+          
+          // Create autocomplete service
+          const service = new google.maps.places.AutocompleteService();
+          
+          const googleSuggestions = await new Promise<string[]>((resolve) => {
+            service.getPlacePredictions({
+              input: query,
+              componentRestrictions: { country: 'fr' }, // Restrict to France
+              types: ['address', 'establishment', 'geocode']
+            }, (predictions, status) => {
+              if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
+                const googleResults = predictions.map(prediction => prediction.description);
+                resolve(googleResults.slice(0, 5)); // Limit to 5 Google suggestions
+              } else {
+                console.error('Places service error:', status);
+                resolve([]);
+              }
+            });
+          });
+
+          suggestions.push(...googleSuggestions);
+        }
+      } catch (error) {
+        console.error('Error fetching Google Maps suggestions:', error);
+      }
+    }
+
+    // Update the global suggestions list for validation
     if (suggestions.length > 0) {
-      // Update the global suggestions list for validation
       setAllSuggestions(prev => {
         const combined = [...new Set([...prev, ...suggestions])];
         return combined;
       });
-      return suggestions.slice(0, 8); // Limit to 8 suggestions total
     }
 
-    // For general address suggestions, reduce minimum to 2 characters
-    if (query.length < 2) return [];
-    
-    try {
-      // Get Google Maps API key from Supabase function
-      const { data: keyData, error: keyError } = await supabase.functions.invoke('get-google-maps-key');
-      
-      if (keyError || !keyData?.apiKey) {
-        console.error('Failed to get Google Maps API key:', keyError);
-        return [];
-      }
-
-      // Load Google Maps API if not already loaded
-      const loader = new Loader({
-        apiKey: keyData.apiKey,
-        version: "weekly",
-        libraries: ["places"]
-      });
-
-      const google = await loader.load();
-      
-      // Create autocomplete service
-      const service = new google.maps.places.AutocompleteService();
-      
-      return new Promise<string[]>((resolve) => {
-        service.getPlacePredictions({
-          input: query,
-          componentRestrictions: { country: 'fr' }, // Restrict to France
-          types: ['address', 'establishment', 'geocode']
-        }, (predictions, status) => {
-          if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
-            const suggestions = predictions.map(prediction => prediction.description);
-            // Update the global suggestions list for validation
-            setAllSuggestions(prev => {
-              const combined = [...new Set([...prev, ...suggestions])];
-              return combined;
-            });
-            resolve(suggestions.slice(0, 5)); // Limit to 5 suggestions
-          } else {
-            console.error('Places service error:', status);
-            resolve([]);
-          }
-        });
-      });
-    } catch (error) {
-      console.error('Error fetching address suggestions:', error);
-      return [];
-    }
+    // Return all combined suggestions (airports, trains, hotels, + Google Maps)
+    return suggestions.slice(0, 8); // Limit to 8 suggestions total
   };
 
   // Handle address input changes with suggestions
