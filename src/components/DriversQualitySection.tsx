@@ -1,15 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { ChevronLeft, ChevronRight, CheckCircle, Search, Shield, Users } from "lucide-react";
-import driverMichael from "@/assets/driver-michael.jpg";
+import { CheckCircle, Search, Shield, Users } from "lucide-react";
 
 const DriversQualitySection = () => {
-  const driverProfile = {
-    name: "Michael",
-    image: driverMichael,
-    description: "100% Parisian and in love with showing visitors the hidden gems of Paris. He knows the most authentic places in town, far away from tourist traps.",
-    car: "Mercedes",
-    languages: "English, French, Spanish"
-  };
 
   const vettingProcess = [
     {
@@ -46,61 +38,6 @@ const DriversQualitySection = () => {
             The best drivers in each destination
           </h2>
           <div className="w-16 h-1 bg-accent mx-auto"></div>
-        </div>
-
-        {/* Driver Profile Card */}
-        <div className="max-w-5xl mx-auto mb-16">
-          <Card className="border-0 shadow-lg overflow-hidden bg-white">
-            <CardContent className="p-0">
-              <div className="flex flex-col lg:flex-row">
-                {/* Navigation Arrows */}
-                <div className="hidden lg:flex items-center justify-center w-16 bg-gray-50">
-                  <button className="p-2 hover:bg-gray-200 rounded-full transition-colors">
-                    <ChevronLeft className="w-6 h-6 text-gray-600" />
-                  </button>
-                </div>
-
-                {/* Driver Image */}
-                <div className="lg:w-1/4 relative">
-                  <div className="aspect-square lg:aspect-auto lg:h-48 bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center overflow-hidden">
-                    <img 
-                      src={driverProfile.image}
-                      alt={`${driverProfile.name} - Professional Driver`}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                </div>
-
-                {/* Driver Info */}
-                <div className="lg:w-3/4 p-8 lg:p-12 flex flex-col justify-center">
-                  <h3 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-4">
-                    {driverProfile.name}
-                  </h3>
-                  <p className="text-gray-600 leading-relaxed mb-6 text-base lg:text-lg">
-                    {driverProfile.description}
-                  </p>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="text-gray-400 block">Car</span>
-                      <span className="text-gray-600 font-medium">{driverProfile.car}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-400 block">Languages</span>
-                      <span className="text-gray-600 font-medium">{driverProfile.languages}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Navigation Arrows */}
-                <div className="hidden lg:flex items-center justify-center w-16 bg-gray-50">
-                  <button className="p-2 hover:bg-gray-200 rounded-full transition-colors">
-                    <ChevronRight className="w-6 h-6 text-gray-600" />
-                  </button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
         {/* Vetting Process */}
