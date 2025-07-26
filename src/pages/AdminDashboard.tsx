@@ -48,17 +48,24 @@ interface Driver {
   is_active: boolean;
 }
 
+interface PendingDriver {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  created_at: string;
+  is_active: boolean;
+  has_driver_profile: boolean;
+}
+
 const AdminDashboard = () => {
   const [user, setUser] = useState<any>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [pendingDrivers, setPendingDrivers] = useState<PendingDriver[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDriverForBooking, setSelectedDriverForBooking] = useState<string>("");
   const [selectedBookingId, setSelectedBookingId] = useState<string>("");
-  const [newDriverData, setNewDriverData] = useState({
-    email: "",
-    password: "",
-  });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -119,6 +126,40 @@ const AdminDashboard = () => {
 
       setDrivers(driversData || []);
 
+      // Load pending drivers (users with driver role but incomplete profiles)
+      const { data: pendingData } = await supabase
+        .from('profiles')
+        .select(`
+          id,
+          first_name,
+          last_name,
+          created_at,
+          drivers!inner(is_active),
+          user_roles!inner(role)
+        `)
+        .eq('user_roles.role', 'driver')
+        .eq('drivers.is_active', false)
+        .order('created_at', { ascending: false });
+
+      if (pendingData) {
+        // Get emails for pending drivers
+        const pendingWithEmails = await Promise.all(
+          pendingData.map(async (pending: any) => {
+            const { data: userData } = await supabase.auth.admin.getUserById(pending.id);
+            return {
+              id: pending.id,
+              first_name: pending.first_name,
+              last_name: pending.last_name,
+              email: userData.user?.email || 'Unknown',
+              created_at: pending.created_at,
+              is_active: pending.drivers?.is_active || false,
+              has_driver_profile: true
+            };
+          })
+        );
+        setPendingDrivers(pendingWithEmails);
+      }
+
     } catch (error) {
       console.error('Error loading admin data:', error);
       toast({
@@ -178,88 +219,26 @@ const AdminDashboard = () => {
     }
   };
 
-  const createNewDriver = async () => {
+  const activateDriver = async (driverId: string) => {
     try {
-      // Create auth user
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: newDriverData.email,
-        password: newDriverData.password,
-        email_confirm: true
-      });
-
-      if (authError) throw authError;
-      if (!authData.user) throw new Error("Failed to create user");
-
-      // Create driver profile - start as inactive until profile is complete
-      const { error: driverError } = await supabase
+      const { error } = await supabase
         .from('drivers')
-        .insert({
-          user_id: authData.user.id,
-          license_number: '',
-          vehicle_make: '',
-          vehicle_model: '',
-          vehicle_year: null,
-          vehicle_license_plate: '',
-          phone: '',
-          is_active: false // Start as inactive until profile is complete
-        });
+        .update({ is_active: true })
+        .eq('user_id', driverId);
 
-      if (driverError) throw driverError;
+      if (error) throw error;
 
-      // Assign driver role
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .insert({
-          user_id: authData.user.id,
-          role: 'driver'
-        });
-
-      if (roleError) throw roleError;
-
-      // Send welcome email with login credentials
-      try {
-        const { error: emailError } = await supabase.functions.invoke('send-driver-welcome', {
-          body: {
-            email: newDriverData.email,
-            temporaryPassword: newDriverData.password
-          }
-        });
-
-        if (emailError) {
-          console.error('Email error:', emailError);
-          toast({
-            title: "Driver Created",
-            description: "Driver account created but email notification failed. Please contact the driver manually.",
-            variant: "default",
-          });
-        } else {
-          toast({
-            title: "Success",
-            description: "Driver account created and welcome email sent successfully.",
-          });
-        }
-      } catch (emailError) {
-        console.error('Email error:', emailError);
-        toast({
-          title: "Driver Created",
-          description: "Driver account created but email notification failed. Please contact the driver manually.",
-          variant: "default",
-        });
-      }
-
-      // Reset form and refresh data
-      setNewDriverData({
-        email: "",
-        password: "",
+      toast({
+        title: "Success",
+        description: "Driver has been activated successfully.",
       });
 
       await checkUserAndLoadData();
-
     } catch (error) {
-      console.error('Error creating driver:', error);
+      console.error('Error activating driver:', error);
       toast({
         title: "Error",
-        description: "Failed to create driver.",
+        description: "Failed to activate driver.",
         variant: "destructive",
       });
     }
@@ -289,47 +268,6 @@ const AdminDashboard = () => {
               <Home className="w-4 h-4 mr-2" />
               Home
             </Button>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="outline">
-                  <UserPlus className="w-4 h-4 mr-2" />
-                  Add Driver
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Create New Driver</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={newDriverData.email}
-                      onChange={(e) => setNewDriverData({...newDriverData, email: e.target.value})}
-                      placeholder="driver@example.com"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="password">Password</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      value={newDriverData.password}
-                      onChange={(e) => setNewDriverData({...newDriverData, password: e.target.value})}
-                      placeholder="Temporary password"
-                    />
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    The driver will complete their profile details (license, vehicle info, etc.) after first login.
-                  </p>
-                  <Button onClick={createNewDriver} className="w-full">
-                    Create Driver
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
             <Button onClick={handleSignOut} variant="outline">
               <LogOut className="w-4 h-4 mr-2" />
               Sign Out
@@ -338,7 +276,7 @@ const AdminDashboard = () => {
         </div>
 
         {/* Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
           <Card>
             <CardContent className="p-4">
               <div className="text-2xl font-bold">{bookings.length}</div>
@@ -363,7 +301,49 @@ const AdminDashboard = () => {
               <p className="text-sm text-gray-600">Active Drivers</p>
             </CardContent>
           </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-2xl font-bold text-yellow-600">{pendingDrivers.length}</div>
+              <p className="text-sm text-gray-600">Pending Drivers</p>
+            </CardContent>
+          </Card>
         </div>
+
+        {/* Pending Drivers Section */}
+        {pendingDrivers.length > 0 && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="text-yellow-600">Pending Driver Activations ({pendingDrivers.length})</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {pendingDrivers.map((driver) => (
+                  <Card key={driver.id} className="border-l-4 border-l-yellow-500">
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h3 className="font-semibold">{driver.first_name} {driver.last_name}</h3>
+                          <p className="text-sm text-gray-600">{driver.email}</p>
+                          <p className="text-xs text-gray-500">
+                            Registered: {format(new Date(driver.created_at), 'MMM d, yyyy')}
+                          </p>
+                          <Badge variant="secondary" className="mt-1">PENDING ACTIVATION</Badge>
+                        </div>
+                        <Button 
+                          onClick={() => activateDriver(driver.id)}
+                          size="sm"
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          Activate Driver
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Driver Assignment Section */}
         {unassignedBookings.length > 0 && (

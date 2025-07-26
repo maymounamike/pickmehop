@@ -31,6 +31,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/collaborateurs" element={<Auth />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/driver" element={<DriverDashboard />} />
             <Route path="/driver/profile" element={<DriverProfile />} />
