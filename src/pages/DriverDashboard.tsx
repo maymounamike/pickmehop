@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { MapPin, Calendar, Clock, Users, Phone, Mail, Car } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MapPin, Calendar, Clock, Users, Phone, Mail, Car, CreditCard, UserCircle, ListTodo, Navigation } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import DriverNavigation from "@/components/DriverNavigation";
@@ -158,6 +159,121 @@ const DriverDashboard = () => {
     return <div className="flex justify-center items-center h-64">Loading...</div>;
   }
 
+  // Separate bookings by status
+  const pendingBookings = bookings.filter(b => b.status === 'confirmed');
+  const ongoingBookings = bookings.filter(b => b.status === 'in_progress');
+  const completedBookings = bookings.filter(b => b.status === 'completed');
+
+  const renderBookingCard = (booking: Booking) => (
+    <Card key={booking.id} className="border-l-4 border-l-blue-500">
+      <CardContent className="p-4">
+        <div className="flex justify-between items-start mb-3">
+          <div>
+            <h3 className="font-semibold">Booking #{booking.booking_id}</h3>
+            <Badge variant={
+              booking.status === 'confirmed' ? 'default' :
+              booking.status === 'in_progress' ? 'secondary' :
+              booking.status === 'completed' ? 'outline' : 'destructive'
+            }>
+              {booking.status.replace('_', ' ').toUpperCase()}
+            </Badge>
+          </div>
+          <div className="text-right">
+            <p className="text-lg font-bold text-green-600">€{booking.estimated_price}</p>
+            <p className="text-xs text-gray-500">
+              Assigned: {format(new Date(booking.assigned_at), 'MMM d, HH:mm')}
+            </p>
+          </div>
+        </div>
+
+        <Separator className="my-3" />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Route Information */}
+          <div className="space-y-2">
+            <div className="flex items-center text-sm">
+              <MapPin className="w-4 h-4 mr-2 text-green-600" />
+              <span className="font-medium">From:</span>
+            </div>
+            <p className="text-sm text-gray-700 ml-6">{booking.from_location}</p>
+            
+            <div className="flex items-center text-sm">
+              <MapPin className="w-4 h-4 mr-2 text-red-600" />
+              <span className="font-medium">To:</span>
+            </div>
+            <p className="text-sm text-gray-700 ml-6">{booking.to_location}</p>
+          </div>
+
+          {/* Booking Details */}
+          <div className="space-y-2">
+            <div className="flex items-center text-sm">
+              <Calendar className="w-4 h-4 mr-2" />
+              <span className="font-medium">Date:</span>
+              <span className="ml-2">{format(new Date(booking.date), 'MMM d, yyyy')}</span>
+            </div>
+            
+            <div className="flex items-center text-sm">
+              <Clock className="w-4 h-4 mr-2" />
+              <span className="font-medium">Time:</span>
+              <span className="ml-2">{booking.time}</span>
+            </div>
+            
+            <div className="flex items-center text-sm">
+              <Users className="w-4 h-4 mr-2" />
+              <span className="font-medium">Passengers:</span>
+              <span className="ml-2">{booking.passengers}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Customer Information */}
+        <Separator className="my-3" />
+        <div className="space-y-2">
+          <h4 className="font-medium text-sm">Customer Information</h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+            <div className="flex items-center">
+              <span className="font-medium">Name:</span>
+              <span className="ml-2">{booking.customer_name}</span>
+            </div>
+            <div className="flex items-center">
+              <Phone className="w-4 h-4 mr-1" />
+              <a href={`tel:${booking.customer_phone}`} className="text-blue-600 hover:underline">
+                {booking.customer_phone}
+              </a>
+            </div>
+            <div className="flex items-center">
+              <Mail className="w-4 h-4 mr-1" />
+              <a href={`mailto:${booking.customer_email}`} className="text-blue-600 hover:underline">
+                {booking.customer_email}
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex gap-2 mt-4">
+          {booking.status === 'confirmed' && (
+            <Button 
+              size="sm" 
+              onClick={() => updateBookingStatus(booking.id, 'in_progress')}
+            >
+              Start Ride
+            </Button>
+          )}
+          {booking.status === 'in_progress' && (
+            <Button 
+              size="sm" 
+              variant="outline"
+              onClick={() => updateBookingStatus(booking.id, 'completed')}
+            >
+              Complete Ride
+            </Button>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4">
       <div className="max-w-6xl mx-auto">
@@ -168,167 +284,201 @@ const DriverDashboard = () => {
 
         {/* Page Title */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Booking Requests</h1>
-          <p className="text-gray-600">View your assigned rides and manage bookings</p>
+          <h1 className="text-3xl font-bold text-gray-900">Driver Dashboard</h1>
+          <p className="text-gray-600">Manage your rides, profile, and earnings</p>
         </div>
 
-        {/* Driver Profile Card */}
-        {driver && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Car className="w-5 h-5 mr-2" />
-                Your Vehicle Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <p className="text-sm text-gray-600">Vehicle</p>
-                  <p className="font-medium">{driver.vehicle_make} {driver.vehicle_model} ({driver.vehicle_year})</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">License Plate</p>
-                  <p className="font-medium">{driver.vehicle_license_plate}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">License Number</p>
-                  <p className="font-medium">{driver.license_number}</p>
-                </div>
-              </div>
-              <div className="mt-4">
-                <Badge variant={driver.is_active ? "default" : "secondary"}>
-                  {driver.is_active ? "Active" : "Inactive"}
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        {/* Tabs for different sections */}
+        <Tabs defaultValue="my-rides" className="w-full">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="my-rides" className="flex items-center gap-2">
+              <ListTodo className="w-4 h-4" />
+              My Rides
+            </TabsTrigger>
+            <TabsTrigger value="pending" className="flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              Pending Requests
+            </TabsTrigger>
+            <TabsTrigger value="ongoing" className="flex items-center gap-2">
+              <Navigation className="w-4 h-4" />
+              Ongoing Rides
+            </TabsTrigger>
+            <TabsTrigger value="profile" className="flex items-center gap-2">
+              <UserCircle className="w-4 h-4" />
+              Profile
+            </TabsTrigger>
+            <TabsTrigger value="payments" className="flex items-center gap-2">
+              <CreditCard className="w-4 h-4" />
+              Payments
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Bookings */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Your Assigned Rides</CardTitle>
-            <p className="text-sm text-gray-600">{bookings.length} ride(s) assigned</p>
-          </CardHeader>
-          <CardContent>
-            {bookings.length === 0 ? (
-              <p className="text-center text-gray-500 py-8">No rides assigned yet.</p>
-            ) : (
-              <div className="space-y-4">
-                {bookings.map((booking) => (
-                  <Card key={booking.id} className="border-l-4 border-l-blue-500">
-                    <CardContent className="p-4">
-                      <div className="flex justify-between items-start mb-3">
-                        <div>
-                          <h3 className="font-semibold">Booking #{booking.booking_id}</h3>
-                          <Badge variant={
-                            booking.status === 'confirmed' ? 'default' :
-                            booking.status === 'in_progress' ? 'secondary' :
-                            booking.status === 'completed' ? 'outline' : 'destructive'
-                          }>
-                            {booking.status.replace('_', ' ').toUpperCase()}
-                          </Badge>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-lg font-bold text-green-600">€{booking.estimated_price}</p>
-                          <p className="text-xs text-gray-500">
-                            Assigned: {format(new Date(booking.assigned_at), 'MMM d, HH:mm')}
-                          </p>
-                        </div>
+          {/* My Rides Tab */}
+          <TabsContent value="my-rides" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>All My Rides</CardTitle>
+                <p className="text-sm text-gray-600">{bookings.length} total ride(s)</p>
+              </CardHeader>
+              <CardContent>
+                {bookings.length === 0 ? (
+                  <p className="text-center text-gray-500 py-8">No rides assigned yet.</p>
+                ) : (
+                  <div className="space-y-4">
+                    {bookings.map(renderBookingCard)}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Pending Requests Tab */}
+          <TabsContent value="pending" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Pending Requests</CardTitle>
+                <p className="text-sm text-gray-600">{pendingBookings.length} pending ride(s)</p>
+              </CardHeader>
+              <CardContent>
+                {pendingBookings.length === 0 ? (
+                  <p className="text-center text-gray-500 py-8">No pending rides.</p>
+                ) : (
+                  <div className="space-y-4">
+                    {pendingBookings.map(renderBookingCard)}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Ongoing Rides Tab */}
+          <TabsContent value="ongoing" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Ongoing Rides</CardTitle>
+                <p className="text-sm text-gray-600">{ongoingBookings.length} ongoing ride(s)</p>
+              </CardHeader>
+              <CardContent>
+                {ongoingBookings.length === 0 ? (
+                  <p className="text-center text-gray-500 py-8">No ongoing rides.</p>
+                ) : (
+                  <div className="space-y-4">
+                    {ongoingBookings.map(renderBookingCard)}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Profile Tab */}
+          <TabsContent value="profile" className="mt-6">
+            {driver && (
+              <div className="space-y-6">
+                {/* Driver Profile Card */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <Car className="w-5 h-5 mr-2" />
+                      Vehicle Information
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <p className="text-sm text-gray-600">Vehicle</p>
+                        <p className="font-medium">{driver.vehicle_make} {driver.vehicle_model} ({driver.vehicle_year})</p>
                       </div>
-
-                      <Separator className="my-3" />
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Route Information */}
-                        <div className="space-y-2">
-                          <div className="flex items-center text-sm">
-                            <MapPin className="w-4 h-4 mr-2 text-green-600" />
-                            <span className="font-medium">From:</span>
-                          </div>
-                          <p className="text-sm text-gray-700 ml-6">{booking.from_location}</p>
-                          
-                          <div className="flex items-center text-sm">
-                            <MapPin className="w-4 h-4 mr-2 text-red-600" />
-                            <span className="font-medium">To:</span>
-                          </div>
-                          <p className="text-sm text-gray-700 ml-6">{booking.to_location}</p>
-                        </div>
-
-                        {/* Booking Details */}
-                        <div className="space-y-2">
-                          <div className="flex items-center text-sm">
-                            <Calendar className="w-4 h-4 mr-2" />
-                            <span className="font-medium">Date:</span>
-                            <span className="ml-2">{format(new Date(booking.date), 'MMM d, yyyy')}</span>
-                          </div>
-                          
-                          <div className="flex items-center text-sm">
-                            <Clock className="w-4 h-4 mr-2" />
-                            <span className="font-medium">Time:</span>
-                            <span className="ml-2">{booking.time}</span>
-                          </div>
-                          
-                          <div className="flex items-center text-sm">
-                            <Users className="w-4 h-4 mr-2" />
-                            <span className="font-medium">Passengers:</span>
-                            <span className="ml-2">{booking.passengers}</span>
-                          </div>
-                        </div>
+                      <div>
+                        <p className="text-sm text-gray-600">License Plate</p>
+                        <p className="font-medium">{driver.vehicle_license_plate}</p>
                       </div>
-
-                      {/* Customer Information */}
-                      <Separator className="my-3" />
-                      <div className="space-y-2">
-                        <h4 className="font-medium text-sm">Customer Information</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
-                          <div className="flex items-center">
-                            <span className="font-medium">Name:</span>
-                            <span className="ml-2">{booking.customer_name}</span>
-                          </div>
-                          <div className="flex items-center">
-                            <Phone className="w-4 h-4 mr-1" />
-                            <a href={`tel:${booking.customer_phone}`} className="text-blue-600 hover:underline">
-                              {booking.customer_phone}
-                            </a>
-                          </div>
-                          <div className="flex items-center">
-                            <Mail className="w-4 h-4 mr-1" />
-                            <a href={`mailto:${booking.customer_email}`} className="text-blue-600 hover:underline">
-                              {booking.customer_email}
-                            </a>
-                          </div>
-                        </div>
+                      <div>
+                        <p className="text-sm text-gray-600">License Number</p>
+                        <p className="font-medium">{driver.license_number}</p>
                       </div>
+                    </div>
+                    <div className="mt-4 flex items-center justify-between">
+                      <Badge variant={driver.is_active ? "default" : "secondary"}>
+                        {driver.is_active ? "Active" : "Inactive"}
+                      </Badge>
+                      <Button variant="outline" onClick={() => navigate('/driver/profile')}>
+                        Edit Profile
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
 
-                      {/* Action Buttons */}
-                      <div className="flex gap-2 mt-4">
-                        {booking.status === 'confirmed' && (
-                          <Button 
-                            size="sm" 
-                            onClick={() => updateBookingStatus(booking.id, 'in_progress')}
-                          >
-                            Start Ride
-                          </Button>
-                        )}
-                        {booking.status === 'in_progress' && (
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => updateBookingStatus(booking.id, 'completed')}
-                          >
-                            Complete Ride
-                          </Button>
-                        )}
+                {/* Personal Information */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Personal Information</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-gray-600">Name</p>
+                        <p className="font-medium">
+                          {profile?.first_name} {profile?.last_name}
+                        </p>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      <div>
+                        <p className="text-sm text-gray-600">Phone</p>
+                        <p className="font-medium">{driver.phone}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </TabsContent>
+
+          {/* Payments Tab */}
+          <TabsContent value="payments" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Payment Summary</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div className="text-center p-4 bg-green-50 rounded-lg">
+                    <p className="text-2xl font-bold text-green-600">
+                      €{completedBookings.reduce((sum, booking) => sum + Number(booking.estimated_price), 0).toFixed(2)}
+                    </p>
+                    <p className="text-sm text-gray-600">Total Earnings</p>
+                  </div>
+                  <div className="text-center p-4 bg-blue-50 rounded-lg">
+                    <p className="text-2xl font-bold text-blue-600">{completedBookings.length}</p>
+                    <p className="text-sm text-gray-600">Completed Rides</p>
+                  </div>
+                  <div className="text-center p-4 bg-orange-50 rounded-lg">
+                    <p className="text-2xl font-bold text-orange-600">
+                      €{pendingBookings.reduce((sum, booking) => sum + Number(booking.estimated_price), 0).toFixed(2)}
+                    </p>
+                    <p className="text-sm text-gray-600">Pending Earnings</p>
+                  </div>
+                </div>
+                
+                {completedBookings.length > 0 ? (
+                  <div className="space-y-2">
+                    <h4 className="font-medium">Recent Completed Rides</h4>
+                    {completedBookings.slice(0, 5).map((booking) => (
+                      <div key={booking.id} className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                        <div>
+                          <p className="font-medium">#{booking.booking_id}</p>
+                          <p className="text-sm text-gray-600">{booking.from_location} → {booking.to_location}</p>
+                          <p className="text-xs text-gray-500">{format(new Date(booking.date), 'MMM d, yyyy')}</p>
+                        </div>
+                        <p className="font-bold text-green-600">€{booking.estimated_price}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-center text-gray-500 py-8">No completed rides yet.</p>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
