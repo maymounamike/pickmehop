@@ -150,6 +150,86 @@ const DriversManagement = () => {
     }
   };
 
+  const createTestDriverAccount = async () => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to create a test driver account.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Check if user already has driver role
+      const { data: existingRole } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('role', 'driver')
+        .single();
+
+      // Add driver role if not exists
+      if (!existingRole) {
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert({
+            user_id: user.id,
+            role: 'driver'
+          });
+
+        if (roleError) throw roleError;
+      }
+
+      // Check if driver profile already exists
+      const { data: existingDriver } = await supabase
+        .from('drivers')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      // Create driver profile if not exists
+      if (!existingDriver) {
+        const { error: driverError } = await supabase
+          .from('drivers')
+          .insert({
+            user_id: user.id,
+            license_number: 'TEST-LICENSE-123',
+            vehicle_make: 'Toyota',
+            vehicle_model: 'Camry',
+            vehicle_year: 2023,
+            vehicle_license_plate: 'TEST-123',
+            phone: '+33 1 23 45 67 89',
+            is_active: true
+          });
+
+        if (driverError) throw driverError;
+      } else {
+        // If exists but inactive, activate it
+        const { error: updateError } = await supabase
+          .from('drivers')
+          .update({ is_active: true })
+          .eq('user_id', user.id);
+
+        if (updateError) throw updateError;
+      }
+
+      toast({
+        title: "Success!",
+        description: "You are now set up as a test driver with sample vehicle information.",
+      });
+
+      await fetchDrivers();
+    } catch (error) {
+      console.error('Error creating test driver account:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create test driver account. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -186,14 +266,23 @@ const DriversManagement = () => {
             <h1 className="text-3xl font-bold">Drivers Management</h1>
             <p className="text-muted-foreground">Manage active and pending drivers</p>
           </div>
-          <div className="flex gap-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{activeDrivers.length}</div>
-              <p className="text-sm text-muted-foreground">Active Drivers</p>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-yellow-600">{pendingDrivers.length}</div>
-              <p className="text-sm text-muted-foreground">Pending Activation</p>
+          <div className="flex items-center gap-6">
+            <Button
+              onClick={createTestDriverAccount}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              <UserCheck className="mr-2 h-4 w-4" />
+              Make Me a Test Driver
+            </Button>
+            <div className="flex gap-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600">{activeDrivers.length}</div>
+                <p className="text-sm text-muted-foreground">Active Drivers</p>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-yellow-600">{pendingDrivers.length}</div>
+                <p className="text-sm text-muted-foreground">Pending Activation</p>
+              </div>
             </div>
           </div>
         </div>
