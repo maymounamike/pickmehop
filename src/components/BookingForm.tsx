@@ -235,6 +235,40 @@ const BookingForm = () => {
     return presets;
   };
 
+  // Train station suggestions for Paris stations
+  const getTrainStationSuggestions = (query: string): string[] => {
+    const queryLower = query.toLowerCase();
+    const stations: string[] = [];
+
+    // Major Paris train stations with their keywords
+    const trainStations = [
+      { keywords: ['g', 'ga', 'gar', 'gare', 'n', 'no', 'nor', 'nord'], name: 'Gare du Nord, Paris 75010' },
+      { keywords: ['g', 'ga', 'gar', 'gare', 'e', 'es', 'est'], name: 'Gare de l\'Est, Paris 75010' },
+      { keywords: ['g', 'ga', 'gar', 'gare', 'l', 'ly', 'lyo', 'lyon'], name: 'Gare de Lyon, Paris 75012' },
+      { keywords: ['g', 'ga', 'gar', 'gare', 'a', 'au', 'aus', 'aust', 'auste', 'auster', 'austerl', 'austerlitz'], name: 'Gare d\'Austerlitz, Paris 75013' },
+      { keywords: ['g', 'ga', 'gar', 'gare', 'm', 'mo', 'mon', 'mont', 'montp', 'montpa', 'montpar', 'montparn', 'montparna', 'montparnas', 'montparnass', 'montparnasse'], name: 'Gare Montparnasse, Paris 75015' },
+      { keywords: ['g', 'ga', 'gar', 'gare', 's', 'sa', 'sai', 'sain', 'saint', 'l', 'la', 'laz', 'laza', 'lazar', 'lazare'], name: 'Gare Saint-Lazare, Paris 75008' },
+      { keywords: ['g', 'ga', 'gar', 'gare', 'b', 'be', 'ber', 'berc', 'bercy'], name: 'Gare de Bercy, Paris 75012' },
+      { keywords: ['c', 'ch', 'cha', 'chat', 'chate', 'chatel', 'chatelet'], name: 'Châtelet-Les Halles RER, Paris 75001' },
+      { keywords: ['n', 'na', 'nat', 'nati', 'natio', 'nation'], name: 'Nation, Paris 75011' },
+      { keywords: ['r', 're', 'rep', 'repu', 'repub', 'republ', 'republi', 'republic', 'republique'], name: 'République, Paris 75003' },
+      { keywords: ['b', 'ba', 'bas', 'bast', 'basti', 'bastil', 'bastill', 'bastille'], name: 'Bastille, Paris 75004' },
+      { keywords: ['o', 'op', 'ope', 'oper', 'opera'], name: 'Opéra, Paris 75009' },
+      { keywords: ['c', 'co', 'con', 'conc', 'conco', 'concor', 'concord', 'concorde'], name: 'Concorde, Paris 75001' },
+      { keywords: ['c', 'ch', 'cha', 'cham', 'champ', 'champs', 'e', 'el', 'ely', 'elys', 'elyse', 'elysee', 'elysees'], name: 'Champs-Élysées, Paris 75008' }
+    ];
+
+    for (const station of trainStations) {
+      if (station.keywords.some(keyword => queryLower.startsWith(keyword) || keyword.startsWith(queryLower))) {
+        if (!stations.includes(station.name)) {
+          stations.push(station.name);
+        }
+      }
+    }
+
+    return stations;
+  };
+
   // Hotel suggestion function for Paris hotels
   const fetchHotelSuggestions = async (query: string) => {
     if (query.length < 1) return [];
@@ -256,22 +290,31 @@ const BookingForm = () => {
     }
   };
 
-  // Enhanced address suggestion function that includes hotels
+  // Enhanced address suggestion function that includes hotels and train stations
   const fetchAddressSuggestions = async (query: string) => {
+    const suggestions: string[] = [];
+
     // First check for airport presets (minimum 1 character)
     if (query.length >= 1) {
       const airportPresets = getAirportPresets(query);
-      if (airportPresets.length > 0) {
-        return airportPresets;
-      }
+      suggestions.push(...airportPresets);
+    }
+
+    // Check for train station suggestions (minimum 1 character)
+    if (query.length >= 1) {
+      const trainStations = getTrainStationSuggestions(query);
+      suggestions.push(...trainStations);
     }
 
     // Always check for hotel suggestions for any query with 1+ character
     if (query.length >= 1) {
       const hotelSuggestions = await fetchHotelSuggestions(query);
-      if (hotelSuggestions.length > 0) {
-        return hotelSuggestions;
-      }
+      suggestions.push(...hotelSuggestions);
+    }
+
+    // Return combined suggestions if we have any
+    if (suggestions.length > 0) {
+      return suggestions.slice(0, 8); // Limit to 8 suggestions total
     }
 
     // For general address suggestions, reduce minimum to 2 characters
