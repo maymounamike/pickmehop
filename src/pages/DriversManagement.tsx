@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, UserCheck, Car, Phone, Mail, Calendar, Trash2, Crown, MoreVertical, Eye, UserX } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import Header from "@/components/Header";
 
 interface Driver {
   id: string;
@@ -90,39 +91,65 @@ const DriversManagement = () => {
         setActiveDrivers(activeData || []);
       }
 
-      // Fetch pending drivers (users with driver role but inactive)
-      const { data: pendingData, error: pendingError } = await supabase
-        .from('profiles')
-        .select(`
-          id,
-          first_name,
-          last_name,
-          created_at,
-          drivers!inner(is_active),
-          user_roles!inner(role)
-        `)
-        .eq('user_roles.role', 'driver')
-        .eq('drivers.is_active', false)
-        .order('created_at', { ascending: false });
+      // Fetch pending drivers - try a different approach
+      console.log('Fetching pending drivers...');
+      
+      // First, let's get all users with driver role
+      const { data: userRoles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'driver');
 
-      if (pendingError) {
-        console.error('Error fetching pending drivers:', pendingError);
-      } else if (pendingData) {
-        // Get emails for pending drivers
-        const pendingWithEmails = await Promise.all(
-          pendingData.map(async (pending: any) => {
-            const { data: userData } = await supabase.auth.admin.getUserById(pending.id);
-            return {
-              id: pending.id,
-              first_name: pending.first_name,
-              last_name: pending.last_name,
-              email: userData.user?.email || 'Unknown',
-              created_at: pending.created_at,
-              is_active: pending.drivers?.is_active || false
-            };
-          })
-        );
-        setPendingDrivers(pendingWithEmails);
+      console.log('User roles with driver:', userRoles);
+
+      if (rolesError) {
+        console.error('Error fetching user roles:', rolesError);
+      } else if (userRoles && userRoles.length > 0) {
+        // Get all drivers for these users
+        const { data: allDrivers, error: driversError } = await supabase
+          .from('drivers')
+          .select('user_id, is_active')
+          .in('user_id', userRoles.map(ur => ur.user_id));
+
+        console.log('All drivers:', allDrivers);
+
+        // Find users with driver role who have inactive driver records
+        const inactiveDriverUserIds = allDrivers
+          ?.filter(d => !d.is_active)
+          ?.map(d => d.user_id) || [];
+
+        console.log('Inactive driver user IDs:', inactiveDriverUserIds);
+
+        if (inactiveDriverUserIds.length > 0) {
+          // Get profiles for these users
+          const { data: profilesData, error: profilesError } = await supabase
+            .from('profiles')
+            .select('id, first_name, last_name, created_at')
+            .in('id', inactiveDriverUserIds);
+
+          console.log('Profiles data:', profilesData);
+
+          if (profilesError) {
+            console.error('Error fetching profiles:', profilesError);
+          } else if (profilesData) {
+            // Get emails for pending drivers
+            const pendingWithEmails = await Promise.all(
+              profilesData.map(async (profile: any) => {
+                const { data: userData } = await supabase.auth.admin.getUserById(profile.id);
+                return {
+                  id: profile.id,
+                  first_name: profile.first_name,
+                  last_name: profile.last_name,
+                  email: userData.user?.email || 'Unknown',
+                  created_at: profile.created_at,
+                  is_active: false
+                };
+              })
+            );
+            console.log('Pending drivers with emails:', pendingWithEmails);
+            setPendingDrivers(pendingWithEmails);
+          }
+        }
       }
 
       // Fetch deleted drivers - soft deleted drivers
@@ -222,8 +249,10 @@ const DriversManagement = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
-      <div className="container mx-auto px-4 py-8">
+    <>
+      <Header />
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 pt-20">
+        <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold flex items-center">
@@ -434,8 +463,9 @@ const DriversManagement = () => {
             )}
           </CardContent>
         </Card>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
