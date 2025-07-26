@@ -1015,7 +1015,18 @@ const BookingForm = () => {
                         <FormControl>
                           <div className="flex gap-2">
                             {/* Country Code Dropdown */}
-                            <Select value={selectedCountryCode} onValueChange={setSelectedCountryCode}>
+                            <Select 
+                              value={selectedCountryCode} 
+                              onValueChange={(newCode) => {
+                                setSelectedCountryCode(newCode);
+                                // Update the phone field with new country code if there's an existing number
+                                const currentPhone = field.value || "";
+                                const numberPart = currentPhone.replace(/^\+\d+\s?/, '').trim();
+                                if (numberPart) {
+                                  field.onChange(`${newCode} ${numberPart}`);
+                                }
+                              }}
+                            >
                               <SelectTrigger className="w-[120px] h-10">
                                 <SelectValue placeholder="Code" />
                               </SelectTrigger>
@@ -1038,11 +1049,15 @@ const BookingForm = () => {
                                 type="tel"
                                 placeholder={selectedCountryCode === "+1" ? "555 123 4567" : "6 12 34 56 78"}
                                 className="pl-10 h-10 text-sm"
-                                value={field.value || ""}
+                                value={
+                                  field.value 
+                                    ? field.value.replace(selectedCountryCode, '').trim() 
+                                    : ""
+                                }
                                 onChange={(e) => {
-                                  // Combine country code with phone number
-                                  const phoneNumber = e.target.value;
-                                  const fullNumber = `${selectedCountryCode} ${phoneNumber}`;
+                                  // Only store the number part, system will combine with country code
+                                  const phoneNumber = e.target.value.trim();
+                                  const fullNumber = phoneNumber ? `${selectedCountryCode} ${phoneNumber}` : "";
                                   field.onChange(fullNumber);
                                 }}
                                 onBlur={field.onBlur}
