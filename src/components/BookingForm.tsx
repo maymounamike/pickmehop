@@ -175,8 +175,8 @@ const BookingForm = () => {
     const fromLower = from.toLowerCase();
     const toLower = to.toLowerCase();
     
-    // Fixed pricing rules only apply when passengers ≤ 4 and luggage ≤ 4
-    const qualifiesForFixedPricing = passengers <= 4 && luggage <= 4;
+    // Fixed pricing rules only apply when passengers < 4 and luggage < 4
+    const qualifiesForFixedPricing = passengers < 4 && luggage < 4;
     
     if (qualifiesForFixedPricing) {
       // Check for Beauvais Airport (150€ fixed price)

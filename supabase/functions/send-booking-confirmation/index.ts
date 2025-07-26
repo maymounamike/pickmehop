@@ -57,7 +57,16 @@ interface BookingConfirmationRequest {
   flightNumber?: string;
 }
 
-const generateCustomerEmailHTML = (booking: BookingConfirmationRequest) => `
+const generateCustomerEmailHTML = (booking: BookingConfirmationRequest) => {
+  // Format date to remove the T22:00:00.000Z part
+  const formattedDate = booking.date ? new Date(booking.date).toLocaleDateString('en-GB', {
+    weekday: 'long',
+    year: 'numeric', 
+    month: 'long',
+    day: 'numeric'
+  }) : booking.date;
+  
+  return `
 <!DOCTYPE html>
 <html>
 <head>
@@ -87,7 +96,7 @@ const generateCustomerEmailHTML = (booking: BookingConfirmationRequest) => `
 <body>
   <div class="container">
     <div class="header">
-      <div style="width: 60px; height: 60px; border-radius: 50%; margin: 0 auto 15px; display: block; border: 3px solid rgba(255,255,255,0.2); background: white; line-height: 54px; text-align: center; font-size: 24px; font-weight: bold; color: #2563eb;">🚗</div>
+      <img src="https://8d3b327c-3050-4151-be81-4ef802ca3a04.lovableproject.com/lovable-uploads/fd647c9d-74ed-4206-99d0-9b04a8f86b41.png" alt="PickMeHop Logo" style="width: 60px; height: 60px; border-radius: 50%; margin: 0 auto 15px; display: block; border: 3px solid rgba(255,255,255,0.2); object-fit: cover;"">
       <h1>PickMeHop</h1>
       <p>Your Booking is Confirmed!</p>
     </div>
@@ -109,10 +118,10 @@ const generateCustomerEmailHTML = (booking: BookingConfirmationRequest) => `
           <span class="detail-label">To:</span>
           <span class="detail-value">${booking.toLocation}</span>
         </div>
-        <div class="detail-row">
-          <span class="detail-label">Date & Time:</span>
-          <span class="detail-value">${booking.date} at ${booking.time}</span>
-        </div>
+         <div class="detail-row">
+           <span class="detail-label">Date & Time:</span>
+           <span class="detail-value">${formattedDate} at ${booking.time}</span>
+         </div>
         <div class="detail-row">
           <span class="detail-label">Passengers:</span>
           <span class="detail-value">${booking.passengers}</span>
@@ -147,11 +156,21 @@ const generateCustomerEmailHTML = (booking: BookingConfirmationRequest) => `
       <p>Safe travels! 🚗✨</p>
     </div>
   </div>
-</body>
-</html>
-`;
+ </body>
+ </html>
+ `;
+}
 
-const generateBusinessEmailHTML = (booking: BookingConfirmationRequest) => `
+const generateBusinessEmailHTML = (booking: BookingConfirmationRequest) => {
+  // Format date to remove the T22:00:00.000Z part
+  const formattedDate = booking.date ? new Date(booking.date).toLocaleDateString('en-GB', {
+    weekday: 'long',
+    year: 'numeric', 
+    month: 'long',
+    day: 'numeric'
+  }) : booking.date;
+  
+  return `
 <!DOCTYPE html>
 <html>
 <head>
@@ -177,7 +196,7 @@ const generateBusinessEmailHTML = (booking: BookingConfirmationRequest) => `
 <body>
   <div class="container">
     <div class="header">
-      <div style="width: 50px; height: 50px; border-radius: 50%; margin: 0 auto 15px; display: block; border: 2px solid rgba(255,255,255,0.3); background: white; line-height: 46px; text-align: center; font-size: 20px; font-weight: bold; color: #dc2626;">🚗</div>
+      <img src="https://8d3b327c-3050-4151-be81-4ef802ca3a04.lovableproject.com/lovable-uploads/fd647c9d-74ed-4206-99d0-9b04a8f86b41.png" alt="PickMeHop Logo" style="width: 50px; height: 50px; border-radius: 50%; margin: 0 auto 15px; display: block; border: 2px solid rgba(255,255,255,0.3); object-fit: cover;">
       <h1>New Booking Alert - PickMeHop</h1>
     </div>
     <div class="content">
@@ -211,10 +230,10 @@ const generateBusinessEmailHTML = (booking: BookingConfirmationRequest) => `
           <span class="detail-label">To:</span>
           <span class="detail-value">${booking.toLocation}</span>
         </div>
-        <div class="detail-row">
-          <span class="detail-label">Date & Time:</span>
-          <span class="detail-value">${booking.date} at ${booking.time}</span>
-        </div>
+         <div class="detail-row">
+           <span class="detail-label">Date & Time:</span>
+           <span class="detail-value">${formattedDate} at ${booking.time}</span>
+         </div>
         <div class="detail-row">
           <span class="detail-label">Passengers:</span>
           <span class="detail-value">${booking.passengers}</span>
@@ -239,9 +258,10 @@ const generateBusinessEmailHTML = (booking: BookingConfirmationRequest) => `
       </div>
     </div>
   </div>
-</body>
-</html>
-`;
+ </body>
+ </html>
+ `;
+}
 
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
@@ -277,12 +297,15 @@ const handler = async (req: Request): Promise<Response> => {
     let smsResponse = null;
     if (booking.phone && TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN && TWILIO_PHONE_NUMBER) {
       try {
+        // Format date for SMS
+        const formattedDate = booking.date ? new Date(booking.date).toLocaleDateString('en-GB') : booking.date;
+        
         const smsMessage = `PickMeHop Booking Confirmed! 
         
 Booking ID: ${booking.bookingId}
 From: ${booking.fromLocation}
 To: ${booking.toLocation}
-Date: ${booking.date} at ${booking.time}
+Date: ${formattedDate} at ${booking.time}
 Passengers: ${booking.passengers}
 Price: €${booking.estimatedPrice}
 

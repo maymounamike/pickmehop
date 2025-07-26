@@ -160,8 +160,8 @@ serve(async (req) => {
       )
     }
 
-    // Create booking ID and simulate processing
-    const bookingId = `BK-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    // Create booking ID with PMH prefix and 4 digits
+    const bookingId = `PMH${Math.floor(1000 + Math.random() * 9000)}`;
     console.log('Booking data validated and sanitized:', sanitizedData)
     
     // Initialize Supabase client
