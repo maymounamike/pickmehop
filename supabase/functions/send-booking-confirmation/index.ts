@@ -87,7 +87,7 @@ const generateCustomerEmailHTML = (booking: BookingConfirmationRequest) => `
 <body>
   <div class="container">
     <div class="header">
-      <img src="https://nwctkeacagskeuavjrch.supabase.co/storage/v1/object/public/assets/lovable-uploads/298c0d83-9fd2-4556-aeff-ab20854f90c7.png" alt="PickMeHop Logo" class="logo">
+      <div style="width: 60px; height: 60px; border-radius: 50%; margin: 0 auto 15px; display: block; border: 3px solid rgba(255,255,255,0.2); background: white; line-height: 54px; text-align: center; font-size: 24px; font-weight: bold; color: #2563eb;">🚗</div>
       <h1>PickMeHop</h1>
       <p>Your Booking is Confirmed!</p>
     </div>
@@ -177,7 +177,7 @@ const generateBusinessEmailHTML = (booking: BookingConfirmationRequest) => `
 <body>
   <div class="container">
     <div class="header">
-      <img src="https://nwctkeacagskeuavjrch.supabase.co/storage/v1/object/public/assets/lovable-uploads/298c0d83-9fd2-4556-aeff-ab20854f90c7.png" alt="PickMeHop Logo" class="logo">
+      <div style="width: 50px; height: 50px; border-radius: 50%; margin: 0 auto 15px; display: block; border: 2px solid rgba(255,255,255,0.3); background: white; line-height: 46px; text-align: center; font-size: 20px; font-weight: bold; color: #dc2626;">🚗</div>
       <h1>New Booking Alert - PickMeHop</h1>
     </div>
     <div class="content">
