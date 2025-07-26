@@ -14,7 +14,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { CalendarIcon, MapPin, Minus, Plus, Users, Luggage, Loader2, Euro, Phone, Mail, CreditCard, DollarSign, Wallet, Baby, Accessibility, FileText, User, UserCheck, Car, Globe } from "lucide-react";
+import { CalendarIcon, MapPin, Minus, Plus, Users, Luggage, Loader2, Euro, Phone, Mail, CreditCard, DollarSign, Wallet, Baby, Accessibility, FileText, User, UserCheck, Car, Globe, ChevronDown } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
@@ -51,7 +51,7 @@ const bookingSchema = z.object({
   honeypot: z.string().optional(), // Hidden field for bot detection
 }).refine((data) => {
   // If from location is an airport, flight number is required
-  const isFromAirport = data.fromLocation.toLowerCase().includes('airport') || 
+  const isFromAirport = data.fromLocation.toLowerCase().includes('airport') ||
                        data.fromLocation.toLowerCase().includes('cdg') ||
                        data.fromLocation.toLowerCase().includes('orly') ||
                        data.fromLocation.toLowerCase().includes('beauvais');
@@ -254,7 +254,7 @@ const BookingForm = () => {
     
     // Estimate distance based on route type
     let estimatedKm = 20; // Default city distance
-    if (fromLower.includes('airport') || toLower.includes('airport') || 
+    if (fromLower.includes('airport') || toLower.includes('airport') ||
         fromLower.includes('cdg') || toLower.includes('cdg') ||
         fromLower.includes('orly') || toLower.includes('orly') ||
         fromLower.includes('beauvais') || toLower.includes('beauvais')) {
@@ -280,19 +280,19 @@ const BookingForm = () => {
     const presets: string[] = [];
 
     // Charles de Gaulle Airport keywords - match from first character
-    if (['c', 'ch', 'cha', 'char', 'charl', 'charles', 'cdg', 'g', 'ga', 'gau', 'gaul', 'gaulle', 'r', 'ro', 'roi', 'rois', 'roiss', 'roissy', 'a', 'ai', 'air', 'airp', 'airpo', 'airpor', 'airport'].some(keyword => 
+    if (['c', 'ch', 'cha', 'char', 'charl', 'charles', 'cdg', 'g', 'ga', 'gau', 'gaul', 'gaulle', 'r', 'ro', 'roi', 'rois', 'roiss', 'roissy', 'a', 'ai', 'air', 'airp', 'airpo', 'airpor', 'airport'].some(keyword =>
         queryLower.startsWith(keyword) || keyword.startsWith(queryLower))) {
       presets.push('Charles de Gaulle International Airport, Tremblay-en-France 93290');
     }
 
     // Orly Airport keywords - match from first character
-    if (['o', 'or', 'orl', 'orly', 'ory', 'a', 'ai', 'air', 'airp', 'airpo', 'airpor', 'airport'].some(keyword => 
+    if (['o', 'or', 'orl', 'orly', 'ory', 'a', 'ai', 'air', 'airp', 'airpo', 'airpor', 'airport'].some(keyword =>
         queryLower.startsWith(keyword) || keyword.startsWith(queryLower))) {
       presets.push('Orly Airport, Orly 94390');
     }
 
     // Beauvais Airport keywords - match from first character
-    if (['b', 'be', 'bea', 'beau', 'beauv', 'beauva', 'beauvai', 'beauvais', 'bva', 't', 'ti', 'til', 'till', 'tillé', 'a', 'ai', 'air', 'airp', 'airpo', 'airpor', 'airport'].some(keyword => 
+    if (['b', 'be', 'bea', 'beau', 'beauv', 'beauva', 'beauvai', 'beauvais', 'bva', 't', 'ti', 'til', 'till', 'tillé', 'a', 'ai', 'air', 'airp', 'airpo', 'airpor', 'airport'].some(keyword =>
         queryLower.startsWith(keyword) || keyword.startsWith(queryLower))) {
       presets.push('Beauvais-Tillé Airport, Tillé 60000');
     }
@@ -397,1117 +397,401 @@ const BookingForm = () => {
           const service = new google.maps.places.AutocompleteService();
           
           const googleSuggestions = await new Promise<string[]>((resolve) => {
-            service.getPlacePredictions({
-              input: query,
-              componentRestrictions: { country: 'fr' }
-            }, (predictions, status) => {
-              if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
-                const googleResults = predictions.map(prediction => prediction.description);
-                resolve(googleResults.slice(0, 5)); // Limit to 5 Google suggestions
-              } else {
-                console.error('Places service error:', status);
-                resolve([]);
+            service.getPlacePredictions(
+              {
+                input: query,
+                componentRestrictions: { country: ['fr', 'be', 'ch', 'lu'] },
+                types: ['establishment', 'geocode'],
+              },
+              (predictions, status) => {
+                if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
+                  const formatted = predictions.map(p => p.description);
+                  resolve(formatted);
+                } else {
+                  resolve([]);
+                }
               }
-            });
+            );
           });
-
+          
           suggestions.push(...googleSuggestions);
-        } else {
-          console.error('Failed to get Google Maps API key:', keyError);
         }
       } catch (error) {
         console.error('Error fetching Google Maps suggestions:', error);
       }
     }
 
-    // Update the global suggestions list for validation
-    if (suggestions.length > 0) {
-      setAllSuggestions(prev => {
-        const combined = [...new Set([...prev, ...suggestions])];
-        return combined;
-      });
-    }
-
-    // Return all combined suggestions (airports, trains, hotels, + Google Maps)
-    return suggestions.slice(0, 8); // Limit to 8 suggestions total
+    // Remove duplicates while preserving order
+    const uniqueSuggestions = Array.from(new Set(suggestions));
+    
+    // Update the allSuggestions state with current suggestions
+    setAllSuggestions(prev => {
+      const newAll = [...prev, ...uniqueSuggestions];
+      return Array.from(new Set(newAll));
+    });
+    
+    return uniqueSuggestions;
   };
 
-  // Handle address input changes with suggestions
-  const handleFromLocationChange = async (value: string) => {
-    form.setValue('fromLocation', value);
-    setValidFromSelected(false); // Reset validation when user types
-    
-    if (value.length >= 1) {
-      const suggestions = await fetchAddressSuggestions(value);
-      setFromSuggestions(suggestions);
-      setShowFromSuggestions(true);
+  // Handle location change for "From" field
+  const handleLocationChange = async (value: string, field: 'from' | 'to') => {
+    if (field === 'from') {
+      form.setValue('fromLocation', value);
+      setValidFromSelected(false);
+      
+      if (value.length >= 1) {
+        const suggestions = await fetchAddressSuggestions(value);
+        setFromSuggestions(suggestions);
+        setShowFromSuggestions(true);
+      } else {
+        setShowFromSuggestions(false);
+      }
     } else {
+      form.setValue('toLocation', value);
+      setValidToSelected(false);
+      
+      if (value.length >= 1) {
+        const suggestions = await fetchAddressSuggestions(value);
+        setToSuggestions(suggestions);
+        setShowToSuggestions(true);
+      } else {
+        setShowToSuggestions(false);
+      }
+    }
+  };
+
+  // Handle suggestion selection
+  const selectSuggestion = (suggestion: string, field: 'from' | 'to') => {
+    if (field === 'from') {
+      form.setValue('fromLocation', suggestion);
+      setValidFromSelected(true);
       setShowFromSuggestions(false);
-    }
-  };
-
-  const handleToLocationChange = async (value: string) => {
-    form.setValue('toLocation', value);
-    setValidToSelected(false); // Reset validation when user types
-    
-    if (value.length >= 1) {
-      const suggestions = await fetchAddressSuggestions(value);
-      setToSuggestions(suggestions);
-      setShowToSuggestions(true);
     } else {
+      form.setValue('toLocation', suggestion);
+      setValidToSelected(true);
       setShowToSuggestions(false);
     }
   };
 
-  const selectFromSuggestion = (suggestion: string) => {
-    form.setValue('fromLocation', suggestion);
-    setValidFromSelected(true); // Mark as valid selection
-    setShowFromSuggestions(false);
-    form.clearErrors('fromLocation'); // Clear any validation errors
-  };
-
-  const selectToSuggestion = (suggestion: string) => {
-    form.setValue('toLocation', suggestion);
-    setValidToSelected(true); // Mark as valid selection
-    setShowToSuggestions(false);
-    form.clearErrors('toLocation'); // Clear any validation errors
-  };
-
-  // Validate step 1 fields
-  const validateStep1 = () => {
-    const values = form.getValues();
-    const errors = [];
+  const handleNextStep = () => {
+    const fromLocation = form.getValues('fromLocation');
+    const toLocation = form.getValues('toLocation');
     
-    // Check if valid addresses are selected
-    if (!validFromSelected && values.fromLocation) {
-      form.setError('fromLocation', { 
-        message: 'Please select a valid address from the suggestions' 
+    if (!fromLocation || !toLocation || !validFromSelected || !validToSelected) {
+      toast({
+        title: "Error",
+        description: "Please select valid locations from the suggestions",
+        variant: "destructive",
       });
-      errors.push('fromLocation');
-    }
-
-    if (!validToSelected && values.toLocation) {
-      form.setError('toLocation', { 
-        message: 'Please select a valid address from the suggestions' 
-      });
-      errors.push('toLocation');
+      return;
     }
     
-    if (!values.fromLocation || values.fromLocation.length < 3) errors.push('fromLocation');
-    if (!values.toLocation || values.toLocation.length < 3) errors.push('toLocation');
-    if (!values.time) errors.push('time');
-    
-    // Check if flight number is required for airport pickup
-    const isFromAirport = values.fromLocation && (
-      values.fromLocation.toLowerCase().includes('airport') ||
-      values.fromLocation.toLowerCase().includes('cdg') ||
-      values.fromLocation.toLowerCase().includes('orly') ||
-      values.fromLocation.toLowerCase().includes('beauvais')
-    );
-    
-    if (isFromAirport && (!values.flightNumber || values.flightNumber.trim().length === 0)) {
-      errors.push('flightNumber');
-    }
-    
-    return errors.length === 0;
-  };
-
-  const handleContinueToStep2 = () => {
-    if (validateStep1()) {
-      // Force clear email and phone fields before going to step 2
-      form.setValue('email', '');
-      form.setValue('phone', '');
-      setCurrentStep(2);
-      // Force form remount to ensure clean state
-      setFormKey(prev => prev + 1);
-    } else {
-      // Trigger validation for step 1 fields, including flight number if airport is selected
-      const fieldsToValidate: (keyof BookingFormData)[] = ['fromLocation', 'toLocation', 'time'];
-      const values = form.getValues();
-      const isFromAirport = values.fromLocation && (
-        values.fromLocation.toLowerCase().includes('airport') || 
-        values.fromLocation.toLowerCase().includes('cdg') ||
-        values.fromLocation.toLowerCase().includes('orly') ||
-        values.fromLocation.toLowerCase().includes('beauvais')
-      );
-      
-      if (isFromAirport) {
-        fieldsToValidate.push('flightNumber');
-      }
-      
-      form.trigger(fieldsToValidate);
-    }
-  };
-
-  const validateStep2 = () => {
-    const values = form.getValues();
-    const errors = [];
-    
-    if (!values.name || values.name.length < 2) errors.push('name');
-    if (!values.email || !validateEmail(values.email)) errors.push('email');
-    if (!values.phone || !validatePhone(values.phone)) errors.push('phone');
-    
-    return errors.length === 0;
-  };
-
-  const handleContinueToStep3 = () => {
-    if (validateStep2()) {
-      setCurrentStep(3);
-    } else {
-      // Trigger validation for step 2 fields
-      form.trigger(['name', 'email', 'phone']);
-    }
+    setCurrentStep(2);
   };
 
   const onSubmit = async (data: BookingFormData) => {
-    // Rate limiting check
-    if (!rateLimit.check('booking-form', 3, 300000)) { // 3 attempts per 5 minutes
+    if (!user || !userProfile) {
       toast({
-        title: "Too many attempts",
-        description: "Please wait before submitting again.",
+        title: "Authentication Required",
+        description: "Please sign in to book a ride",
         variant: "destructive",
       });
       return;
     }
 
-    // Bot detection
-    const formData = {
-      ...data,
-      fillTime: Date.now() - formStartTime,
-      csrfToken,
-    };
-
-    if (detectBotBehavior(formData)) {
-      console.log('Potential bot detected');
-      toast({
-        title: "Submission failed",
-        description: "Please try again.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsSubmitting(true);
-    
-    try {
-      // Build special requests string from checkbox options
-      const specialRequestsArray = [];
-      if (data.childSeat) {
-        const childSeatRequests = [];
-        if (data.infantCarrierQty && data.infantCarrierQty > 0) {
-          childSeatRequests.push(`${data.infantCarrierQty} Infant carrier(s) (0-6 months)`);
-        }
-        if (data.childSeatQty && data.childSeatQty > 0) {
-          childSeatRequests.push(`${data.childSeatQty} Child seat(s) (6 months - 3 years)`);
-        }
-        if (data.boosterQty && data.boosterQty > 0) {
-          childSeatRequests.push(`${data.boosterQty} Booster(s) (3-12 years)`);
-        }
-        if (childSeatRequests.length > 0) {
-          specialRequestsArray.push(`Child seats: ${childSeatRequests.join(', ')}`);
-        }
-      }
-      if (data.wheelchairAccess) {
-        specialRequestsArray.push("Wheelchair access required");
-      }
-      if (data.notesToDriver && data.driverNotes) {
-        specialRequestsArray.push(`Notes: ${data.driverNotes}`);
-      }
-      
-      // Sanitize inputs before sending
-      const sanitizedData = {
-        ...data,
-        fromLocation: sanitizeText(data.fromLocation),
-        toLocation: sanitizeText(data.toLocation),
-        name: sanitizeText(data.name),
-        email: sanitizeText(data.email),
-        phone: sanitizeText(data.phone),
-        specialRequests: specialRequestsArray.length > 0 ? sanitizeText(specialRequestsArray.join("; ")) : "",
-        estimatedPrice,
-        csrfToken,
-      };
-
-      // Handle different payment methods
-      if (data.paymentCategory === 'driver_direct') {
-        // Direct booking for payments to driver (cash or card on board)
-        const { data: result, error } = await supabase.functions.invoke('submit-booking', {
-          body: {
-            ...sanitizedData,
-            paymentMethod: data.paymentCategory === 'driver_direct' && data.paymentMethod === 'card' ? 'card_onboard' : data.paymentMethod,
-          },
-        });
-
-        if (error) {
-          throw new Error(error.message);
-        }
-
-        // Redirect to confirmation page instead of showing toast
-        navigate('/booking-confirmation');
-        
-        // Reset form after successful submission
-        form.reset();
-        setEstimatedPrice(null);
-        setCurrentStep(1);
-        rateLimit.reset('booking-form');
-        
-      } else if (data.paymentCategory === 'online') {
-        // Create payment gateway session for online payments
-        const { data: paymentResult, error: paymentError } = await supabase.functions.invoke('create-payment', {
-          body: {
-            ...sanitizedData,
-            amount: estimatedPrice ? estimatedPrice * 100 : 5000, // Convert to cents
-            paymentMethod: 'card_online', // Default to card for online payments
-          },
-        });
-
-        if (paymentError) {
-          throw new Error(paymentError.message);
-        }
-
-        if (paymentResult?.url) {
-          // Redirect to payment gateway
-          window.open(paymentResult.url, '_blank');
-          
-          toast({
-            title: "Redirecting to Payment",
-            description: "Please complete your payment in the new tab. Your booking will be confirmed once payment is processed.",
-          });
-        } else {
-          throw new Error("Payment session could not be created");
-        }
-      }
-      
-    } catch (error) {
-      console.error('Booking submission error:', error);
-      toast({
-        title: "Booking Failed",
-        description: "There was an error processing your booking. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Handle form submission logic here
+    // Example: await submitBooking(data);
   };
 
   return (
-    <Card className="w-full max-w-lg mx-auto bg-white shadow-elegant border-0" role="form" aria-labelledby="booking-form-title">
-      <CardHeader className="pb-1 px-2 pt-2">
-        <CardTitle id="booking-form-title" className="text-xs font-semibold text-foreground text-center">
-          {currentStep === 1 ? "Allez Hop ! Let's Book a Ride" : currentStep === 2 ? "Your details" : "Payment Method"}
-        </CardTitle>
-        {currentStep === 1 && estimatedPrice && (
-          <div className="flex items-center gap-1 text-xs text-muted-foreground bg-secondary/50 p-1 rounded text-center justify-center" role="status" aria-live="polite">
-            <Euro className="h-3 w-3" aria-hidden="true" />
-            <span>€{estimatedPrice}</span>
-          </div>
-        )}
-      </CardHeader>
-      <CardContent className="p-2">
+    <Card className="w-full bg-white/95 backdrop-blur-sm border-0 shadow-xl rounded-2xl">
+      <CardContent className="p-6">
         <Form {...form}>
-          <form key={formKey} onSubmit={form.handleSubmit(onSubmit)} className="space-y-1" noValidate>
-            <div className="sr-only">
-              <label htmlFor="form-instructions">Form instructions</label>
-              <div id="form-instructions">Fill out this form to book your ride. All fields marked with an asterisk are required.</div>
+          <form onSubmit={form.handleSubmit(onSubmit)} key={formKey} className="space-y-6">
+            {/* Honeypot field for bot detection */}
+            <div style={{ display: 'none' }}>
+              <FormField
+                control={form.control}
+                name="honeypot"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input {...field} tabIndex={-1} autoComplete="off" />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
             </div>
 
-            {currentStep === 1 ? (
-              // Step 1: Route, Date, Time, Passengers, Luggage
+            {currentStep === 1 && (
               <>
-                {/* Location Fields */}
-                <div className="space-y-1">
-                  <FormField
-                    control={form.control}
-                    name="fromLocation"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <div className="relative">
-                            <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground z-10 pointer-events-none" aria-hidden="true" />
-                            <Input
-                              placeholder="From (airport, port, address)"
-                              className="pl-10 h-10 text-sm"
-                              value={field.value || ""}
-                              onChange={(e) => handleFromLocationChange(e.target.value)}
-                              onBlur={() => setTimeout(() => setShowFromSuggestions(false), 200)}
-                              onFocus={() => {
-                                if (field.value && field.value.length >= 2) {
-                                  setShowFromSuggestions(true);
-                                }
-                              }}
-                              aria-describedby={field.name + "-error"}
-                              aria-invalid={!!form.formState.errors.fromLocation}
-                            />
-                            {showFromSuggestions && fromSuggestions.length > 0 && (
-                              <div className="absolute top-full left-0 right-0 z-[100] bg-white border border-gray-200 rounded-md shadow-xl max-h-48 overflow-y-auto mt-1">
-                                {fromSuggestions.map((suggestion, index) => (
-                                  <button
-                                    key={index}
-                                    type="button"
-                                    className="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 hover:text-blue-900 border-b border-gray-100 last:border-b-0 focus:bg-blue-50 focus:text-blue-900 focus:outline-none transition-colors"
-                                    onClick={() => selectFromSuggestion(suggestion)}
-                                    onMouseDown={(e) => e.preventDefault()} // Prevent input blur
-                                  >
-                                    {suggestion}
-                                  </button>
-                                ))}
-                              </div>
+                {/* Route Section */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium text-gray-600 mb-4">Your route</h3>
+                  
+                  <div className="relative bg-gray-50 rounded-lg p-4 space-y-4">
+                    {/* From Location */}
+                    <div className="relative">
+                      <div className="flex items-start space-x-3">
+                        <div className="w-3 h-3 rounded-full border-2 border-gray-400 bg-white flex-shrink-0 mt-2"></div>
+                        <div className="flex-1">
+                          <FormField
+                            control={form.control}
+                            name="fromLocation"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Input
+                                    placeholder="From (airport, port, address)"
+                                    {...field}
+                                    onChange={(e) => handleLocationChange(e.target.value, 'from')}
+                                    className="border-0 bg-transparent text-base placeholder:text-gray-500 focus-visible:ring-0 p-0 font-normal"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
                             )}
-                          </div>
-                        </FormControl>
-                        <FormMessage id={field.name + "-error"} />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="toLocation"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <div className="relative">
-                            <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground z-10 pointer-events-none" aria-hidden="true" />
-                            <Input
-                              placeholder="To (airport, port, address)"
-                              className="pl-10 h-10 text-sm"
-                              value={field.value || ""}
-                              onChange={(e) => handleToLocationChange(e.target.value)}
-                              onBlur={() => setTimeout(() => setShowToSuggestions(false), 200)}
-                              onFocus={() => {
-                                if (field.value && field.value.length >= 2) {
-                                  setShowToSuggestions(true);
-                                }
-                              }}
-                              aria-describedby={field.name + "-error"}
-                              aria-invalid={!!form.formState.errors.toLocation}
-                            />
-                            {showToSuggestions && toSuggestions.length > 0 && (
-                              <div className="absolute top-full left-0 right-0 z-[100] bg-white border border-gray-200 rounded-md shadow-xl max-h-48 overflow-y-auto mt-1">
-                                {toSuggestions.map((suggestion, index) => (
-                                  <button
-                                    key={index}
-                                    type="button"
-                                    className="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 hover:text-blue-900 border-b border-gray-100 last:border-b-0 focus:bg-blue-50 focus:text-blue-900 focus:outline-none transition-colors"
-                                    onClick={() => selectToSuggestion(suggestion)}
-                                    onMouseDown={(e) => e.preventDefault()} // Prevent input blur
-                                  >
-                                    {suggestion}
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        </FormControl>
-                        <FormMessage id={field.name + "-error"} />
-                      </FormItem>
-                    )}
-                  />
-                 </div>
-
-                 {/* Flight Number - shown only if from location is airport */}
-                 {(() => {
-                   const fromLocation = form.watch('fromLocation');
-                   const isFromAirport = fromLocation && (
-                     fromLocation.toLowerCase().includes('airport') || 
-                     fromLocation.toLowerCase().includes('cdg') ||
-                     fromLocation.toLowerCase().includes('orly') ||
-                     fromLocation.toLowerCase().includes('beauvais')
-                   );
-                   
-                   if (!isFromAirport) return null;
-                   
-                   return (
-                     <FormField
-                       control={form.control}
-                       name="flightNumber"
-                       render={({ field }) => (
-                         <FormItem>
-                           <FormLabel className="text-xs font-medium">
-                             Flight Number <span className="text-destructive" aria-label="required">*</span>
-                           </FormLabel>
-                           <FormControl>
-                             <Input
-                               placeholder="e.g., AF1234, BA456"
-                               className="h-10 text-sm"
-                               {...field}
-                               aria-describedby={field.name + "-error"}
-                               aria-invalid={!!form.formState.errors.flightNumber}
-                             />
-                           </FormControl>
-                           <FormMessage id={field.name + "-error"} />
-                         </FormItem>
-                       )}
-                     />
-                   );
-                 })()}
-
-                 {/* Date and Time */}
-                <div className="grid grid-cols-2 gap-2">
-                  <FormField
-                    control={form.control}
-                    name="date"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-col">
-                        <FormLabel className="text-xs font-medium mb-1">Pickup date</FormLabel>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <FormControl>
-                              <Button
-                                variant="outline"
-                                className={cn(
-                                  "w-full justify-start text-left font-normal h-10 text-sm",
-                                  !field.value && "text-muted-foreground"
-                                )}
-                                aria-haspopup="dialog"
-                                aria-expanded="false"
-                                aria-describedby={field.name + "-error"}
-                              >
-                                <CalendarIcon className="mr-2 h-4 w-4" aria-hidden="true" />
-                                {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                              </Button>
-                            </FormControl>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={field.value}
-                              onSelect={field.onChange}
-                              disabled={(date) => date < new Date()}
-                              initialFocus
-                              className="pointer-events-auto"
-                            />
-                          </PopoverContent>
-                        </Popover>
-                        <FormMessage id={field.name + "-error"} />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="time"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-col">
-                        <FormLabel className="text-xs font-medium mb-1">Pickup time</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger 
-                              className={cn(
-                                "w-full justify-start text-left font-normal bg-background h-10 text-sm",
-                                !field.value && "text-muted-foreground"
-                              )}
-                              aria-describedby={field.name + "-error"}
-                              aria-invalid={!!form.formState.errors.time}
+                          />
+                        </div>
+                      </div>
+                      
+                      {/* From Suggestions */}
+                      {showFromSuggestions && fromSuggestions.length > 0 && (
+                        <div className="absolute top-full left-12 right-0 z-50 bg-white border border-border rounded-md shadow-lg max-h-48 overflow-y-auto mt-1">
+                          {fromSuggestions.map((suggestion, index) => (
+                            <div
+                              key={index}
+                              className="px-3 py-2 hover:bg-muted cursor-pointer text-sm"
+                              onClick={() => selectSuggestion(suggestion, 'from')}
                             >
-                              <SelectValue placeholder="Select time" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="bg-background border z-50 max-h-60 overflow-y-auto" aria-label="Available pickup times">
-                            {times.map((time) => (
-                              <SelectItem key={time} value={time} className="hover:bg-secondary">
-                                {time}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage id={field.name + "-error"} />
-                      </FormItem>
-                    )}
-                  />
+                              {suggestion}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Dotted line connection */}
+                    <div className="flex items-center space-x-3">
+                      <div className="w-3 flex justify-center">
+                        <div className="w-0.5 h-6 border-l-2 border-dotted border-gray-300"></div>
+                      </div>
+                    </div>
+
+                    {/* To Location */}
+                    <div className="relative">
+                      <div className="flex items-start space-x-3">
+                        <div className="w-3 h-3 bg-gray-600 rounded-full flex-shrink-0 mt-2 relative">
+                          <div className="absolute inset-0.5 bg-white rounded-full"></div>
+                          <div className="absolute inset-1 bg-gray-600 rounded-full"></div>
+                        </div>
+                        <div className="flex-1">
+                          <FormField
+                            control={form.control}
+                            name="toLocation"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Input
+                                    placeholder="To (airport, port, address)"
+                                    {...field}
+                                    onChange={(e) => handleLocationChange(e.target.value, 'to')}
+                                    className="border-0 bg-transparent text-base placeholder:text-gray-500 focus-visible:ring-0 p-0 font-normal"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+                      
+                      {/* To Suggestions */}
+                      {showToSuggestions && toSuggestions.length > 0 && (
+                        <div className="absolute top-full left-12 right-0 z-50 bg-white border border-border rounded-md shadow-lg max-h-48 overflow-y-auto mt-1">
+                          {toSuggestions.map((suggestion, index) => (
+                            <div
+                              key={index}
+                              className="px-3 py-2 hover:bg-muted cursor-pointer text-sm"
+                              onClick={() => selectSuggestion(suggestion, 'to')}
+                            >
+                              {suggestion}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Date and Time Section */}
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Pickup Date */}
+                  <div>
+                    <h4 className="text-base font-medium text-gray-900 mb-3">Pickup date</h4>
+                    <FormField
+                      control={form.control}
+                      name="date"
+                      render={({ field }) => (
+                        <FormItem>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant="outline"
+                                  className={cn(
+                                    "w-full justify-center text-left font-normal h-14 bg-gray-50 border-gray-200 hover:bg-gray-100",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  {field.value ? (
+                                    format(field.value, "PPP")
+                                  ) : (
+                                    <CalendarIcon className="h-5 w-5 text-gray-400" />
+                                  )}
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                disabled={(date) => date < new Date()}
+                                initialFocus
+                                className="pointer-events-auto"
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* Pickup Time */}
+                  <div>
+                    <h4 className="text-base font-medium text-gray-900 mb-3">Pickup time</h4>
+                    <FormField
+                      control={form.control}
+                      name="time"
+                      render={({ field }) => (
+                        <FormItem>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="h-14 bg-gray-50 border-gray-200 hover:bg-gray-100">
+                                <SelectValue placeholder={
+                                  <div className="flex items-center justify-center w-full">
+                                    <ChevronDown className="h-5 w-5 text-gray-400" />
+                                  </div>
+                                } />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {times.map((time) => (
+                                <SelectItem key={time} value={time}>
+                                  {time}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </div>
 
                 {/* Passengers and Luggage */}
-                <div className="grid grid-cols-2 gap-2">
-                  <FormField
-                    control={form.control}
-                    name="passengers"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs font-medium mb-1">Passengers</FormLabel>
-                        <FormControl>
-                          <div className="flex items-center justify-between border rounded-lg p-2 h-10" role="group" aria-label="Number of passengers">
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Passengers */}
+                  <div>
+                    <h4 className="text-base font-medium text-gray-900 mb-3">Passengers</h4>
+                    <FormField
+                      control={form.control}
+                      name="passengers"
+                      render={({ field }) => (
+                        <FormItem>
+                          <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg h-14 px-4">
                             <Button
                               type="button"
                               variant="ghost"
                               size="sm"
+                              className="h-8 w-8 p-0 hover:bg-gray-200"
                               onClick={() => field.onChange(Math.max(1, field.value - 1))}
-                              className="h-6 w-6 p-0 touch-manipulation"
-                              aria-label="Decrease passenger count"
                               disabled={field.value <= 1}
                             >
-                              <Minus className="h-4 w-4" aria-hidden="true" />
+                              <Minus className="h-4 w-4" />
                             </Button>
-                            <div className="flex items-center space-x-1" aria-live="polite">
-                              <Users className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                              <span className="font-medium text-sm" aria-label={`${field.value} passengers selected`}>{field.value}</span>
-                            </div>
+                            <span className="text-lg font-medium text-gray-900">{field.value}</span>
                             <Button
                               type="button"
                               variant="ghost"
                               size="sm"
+                              className="h-8 w-8 p-0 hover:bg-gray-200"
                               onClick={() => field.onChange(Math.min(8, field.value + 1))}
-                              className="h-6 w-6 p-0 touch-manipulation"
-                              aria-label="Increase passenger count"
                               disabled={field.value >= 8}
                             >
-                              <Plus className="h-4 w-4" aria-hidden="true" />
+                              <Plus className="h-4 w-4" />
                             </Button>
                           </div>
-                        </FormControl>
-                        <FormMessage id={field.name + "-error"} />
-                      </FormItem>
-                    )}
-                  />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
-                  <FormField
-                    control={form.control}
-                    name="luggage"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs font-medium mb-1">Luggage pieces</FormLabel>
-                        <FormControl>
-                          <div className="flex items-center justify-between border rounded-lg p-2 h-10" role="group" aria-label="Number of luggage pieces">
+                  {/* Luggage */}
+                  <div>
+                    <h4 className="text-base font-medium text-gray-900 mb-3">Luggage pieces</h4>
+                    <FormField
+                      control={form.control}
+                      name="luggage"
+                      render={({ field }) => (
+                        <FormItem>
+                          <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg h-14 px-4">
                             <Button
                               type="button"
                               variant="ghost"
                               size="sm"
+                              className="h-8 w-8 p-0 hover:bg-gray-200"
                               onClick={() => field.onChange(Math.max(0, field.value - 1))}
-                              className="h-6 w-6 p-0 touch-manipulation"
-                              aria-label="Decrease luggage count"
                               disabled={field.value <= 0}
                             >
-                              <Minus className="h-4 w-4" aria-hidden="true" />
+                              <Minus className="h-4 w-4" />
                             </Button>
-                            <div className="flex items-center space-x-1" aria-live="polite">
-                              <Luggage className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                              <span className="font-medium text-sm" aria-label={`${field.value} luggage pieces selected`}>{field.value}</span>
-                            </div>
+                            <span className="text-lg font-medium text-gray-900">{field.value}</span>
                             <Button
                               type="button"
                               variant="ghost"
                               size="sm"
+                              className="h-8 w-8 p-0 hover:bg-gray-200"
                               onClick={() => field.onChange(Math.min(10, field.value + 1))}
-                              className="h-6 w-6 p-0 touch-manipulation"
-                              aria-label="Increase luggage count"
                               disabled={field.value >= 10}
                             >
-                              <Plus className="h-4 w-4" aria-hidden="true" />
+                              <Plus className="h-4 w-4" />
                             </Button>
                           </div>
-                        </FormControl>
-                        <FormMessage id={field.name + "-error"} />
-                      </FormItem>
-                    )}
-                  />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </div>
 
+                {/* Continue Button */}
                 <Button 
-                  type="button"
-                  onClick={handleContinueToStep2}
-                  className="w-full bg-accent hover:bg-accent/90 text-accent-foreground h-12 text-sm font-medium touch-manipulation mt-3"
+                  type="button" 
+                  onClick={handleNextStep}
+                  className="w-full h-14 bg-emerald-500 hover:bg-emerald-600 text-white font-medium text-base rounded-lg"
+                  disabled={!form.getValues('fromLocation') || !form.getValues('toLocation') || !validFromSelected || !validToSelected}
                 >
                   Continue booking
                 </Button>
               </>
-            ) : currentStep === 2 ? (
-              // Step 2: Contact Information
-              <>
-                <div className="mb-3 text-xs text-muted-foreground text-center">
-                  {form.getValues('fromLocation')} → {form.getValues('toLocation')}
-                  {estimatedPrice && <span className="block">€{estimatedPrice}</span>}
-                </div>
-
-                {/* Contact Information */}
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs font-medium">
-                        Full Name <span className="text-destructive" aria-label="required">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="Your full name" 
-                          className="h-10 text-sm"
-                          {...field} 
-                          aria-describedby={field.name + "-error"}
-                          aria-invalid={!!form.formState.errors.name}
-                          autoComplete="name"
-                        />
-                      </FormControl>
-                      <FormMessage id={field.name + "-error"} />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="grid grid-cols-1 gap-2">
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs font-medium">
-                          Email <span className="text-destructive" aria-label="required">*</span>
-                        </FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" aria-hidden="true" />
-                            <Input
-                              type="email"
-                              placeholder="your@email.com"
-                              className="pl-10 h-10 text-sm"
-                              value={field.value || ""}
-                              onChange={field.onChange}
-                              onBlur={field.onBlur}
-                              name={field.name}
-                              aria-describedby={field.name + "-error"}
-                              aria-invalid={!!form.formState.errors.email}
-                              autoComplete="email"
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage id={field.name + "-error"} />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="phone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs font-medium">
-                          Phone <span className="text-destructive" aria-label="required">*</span>
-                        </FormLabel>
-                        <FormControl>
-                          <div className="flex gap-2">
-                            {/* Country Code Dropdown */}
-                            <Select 
-                              value={selectedCountryCode} 
-                              onValueChange={(newCode) => {
-                                setSelectedCountryCode(newCode);
-                                // Update the phone field with new country code if there's an existing number
-                                const currentPhone = field.value || "";
-                                const numberPart = currentPhone.replace(/^\+\d+\s?/, '').trim();
-                                if (numberPart) {
-                                  field.onChange(`${newCode} ${numberPart}`);
-                                }
-                              }}
-                            >
-                              <SelectTrigger className="w-[110px] sm:w-[130px] h-10 text-xs sm:text-sm px-2">
-                                <SelectValue placeholder="Code" />
-                              </SelectTrigger>
-                              <SelectContent className="bg-background border border-border shadow-lg z-50">
-                                {countryCodes.map((country) => (
-                                  <SelectItem key={country.code} value={country.code}>
-                                    <span className="flex items-center gap-1 text-xs sm:text-sm">
-                                      <span className="text-xs">{country.flag}</span>
-                                      <span className="font-mono text-xs">{country.code}</span>
-                                    </span>
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            
-                            {/* Phone Number Input */}
-                            <div className="relative flex-1">
-                              <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" aria-hidden="true" />
-                              <Input
-                                type="tel"
-                                placeholder={selectedCountryCode === "+1" ? "555 123 4567" : "6 12 34 56 78"}
-                                className="pl-10 h-10 text-sm"
-                                value={
-                                  field.value 
-                                    ? field.value.replace(selectedCountryCode, '').trim() 
-                                    : ""
-                                }
-                                onChange={(e) => {
-                                  // Only store the number part, system will combine with country code
-                                  const phoneNumber = e.target.value.trim();
-                                  const fullNumber = phoneNumber ? `${selectedCountryCode} ${phoneNumber}` : "";
-                                  field.onChange(fullNumber);
-                                }}
-                                onBlur={field.onBlur}
-                                name={field.name}
-                                aria-describedby={field.name + "-error"}
-                                aria-invalid={!!form.formState.errors.phone}
-                                autoComplete="tel"
-                              />
-                            </div>
-                          </div>
-                        </FormControl>
-                        <FormMessage id={field.name + "-error"} />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                {/* Special Requests */}
-                <div className="space-y-2">
-                  <div className="text-xs font-medium">Special Requests (Optional)</div>
-                  
-                  {/* Child Seat Option */}
-                  <FormField
-                    control={form.control}
-                    name="childSeat"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel className="flex items-center gap-2 text-sm font-normal cursor-pointer">
-                            <Baby className="h-4 w-4" />
-                            Child Seat
-                          </FormLabel>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Child Seat Type Options - Show when child seat is checked */}
-                  {form.watch("childSeat") && (
-                    <div className="ml-6 space-y-2">
-                      <div className="text-xs text-muted-foreground mb-1">Select quantities:</div>
-                      
-                      {/* Infant Carrier Quantity */}
-                      <FormField
-                        control={form.control}
-                        name="infantCarrierQty"
-                        render={({ field }) => (
-                           <FormItem className="py-1">
-                             <div className="flex items-center justify-between">
-                               <FormLabel className="flex items-center gap-1 text-xs">
-                                 <Baby className="h-3 w-3" />
-                                 Infant carrier (0-6 months)
-                               </FormLabel>
-                               <div className="flex items-center gap-1">
-                                 <Button
-                                   type="button"
-                                   variant="outline"
-                                   size="sm"
-                                   className="h-6 w-6 p-0"
-                                  onClick={() => field.onChange(Math.max(0, (field.value || 0) - 1))}
-                                  disabled={(field.value || 0) <= 0}
-                                >
-                                   <Minus className="h-2 w-2" />
-                                 </Button>
-                                 <span className="w-6 text-center text-xs">{field.value || 0}</span>
-                                 <Button
-                                   type="button"
-                                   variant="outline"
-                                   size="sm"
-                                   className="h-6 w-6 p-0"
-                                  onClick={() => field.onChange(Math.min(4, (field.value || 0) + 1))}
-                                  disabled={(field.value || 0) >= 4}
-                                >
-                                   <Plus className="h-2 w-2" />
-                                 </Button>
-                              </div>
-                            </div>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      {/* Child Seat Quantity */}
-                       <FormField
-                         control={form.control}
-                         name="childSeatQty"
-                         render={({ field }) => (
-                           <FormItem className="py-1">
-                             <div className="flex items-center justify-between">
-                               <FormLabel className="flex items-center gap-1 text-xs">
-                                 <User className="h-3 w-3" />
-                                 Child seat (6 months - 3 years)
-                               </FormLabel>
-                               <div className="flex items-center gap-1">
-                                 <Button
-                                   type="button"
-                                   variant="outline"
-                                   size="sm"
-                                   className="h-6 w-6 p-0"
-                                   onClick={() => field.onChange(Math.max(0, (field.value || 0) - 1))}
-                                   disabled={(field.value || 0) <= 0}
-                                 >
-                                   <Minus className="h-2 w-2" />
-                                 </Button>
-                                 <span className="w-6 text-center text-xs">{field.value || 0}</span>
-                                 <Button
-                                   type="button"
-                                   variant="outline"
-                                   size="sm"
-                                   className="h-6 w-6 p-0"
-                                   onClick={() => field.onChange(Math.min(4, (field.value || 0) + 1))}
-                                   disabled={(field.value || 0) >= 4}
-                                 >
-                                   <Plus className="h-2 w-2" />
-                                 </Button>
-                               </div>
-                            </div>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      {/* Booster Quantity */}
-                       <FormField
-                         control={form.control}
-                         name="boosterQty"
-                         render={({ field }) => (
-                           <FormItem className="py-1">
-                             <div className="flex items-center justify-between">
-                               <FormLabel className="flex items-center gap-1 text-xs">
-                                 <UserCheck className="h-3 w-3" />
-                                 Booster (3-12 years)
-                               </FormLabel>
-                               <div className="flex items-center gap-1">
-                                 <Button
-                                   type="button"
-                                   variant="outline"
-                                   size="sm"
-                                   className="h-6 w-6 p-0"
-                                   onClick={() => field.onChange(Math.max(0, (field.value || 0) - 1))}
-                                   disabled={(field.value || 0) <= 0}
-                                 >
-                                   <Minus className="h-2 w-2" />
-                                 </Button>
-                                 <span className="w-6 text-center text-xs">{field.value || 0}</span>
-                                 <Button
-                                   type="button"
-                                   variant="outline"
-                                   size="sm"
-                                   className="h-6 w-6 p-0"
-                                   onClick={() => field.onChange(Math.min(4, (field.value || 0) + 1))}
-                                   disabled={(field.value || 0) >= 4}
-                                 >
-                                   <Plus className="h-2 w-2" />
-                                 </Button>
-                               </div>
-                            </div>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  )}
-
-                  {/* Wheelchair Access Option */}
-                  <FormField
-                    control={form.control}
-                    name="wheelchairAccess"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel className="flex items-center gap-2 text-sm font-normal cursor-pointer">
-                            <Accessibility className="h-4 w-4" />
-                            Wheelchair Access
-                          </FormLabel>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Notes to Driver Option */}
-                  <FormField
-                    control={form.control}
-                    name="notesToDriver"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel className="flex items-center gap-2 text-sm font-normal cursor-pointer">
-                            <FileText className="h-4 w-4" />
-                            Notes to Driver
-                          </FormLabel>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Driver Notes Text Area - Show when notes to driver is checked */}
-                  {form.watch("notesToDriver") && (
-                    <div className="ml-7">
-                      <FormField
-                        control={form.control}
-                        name="driverNotes"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Textarea
-                                placeholder="Please provide any additional information for the driver..."
-                                className="min-h-[80px] text-sm"
-                                {...field}
-                                maxLength={500}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex gap-2 mt-12">
-                  <Button 
-                    type="button"
-                    variant="outline"
-                    onClick={() => setCurrentStep(1)}
-                    className="flex-1 h-12 text-sm"
-                  >
-                    Back
-                  </Button>
-                  <Button 
-                    type="button"
-                    onClick={handleContinueToStep3}
-                    className="flex-1 bg-accent hover:bg-accent/90 text-accent-foreground h-12 text-sm font-medium touch-manipulation"
-                  >
-                    Continue to Payment
-                  </Button>
-                </div>
-              </>
-            ) : (
-              // Step 3: Payment Method
-              <>
-                <div className="mb-3 text-xs text-muted-foreground text-center">
-                  {form.getValues('fromLocation')} → {form.getValues('toLocation')}
-                  {estimatedPrice && <span className="block">€{estimatedPrice}</span>}
-                </div>
-
-                {/* Payment Method Selection */}
-                <FormField
-                  control={form.control}
-                  name="paymentCategory"
-                  render={({ field }) => (
-                    <FormItem className="space-y-3">
-                      <FormLabel className="text-xs font-medium">
-                        Payment Method <span className="text-destructive" aria-label="required">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          value={field.value}
-                          className="grid gap-3"
-                        >
-                          {/* Pay Driver Directly */}
-                          <div className="border rounded-lg">
-                            <div className="flex items-center space-x-3 p-3 hover:bg-secondary/50 transition-colors">
-                              <RadioGroupItem value="driver_direct" id="driver_direct" />
-                              <label htmlFor="driver_direct" className="flex items-center gap-2 text-sm font-medium cursor-pointer flex-1">
-                                <Car className="h-4 w-4 text-muted-foreground" />
-                                Pay Driver Directly
-                              </label>
-                            </div>
-                            
-                            {/* Driver Direct Sub-options */}
-                            {form.watch("paymentCategory") === "driver_direct" && (
-                              <div className="px-3 pb-3 ml-6 space-y-2 border-t bg-secondary/20">
-                                <div className="text-xs text-muted-foreground pt-2 mb-2">Choose payment option:</div>
-                                <FormField
-                                  control={form.control}
-                                  name="paymentMethod"
-                                  render={({ field: subField }) => (
-                                    <RadioGroup
-                                      onValueChange={subField.onChange}
-                                      value={subField.value}
-                                      className="space-y-2"
-                                    >
-                                      <div className="flex items-center space-x-2 p-2 border rounded hover:bg-background transition-colors">
-                                        <RadioGroupItem value="cash" id="cash_driver" />
-                                        <label htmlFor="cash_driver" className="flex items-center gap-2 text-sm cursor-pointer flex-1">
-                                          <DollarSign className="h-3 w-3 text-muted-foreground" />
-                                          Cash
-                                        </label>
-                                      </div>
-                                      
-                                      <div className="flex items-center space-x-2 p-2 border rounded hover:bg-background transition-colors">
-                                        <RadioGroupItem value="card" id="card_driver" />
-                                        <label htmlFor="card_driver" className="flex items-center gap-2 text-sm cursor-pointer flex-1">
-                                          <CreditCard className="h-3 w-3 text-muted-foreground" />
-                                          Card
-                                        </label>
-                                      </div>
-                                    </RadioGroup>
-                                  )}
-                                />
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Pay Online */}
-                          <div className="border rounded-lg">
-                            <div className="flex items-center space-x-3 p-3 hover:bg-secondary/50 transition-colors">
-                              <RadioGroupItem value="online" id="online" />
-                              <label htmlFor="online" className="flex items-center gap-2 text-sm font-medium cursor-pointer flex-1">
-                                <Globe className="h-4 w-4 text-muted-foreground" />
-                                Pay Online
-                              </label>
-                            </div>
-                          </div>
-                        </RadioGroup>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="flex gap-2 mt-4">
-                  <Button 
-                    type="button"
-                    variant="outline"
-                    onClick={() => setCurrentStep(2)}
-                    className="flex-1 h-12 text-sm"
-                  >
-                    Back
-                  </Button>
-                  <Button 
-                    type="submit" 
-                    className="flex-1 bg-accent hover:bg-accent/90 text-accent-foreground h-12 text-sm font-medium touch-manipulation"
-                    disabled={isSubmitting || !form.getValues('paymentCategory') || (form.getValues('paymentCategory') === 'driver_direct' && !form.getValues('paymentMethod'))}
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
-                        Processing...
-                      </>
-                    ) : (
-                      "Complete Booking"
-                    )}
-                  </Button>
-                </div>
-              </>
             )}
 
-            {/* Hidden honeypot field for bot detection */}
-            <FormField
-              control={form.control}
-              name="honeypot"
-              render={({ field }) => (
-                <div style={{ display: 'none' }} aria-hidden="true">
-                  <Input
-                    {...field}
-                    tabIndex={-1}
-                    autoComplete="off"
-                  />
-                </div>
-              )}
-            />
+            {/* Additional steps can be added here */}
           </form>
         </Form>
       </CardContent>
