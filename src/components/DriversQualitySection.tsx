@@ -61,8 +61,8 @@ const DriversQualitySection = () => {
                 </div>
 
                 {/* Driver Image */}
-                <div className="lg:w-1/3 relative">
-                  <div className="aspect-square lg:aspect-auto lg:h-80 bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center overflow-hidden">
+                <div className="lg:w-1/4 relative">
+                  <div className="aspect-square lg:aspect-auto lg:h-48 bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center overflow-hidden">
                     <img 
                       src={driverProfile.image}
                       alt={`${driverProfile.name} - Professional Driver`}
@@ -72,7 +72,7 @@ const DriversQualitySection = () => {
                 </div>
 
                 {/* Driver Info */}
-                <div className="lg:w-2/3 p-8 lg:p-12 flex flex-col justify-center">
+                <div className="lg:w-3/4 p-8 lg:p-12 flex flex-col justify-center">
                   <h3 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-4">
                     {driverProfile.name}
                   </h3>
