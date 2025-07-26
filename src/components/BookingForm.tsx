@@ -187,16 +187,17 @@ const BookingForm = () => {
         return 150; // Fixed price for Beauvais
       }
       
-      // Check for Charles de Gaulle Airport + Paris (75xxx) combination
+      // Check for Charles de Gaulle Airport + Paris combination
       const isCDGRoute = (fromLower.includes('charles de gaulle') || fromLower.includes('cdg')) ||
                          (toLower.includes('charles de gaulle') || toLower.includes('cdg'));
-      const isParisAddress = from.includes('75') || to.includes('75');
+      const isParisAddress = from.includes('75') || to.includes('75') || 
+                            fromLower.includes('paris') || toLower.includes('paris');
       
       if (isCDGRoute && isParisAddress) {
         return 75; // Fixed price for CDG + Paris
       }
       
-      // Check for Orly Airport + Paris (75xxx) combination
+      // Check for Orly Airport + Paris combination
       const isOrlyRoute = (fromLower.includes('orly') || fromLower.includes('ory')) ||
                           (toLower.includes('orly') || toLower.includes('ory'));
       
