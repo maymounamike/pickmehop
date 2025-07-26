@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { MapPin, Calendar, Clock, Users, Car, Phone, Mail, UserPlus, LogOut, Settings } from "lucide-react";
+import { MapPin, Calendar, Clock, Users, Car, Phone, Mail, UserPlus, LogOut, Settings, Home } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
@@ -294,6 +294,13 @@ const AdminDashboard = () => {
             <p className="text-gray-600">Manage bookings and drivers</p>
           </div>
           <div className="flex gap-2">
+            <Button 
+              variant="outline"
+              onClick={() => navigate("/dashboard")}
+            >
+              <Home className="w-4 h-4 mr-2" />
+              Home
+            </Button>
             <Dialog>
               <DialogTrigger asChild>
                 <Button variant="outline">
