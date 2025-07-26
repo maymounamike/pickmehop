@@ -212,21 +212,21 @@ const BookingForm = () => {
     const queryLower = query.toLowerCase();
     const presets: string[] = [];
 
-    // Charles de Gaulle Airport keywords
-    if (['cdg', 'charles', 'gaulle', 'roissy', 'airport'].some(keyword => 
-        queryLower.includes(keyword) || keyword.includes(queryLower))) {
+    // Charles de Gaulle Airport keywords - match from first character
+    if (['c', 'ch', 'cha', 'char', 'charl', 'charles', 'cdg', 'g', 'ga', 'gau', 'gaul', 'gaulle', 'r', 'ro', 'roi', 'rois', 'roiss', 'roissy', 'a', 'ai', 'air', 'airp', 'airpo', 'airpor', 'airport'].some(keyword => 
+        queryLower.startsWith(keyword) || keyword.startsWith(queryLower))) {
       presets.push('Charles de Gaulle International Airport, Tremblay-en-France 93290');
     }
 
-    // Orly Airport keywords
-    if (['orly', 'ory', 'airport'].some(keyword => 
-        queryLower.includes(keyword) || keyword.includes(queryLower))) {
+    // Orly Airport keywords - match from first character
+    if (['o', 'or', 'orl', 'orly', 'ory', 'a', 'ai', 'air', 'airp', 'airpo', 'airpor', 'airport'].some(keyword => 
+        queryLower.startsWith(keyword) || keyword.startsWith(queryLower))) {
       presets.push('Orly Airport, Orly 94390');
     }
 
-    // Beauvais Airport keywords
-    if (['beauvais', 'bva', 'tillé', 'airport'].some(keyword => 
-        queryLower.includes(keyword) || keyword.includes(queryLower))) {
+    // Beauvais Airport keywords - match from first character
+    if (['b', 'be', 'bea', 'beau', 'beauv', 'beauva', 'beauvai', 'beauvais', 'bva', 't', 'ti', 'til', 'till', 'tillé', 'a', 'ai', 'air', 'airp', 'airpo', 'airpor', 'airport'].some(keyword => 
+        queryLower.startsWith(keyword) || keyword.startsWith(queryLower))) {
       presets.push('Beauvais-Tillé Airport, Tillé 60000');
     }
 
@@ -235,7 +235,7 @@ const BookingForm = () => {
 
   // Hotel suggestion function for Paris hotels
   const fetchHotelSuggestions = async (query: string) => {
-    if (query.length < 2) return [];
+    if (query.length < 1) return [];
     
     try {
       const { data, error } = await supabase.functions.invoke('get-paris-hotels', {
@@ -256,38 +256,24 @@ const BookingForm = () => {
 
   // Enhanced address suggestion function that includes hotels
   const fetchAddressSuggestions = async (query: string) => {
-    // First check for airport presets (minimum 2 characters)
-    if (query.length >= 2) {
+    // First check for airport presets (minimum 1 character)
+    if (query.length >= 1) {
       const airportPresets = getAirportPresets(query);
       if (airportPresets.length > 0) {
         return airportPresets;
       }
     }
 
-    // Check for hotel suggestions if query might be a hotel
-    if (query.length >= 2 && (
-      query.toLowerCase().includes('hotel') || 
-      query.toLowerCase().includes('ritz') ||
-      query.toLowerCase().includes('plaza') ||
-      query.toLowerCase().includes('hilton') ||
-      query.toLowerCase().includes('marriott') ||
-      query.toLowerCase().includes('hyatt') ||
-      query.toLowerCase().includes('bristol') ||
-      query.toLowerCase().includes('costes') ||
-      query.toLowerCase().includes('georges') ||
-      query.toLowerCase().includes('george') ||
-      query.toLowerCase().includes('peninsula') ||
-      query.toLowerCase().includes('meurice') ||
-      query.toLowerCase().includes('crillon') ||
-      query.toLowerCase().includes('shangri')
-    )) {
+    // Always check for hotel suggestions for any query with 1+ character
+    if (query.length >= 1) {
       const hotelSuggestions = await fetchHotelSuggestions(query);
       if (hotelSuggestions.length > 0) {
         return hotelSuggestions;
       }
     }
 
-    if (query.length < 3) return [];
+    // For general address suggestions, reduce minimum to 2 characters
+    if (query.length < 2) return [];
     
     try {
       // Get Google Maps API key from Supabase function
@@ -334,7 +320,7 @@ const BookingForm = () => {
   // Handle address input changes with suggestions
   const handleFromLocationChange = async (value: string) => {
     form.setValue('fromLocation', value);
-    if (value.length >= 2) {
+    if (value.length >= 1) {
       const suggestions = await fetchAddressSuggestions(value);
       setFromSuggestions(suggestions);
       setShowFromSuggestions(true);
@@ -345,7 +331,7 @@ const BookingForm = () => {
 
   const handleToLocationChange = async (value: string) => {
     form.setValue('toLocation', value);
-    if (value.length >= 2) {
+    if (value.length >= 1) {
       const suggestions = await fetchAddressSuggestions(value);
       setToSuggestions(suggestions);
       setShowToSuggestions(true);
