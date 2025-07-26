@@ -101,7 +101,7 @@ const Header = () => {
     <header className={`absolute top-0 left-0 right-0 z-50 transition-all duration-300 ${
       isScrolled 
         ? 'bg-black/90 backdrop-blur-sm border-b border-white/10 shadow-lg' 
-        : 'bg-transparent'
+        : 'bg-black/80 backdrop-blur-sm'
     }`}>
       <div className="container mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
         <div className="flex items-center space-x-2">
@@ -117,24 +117,44 @@ const Header = () => {
           {user ? (
             <>
               {userRole === 'admin' && (
-                <Button 
-                  variant="ghost" 
-                  className="text-white hover:text-accent hover:bg-white/10"
-                  onClick={() => navigate("/admin")}
-                >
-                  <User className="mr-2 h-4 w-4" />
-                  Admin Panel
-                </Button>
+                <>
+                  <Button 
+                    variant="ghost" 
+                    className="text-white hover:text-accent hover:bg-white/10"
+                    onClick={() => navigate("/admin")}
+                  >
+                    <User className="mr-2 h-4 w-4" />
+                    Admin Dashboard
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    className="text-white hover:text-accent hover:bg-white/10"
+                    onClick={() => navigate("/drivers")}
+                  >
+                    <User className="mr-2 h-4 w-4" />
+                    Driver Management
+                  </Button>
+                </>
               )}
               {userRole === 'driver' && (
-                <Button 
-                  variant="ghost" 
-                  className="text-white hover:text-accent hover:bg-white/10"
-                  onClick={() => navigate("/driver")}
-                >
-                  <User className="mr-2 h-4 w-4" />
-                  Driver Dashboard
-                </Button>
+                <>
+                  <Button 
+                    variant="ghost" 
+                    className="text-white hover:text-accent hover:bg-white/10"
+                    onClick={() => navigate("/driver")}
+                  >
+                    <User className="mr-2 h-4 w-4" />
+                    Driver Dashboard
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    className="text-white hover:text-accent hover:bg-white/10"
+                    onClick={() => navigate("/driver/scheduled")}
+                  >
+                    <User className="mr-2 h-4 w-4" />
+                    Scheduled Rides
+                  </Button>
+                </>
               )}
               {(userRole === 'user' || !userRole) && (
                 <Button 
@@ -155,7 +175,16 @@ const Header = () => {
                 Sign Out
               </Button>
             </>
-          ) : null}
+          ) : (
+            <Button 
+              variant="ghost" 
+              className="text-white hover:text-accent hover:bg-white/10"
+              onClick={() => navigate("/auth")}
+            >
+              <User className="mr-2 h-4 w-4" />
+              Sign In
+            </Button>
+          )}
           
           <HelpDialog>
             <Button variant="ghost" className="text-white hover:text-accent hover:bg-white/10 text-sm sm:text-base min-h-[44px] px-3 sm:px-4">
