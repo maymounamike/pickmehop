@@ -20,8 +20,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { sanitizeText, validateEmail, validatePhone, ClientRateLimit, detectBotBehavior, generateCSRFToken } from "@/lib/security";
 
 const bookingSchema = z.object({
-  fromLocation: z.string().min(3, "From location must be at least 3 characters").max(200, "Location too long"),
-  toLocation: z.string().min(3, "To location must be at least 3 characters").max(200, "Location too long"),
+  fromLocation: z.string().min(3, "From location must be at least 3 characters").max(200, "Location too long").refine((val) => {
+    // Will be validated by component state - this is just a backup
+    return val.length >= 3;
+  }, "Please select a valid address from the suggestions"),
+  toLocation: z.string().min(3, "To location must be at least 3 characters").max(200, "Location too long").refine((val) => {
+    // Will be validated by component state - this is just a backup  
+    return val.length >= 3;
+  }, "Please select a valid address from the suggestions"),
   date: z.date().optional(),
   time: z.string().min(1, "Please select a pickup time"),
   passengers: z.number().min(1, "At least 1 passenger required").max(8, "Maximum 8 passengers"),
@@ -62,6 +68,9 @@ const BookingForm = () => {
   const [toSuggestions, setToSuggestions] = useState<string[]>([]);
   const [showFromSuggestions, setShowFromSuggestions] = useState(false);
   const [showToSuggestions, setShowToSuggestions] = useState(false);
+  const [validFromSelected, setValidFromSelected] = useState(false);
+  const [validToSelected, setValidToSelected] = useState(false);
+  const [allSuggestions, setAllSuggestions] = useState<string[]>([]); // Track all generated suggestions
   const [formKey, setFormKey] = useState(0); // Key to force form remount
   const [user, setUser] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
@@ -314,6 +323,11 @@ const BookingForm = () => {
 
     // Return combined suggestions if we have any
     if (suggestions.length > 0) {
+      // Update the global suggestions list for validation
+      setAllSuggestions(prev => {
+        const combined = [...new Set([...prev, ...suggestions])];
+        return combined;
+      });
       return suggestions.slice(0, 8); // Limit to 8 suggestions total
     }
 
@@ -349,6 +363,11 @@ const BookingForm = () => {
         }, (predictions, status) => {
           if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
             const suggestions = predictions.map(prediction => prediction.description);
+            // Update the global suggestions list for validation
+            setAllSuggestions(prev => {
+              const combined = [...new Set([...prev, ...suggestions])];
+              return combined;
+            });
             resolve(suggestions.slice(0, 5)); // Limit to 5 suggestions
           } else {
             console.error('Places service error:', status);
@@ -365,6 +384,8 @@ const BookingForm = () => {
   // Handle address input changes with suggestions
   const handleFromLocationChange = async (value: string) => {
     form.setValue('fromLocation', value);
+    setValidFromSelected(false); // Reset validation when user types
+    
     if (value.length >= 1) {
       const suggestions = await fetchAddressSuggestions(value);
       setFromSuggestions(suggestions);
@@ -376,6 +397,8 @@ const BookingForm = () => {
 
   const handleToLocationChange = async (value: string) => {
     form.setValue('toLocation', value);
+    setValidToSelected(false); // Reset validation when user types
+    
     if (value.length >= 1) {
       const suggestions = await fetchAddressSuggestions(value);
       setToSuggestions(suggestions);
@@ -387,12 +410,16 @@ const BookingForm = () => {
 
   const selectFromSuggestion = (suggestion: string) => {
     form.setValue('fromLocation', suggestion);
+    setValidFromSelected(true); // Mark as valid selection
     setShowFromSuggestions(false);
+    form.clearErrors('fromLocation'); // Clear any validation errors
   };
 
   const selectToSuggestion = (suggestion: string) => {
     form.setValue('toLocation', suggestion);
+    setValidToSelected(true); // Mark as valid selection
     setShowToSuggestions(false);
+    form.clearErrors('toLocation'); // Clear any validation errors
   };
 
   // Validate step 1 fields
@@ -400,13 +427,28 @@ const BookingForm = () => {
     const values = form.getValues();
     const errors = [];
     
+    // Check if valid addresses are selected
+    if (!validFromSelected && values.fromLocation) {
+      form.setError('fromLocation', { 
+        message: 'Please select a valid address from the suggestions' 
+      });
+      errors.push('fromLocation');
+    }
+
+    if (!validToSelected && values.toLocation) {
+      form.setError('toLocation', { 
+        message: 'Please select a valid address from the suggestions' 
+      });
+      errors.push('toLocation');
+    }
+    
     if (!values.fromLocation || values.fromLocation.length < 3) errors.push('fromLocation');
     if (!values.toLocation || values.toLocation.length < 3) errors.push('toLocation');
     if (!values.time) errors.push('time');
     
     // Check if flight number is required for airport pickup
     const isFromAirport = values.fromLocation && (
-      values.fromLocation.toLowerCase().includes('airport') || 
+      values.fromLocation.toLowerCase().includes('airport') ||
       values.fromLocation.toLowerCase().includes('cdg') ||
       values.fromLocation.toLowerCase().includes('orly') ||
       values.fromLocation.toLowerCase().includes('beauvais')
