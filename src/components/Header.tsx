@@ -125,7 +125,16 @@ const Header = () => {
                 Sign Out
               </Button>
             </>
-          ) : null}
+          ) : (
+            <Button 
+              variant="ghost" 
+              className="text-white hover:text-accent hover:bg-white/10"
+              onClick={() => navigate("/auth")}
+            >
+              <User className="mr-2 h-4 w-4" />
+              Sign In
+            </Button>
+          )}
           
           <HelpDialog>
             <Button variant="ghost" className="text-white hover:text-accent hover:bg-white/10 text-sm sm:text-base min-h-[44px] px-3 sm:px-4">
