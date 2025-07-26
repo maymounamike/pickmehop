@@ -1,10 +1,11 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight, CheckCircle, Search, Shield, Users } from "lucide-react";
+import driverMichael from "@/assets/driver-michael.jpg";
 
 const DriversQualitySection = () => {
   const driverProfile = {
     name: "Michael",
-    image: "/lovable-uploads/3c984b11-3039-48a9-a10d-a9013e0bda3a.png",
+    image: driverMichael,
     description: "100% Parisian and in love with showing visitors the hidden gems of Paris. He knows the most authentic places in town, far away from tourist traps.",
     car: "Mercedes",
     languages: "English, French, Spanish"
@@ -61,11 +62,11 @@ const DriversQualitySection = () => {
 
                 {/* Driver Image */}
                 <div className="lg:w-1/3 relative">
-                  <div className="aspect-square lg:aspect-auto lg:h-80 bg-gradient-to-br from-blue-50 to-blue-100 flex items-end justify-center overflow-hidden">
+                  <div className="aspect-square lg:aspect-auto lg:h-80 bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center overflow-hidden">
                     <img 
                       src={driverProfile.image}
                       alt={`${driverProfile.name} - Professional Driver`}
-                      className="w-full h-full object-cover object-center"
+                      className="w-full h-full object-cover"
                     />
                   </div>
                 </div>
