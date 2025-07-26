@@ -40,7 +40,9 @@ const bookingSchema = z.object({
   flightNumber: z.string().optional(),
   specialRequests: z.string().max(500, "Special requests too long").optional(),
   childSeat: z.boolean().optional(),
-  childSeatType: z.enum(["infant", "child", "booster"]).optional(),
+  infantCarrierQty: z.number().min(0).max(4).optional(),
+  childSeatQty: z.number().min(0).max(4).optional(),
+  boosterQty: z.number().min(0).max(4).optional(),
   wheelchairAccess: z.boolean().optional(),
   notesToDriver: z.boolean().optional(),
   driverNotes: z.string().max(500, "Notes too long").optional(),
@@ -119,7 +121,9 @@ const BookingForm = () => {
       phone: "",
       specialRequests: "",
       childSeat: false,
-      childSeatType: undefined,
+      infantCarrierQty: 0,
+      childSeatQty: 0,
+      boosterQty: 0,
       wheelchairAccess: false,
       notesToDriver: false,
       driverNotes: "",
@@ -586,13 +590,20 @@ const BookingForm = () => {
     try {
       // Build special requests string from checkbox options
       const specialRequestsArray = [];
-      if (data.childSeat && data.childSeatType) {
-        const childSeatLabels = {
-          infant: "Infant carrier (0-6 months)",
-          child: "Child seat (6 months - 3 years)",
-          booster: "Booster (3-12 years)"
-        };
-        specialRequestsArray.push(`Child seat: ${childSeatLabels[data.childSeatType]}`);
+      if (data.childSeat) {
+        const childSeatRequests = [];
+        if (data.infantCarrierQty && data.infantCarrierQty > 0) {
+          childSeatRequests.push(`${data.infantCarrierQty} Infant carrier(s) (0-6 months)`);
+        }
+        if (data.childSeatQty && data.childSeatQty > 0) {
+          childSeatRequests.push(`${data.childSeatQty} Child seat(s) (6 months - 3 years)`);
+        }
+        if (data.boosterQty && data.boosterQty > 0) {
+          childSeatRequests.push(`${data.boosterQty} Booster(s) (3-12 years)`);
+        }
+        if (childSeatRequests.length > 0) {
+          specialRequestsArray.push(`Child seats: ${childSeatRequests.join(', ')}`);
+        }
       }
       if (data.wheelchairAccess) {
         specialRequestsArray.push("Wheelchair access required");
@@ -1155,38 +1166,115 @@ const BookingForm = () => {
 
                   {/* Child Seat Type Options - Show when child seat is checked */}
                   {form.watch("childSeat") && (
-                    <div className="ml-7 space-y-2">
+                    <div className="ml-7 space-y-4">
+                      <div className="text-xs text-muted-foreground">Select quantities needed:</div>
+                      
+                      {/* Infant Carrier Quantity */}
                       <FormField
                         control={form.control}
-                        name="childSeatType"
+                        name="infantCarrierQty"
                         render={({ field }) => (
-                          <FormItem className="space-y-3">
-                            <FormControl>
-                              <RadioGroup
-                                onValueChange={field.onChange}
-                                value={field.value}
-                                className="flex flex-col space-y-2"
-                              >
-                                <div className="flex items-center space-x-2">
-                                  <RadioGroupItem value="infant" id="infant" />
-                                  <label htmlFor="infant" className="text-sm cursor-pointer">
-                                    Infant carrier (0-6 months)
-                                  </label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                  <RadioGroupItem value="child" id="child" />
-                                  <label htmlFor="child" className="text-sm cursor-pointer">
-                                    Child seat (6 months - 3 years)
-                                  </label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                  <RadioGroupItem value="booster" id="booster" />
-                                  <label htmlFor="booster" className="text-sm cursor-pointer">
-                                    Booster (3-12 years)
-                                  </label>
-                                </div>
-                              </RadioGroup>
-                            </FormControl>
+                          <FormItem>
+                            <div className="flex items-center justify-between">
+                              <FormLabel className="text-sm">Infant carrier (0-6 months)</FormLabel>
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 w-8 p-0"
+                                  onClick={() => field.onChange(Math.max(0, (field.value || 0) - 1))}
+                                  disabled={(field.value || 0) <= 0}
+                                >
+                                  <Minus className="h-3 w-3" />
+                                </Button>
+                                <span className="w-8 text-center text-sm">{field.value || 0}</span>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 w-8 p-0"
+                                  onClick={() => field.onChange(Math.min(4, (field.value || 0) + 1))}
+                                  disabled={(field.value || 0) >= 4}
+                                >
+                                  <Plus className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Child Seat Quantity */}
+                      <FormField
+                        control={form.control}
+                        name="childSeatQty"
+                        render={({ field }) => (
+                          <FormItem>
+                            <div className="flex items-center justify-between">
+                              <FormLabel className="text-sm">Child seat (6 months - 3 years)</FormLabel>
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 w-8 p-0"
+                                  onClick={() => field.onChange(Math.max(0, (field.value || 0) - 1))}
+                                  disabled={(field.value || 0) <= 0}
+                                >
+                                  <Minus className="h-3 w-3" />
+                                </Button>
+                                <span className="w-8 text-center text-sm">{field.value || 0}</span>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 w-8 p-0"
+                                  onClick={() => field.onChange(Math.min(4, (field.value || 0) + 1))}
+                                  disabled={(field.value || 0) >= 4}
+                                >
+                                  <Plus className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Booster Quantity */}
+                      <FormField
+                        control={form.control}
+                        name="boosterQty"
+                        render={({ field }) => (
+                          <FormItem>
+                            <div className="flex items-center justify-between">
+                              <FormLabel className="text-sm">Booster (3-12 years)</FormLabel>
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 w-8 p-0"
+                                  onClick={() => field.onChange(Math.max(0, (field.value || 0) - 1))}
+                                  disabled={(field.value || 0) <= 0}
+                                >
+                                  <Minus className="h-3 w-3" />
+                                </Button>
+                                <span className="w-8 text-center text-sm">{field.value || 0}</span>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 w-8 p-0"
+                                  onClick={() => field.onChange(Math.min(4, (field.value || 0) + 1))}
+                                  disabled={(field.value || 0) >= 4}
+                                >
+                                  <Plus className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </div>
                             <FormMessage />
                           </FormItem>
                         )}
