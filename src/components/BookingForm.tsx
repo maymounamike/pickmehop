@@ -1028,15 +1028,15 @@ const BookingForm = () => {
                                 }
                               }}
                             >
-                              <SelectTrigger className="w-[120px] h-10">
+                              <SelectTrigger className="w-[100px] sm:w-[120px] h-10 text-xs sm:text-sm">
                                 <SelectValue placeholder="Code" />
                               </SelectTrigger>
                               <SelectContent className="bg-background border border-border shadow-lg z-50">
                                 {countryCodes.map((country) => (
                                   <SelectItem key={country.code} value={country.code}>
-                                    <span className="flex items-center gap-2">
-                                      <span>{country.flag}</span>
-                                      <span>{country.code}</span>
+                                    <span className="flex items-center gap-1 text-xs sm:text-sm">
+                                      <span className="text-sm">{country.flag}</span>
+                                      <span className="font-mono">{country.code}</span>
                                     </span>
                                   </SelectItem>
                                 ))}
