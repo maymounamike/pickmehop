@@ -175,34 +175,44 @@ const BookingForm = () => {
     const fromLower = from.toLowerCase();
     const toLower = to.toLowerCase();
     
-    // Fixed pricing rules only apply when passengers ≤ 4 and luggage ≤ 4
-    const qualifiesForFixedPricing = passengers <= 4 && luggage <= 4;
+    // Check if route involves airports
+    const isBeauvaisRoute = (fromLower.includes('beauvais') || fromLower.includes('bva') || fromLower.includes('tillé')) ||
+                            (toLower.includes('beauvais') || toLower.includes('bva') || toLower.includes('tillé'));
+    const isCDGRoute = (fromLower.includes('charles de gaulle') || fromLower.includes('cdg')) ||
+                       (toLower.includes('charles de gaulle') || toLower.includes('cdg'));
+    const isOrlyRoute = (fromLower.includes('orly') || fromLower.includes('ory')) ||
+                        (toLower.includes('orly') || toLower.includes('ory'));
     
-    if (qualifiesForFixedPricing) {
-      // Check for Beauvais Airport (150€ fixed price)
-      const isBeauvaisRoute = (fromLower.includes('beauvais') || fromLower.includes('bva') || fromLower.includes('tillé')) ||
-                              (toLower.includes('beauvais') || toLower.includes('bva') || toLower.includes('tillé'));
-      
+    // Van service pricing (5-8 passengers, ≤8 luggage)
+    if (passengers >= 5 && passengers <= 8 && luggage <= 8) {
       if (isBeauvaisRoute) {
-        return 150; // Fixed price for Beauvais
+        return 220; // Van price for Beauvais
+      }
+      if (isCDGRoute) {
+        return 135; // Van price for CDG
+      }
+      if (isOrlyRoute) {
+        return 90; // Van price for Orly
+      }
+    }
+    
+    // Comfort service pricing (≤4 passengers, ≤4 luggage)
+    const qualifiesForComfortPricing = passengers <= 4 && luggage <= 4;
+    
+    if (qualifiesForComfortPricing) {
+      if (isBeauvaisRoute) {
+        return 150; // Comfort price for Beauvais
       }
       
-      // Check for Charles de Gaulle Airport + Paris combination
-      const isCDGRoute = (fromLower.includes('charles de gaulle') || fromLower.includes('cdg')) ||
-                         (toLower.includes('charles de gaulle') || toLower.includes('cdg'));
       const isParisAddress = from.includes('75') || to.includes('75') || 
                             fromLower.includes('paris') || toLower.includes('paris');
       
       if (isCDGRoute && isParisAddress) {
-        return 75; // Fixed price for CDG + Paris
+        return 75; // Comfort price for CDG + Paris
       }
       
-      // Check for Orly Airport + Paris combination
-      const isOrlyRoute = (fromLower.includes('orly') || fromLower.includes('ory')) ||
-                          (toLower.includes('orly') || toLower.includes('ory'));
-      
       if (isOrlyRoute && isParisAddress) {
-        return 65; // Fixed price for Orly + Paris
+        return 65; // Comfort price for Orly + Paris
       }
     }
     
