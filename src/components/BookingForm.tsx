@@ -11,8 +11,10 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { CalendarIcon, MapPin, Minus, Plus, Users, Luggage, Loader2, Euro, Phone, Mail, CreditCard, DollarSign, Wallet } from "lucide-react";
+import { CalendarIcon, MapPin, Minus, Plus, Users, Luggage, Loader2, Euro, Phone, Mail, CreditCard, DollarSign, Wallet, Baby, Accessibility, FileText } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
@@ -37,6 +39,11 @@ const bookingSchema = z.object({
   phone: z.string().min(10, "Please enter a valid phone number").refine(validatePhone, "Invalid phone format"),
   flightNumber: z.string().optional(),
   specialRequests: z.string().max(500, "Special requests too long").optional(),
+  childSeat: z.boolean().optional(),
+  childSeatType: z.enum(["infant", "child", "booster"]).optional(),
+  wheelchairAccess: z.boolean().optional(),
+  notesToDriver: z.boolean().optional(),
+  driverNotes: z.string().max(500, "Notes too long").optional(),
   paymentMethod: z.enum(["cash", "card_onboard", "card_online", "paypal"]).optional(),
   honeypot: z.string().optional(), // Hidden field for bot detection
 }).refine((data) => {
@@ -111,6 +118,11 @@ const BookingForm = () => {
       email: "",
       phone: "",
       specialRequests: "",
+      childSeat: false,
+      childSeatType: undefined,
+      wheelchairAccess: false,
+      notesToDriver: false,
+      driverNotes: "",
       honeypot: "", // Hidden honeypot field
     },
   });
@@ -572,6 +584,23 @@ const BookingForm = () => {
     setIsSubmitting(true);
     
     try {
+      // Build special requests string from checkbox options
+      const specialRequestsArray = [];
+      if (data.childSeat && data.childSeatType) {
+        const childSeatLabels = {
+          infant: "Infant carrier (0-6 months)",
+          child: "Child seat (6 months - 3 years)",
+          booster: "Booster (3-12 years)"
+        };
+        specialRequestsArray.push(`Child seat: ${childSeatLabels[data.childSeatType]}`);
+      }
+      if (data.wheelchairAccess) {
+        specialRequestsArray.push("Wheelchair access required");
+      }
+      if (data.notesToDriver && data.driverNotes) {
+        specialRequestsArray.push(`Notes: ${data.driverNotes}`);
+      }
+      
       // Sanitize inputs before sending
       const sanitizedData = {
         ...data,
@@ -580,7 +609,7 @@ const BookingForm = () => {
         name: sanitizeText(data.name),
         email: sanitizeText(data.email),
         phone: sanitizeText(data.phone),
-        specialRequests: data.specialRequests ? sanitizeText(data.specialRequests) : "",
+        specialRequests: specialRequestsArray.length > 0 ? sanitizeText(specialRequestsArray.join("; ")) : "",
         estimatedPrice,
         csrfToken,
       };
@@ -1099,25 +1128,139 @@ const BookingForm = () => {
                 </div>
 
                 {/* Special Requests */}
-                <FormField
-                  control={form.control}
-                  name="specialRequests"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs font-medium">Special Requests (Optional)</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Child seat, wheelchair access, etc."
-                          className="h-10 text-sm"
-                          {...field}
-                          aria-describedby={field.name + "-error"}
-                          maxLength={500}
-                        />
-                      </FormControl>
-                      <FormMessage id={field.name + "-error"} />
-                    </FormItem>
+                <div className="space-y-4">
+                  <div className="text-xs font-medium">Special Requests (Optional)</div>
+                  
+                  {/* Child Seat Option */}
+                  <FormField
+                    control={form.control}
+                    name="childSeat"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel className="flex items-center gap-2 text-sm font-normal cursor-pointer">
+                            <Baby className="h-4 w-4" />
+                            Child Seat
+                          </FormLabel>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Child Seat Type Options - Show when child seat is checked */}
+                  {form.watch("childSeat") && (
+                    <div className="ml-7 space-y-2">
+                      <FormField
+                        control={form.control}
+                        name="childSeatType"
+                        render={({ field }) => (
+                          <FormItem className="space-y-3">
+                            <FormControl>
+                              <RadioGroup
+                                onValueChange={field.onChange}
+                                value={field.value}
+                                className="flex flex-col space-y-2"
+                              >
+                                <div className="flex items-center space-x-2">
+                                  <RadioGroupItem value="infant" id="infant" />
+                                  <label htmlFor="infant" className="text-sm cursor-pointer">
+                                    Infant carrier (0-6 months)
+                                  </label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <RadioGroupItem value="child" id="child" />
+                                  <label htmlFor="child" className="text-sm cursor-pointer">
+                                    Child seat (6 months - 3 years)
+                                  </label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <RadioGroupItem value="booster" id="booster" />
+                                  <label htmlFor="booster" className="text-sm cursor-pointer">
+                                    Booster (3-12 years)
+                                  </label>
+                                </div>
+                              </RadioGroup>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                   )}
-                />
+
+                  {/* Wheelchair Access Option */}
+                  <FormField
+                    control={form.control}
+                    name="wheelchairAccess"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel className="flex items-center gap-2 text-sm font-normal cursor-pointer">
+                            <Accessibility className="h-4 w-4" />
+                            Wheelchair Access
+                          </FormLabel>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Notes to Driver Option */}
+                  <FormField
+                    control={form.control}
+                    name="notesToDriver"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel className="flex items-center gap-2 text-sm font-normal cursor-pointer">
+                            <FileText className="h-4 w-4" />
+                            Notes to Driver
+                          </FormLabel>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Driver Notes Text Area - Show when notes to driver is checked */}
+                  {form.watch("notesToDriver") && (
+                    <div className="ml-7">
+                      <FormField
+                        control={form.control}
+                        name="driverNotes"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Textarea
+                                placeholder="Please provide any additional information for the driver..."
+                                className="min-h-[80px] text-sm"
+                                {...field}
+                                maxLength={500}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  )}
+                </div>
 
                 <div className="flex gap-2 mt-4">
                   <Button 
