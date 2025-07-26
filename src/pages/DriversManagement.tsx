@@ -91,8 +91,8 @@ const DriversManagement = () => {
         setActiveDrivers(activeData || []);
       }
 
-      // Fetch pending drivers - try a different approach
-      console.log('Fetching pending drivers...');
+      // Fetch pending drivers - comprehensive debugging
+      console.log('=== DEBUGGING PENDING DRIVERS ===');
       
       // First, let's get all users with driver role
       const { data: userRoles, error: rolesError } = await supabase
@@ -100,7 +100,7 @@ const DriversManagement = () => {
         .select('user_id')
         .eq('role', 'driver');
 
-      console.log('User roles with driver:', userRoles);
+      console.log('1. User roles with driver:', userRoles);
 
       if (rolesError) {
         console.error('Error fetching user roles:', rolesError);
@@ -108,34 +108,43 @@ const DriversManagement = () => {
         // Get all drivers for these users
         const { data: allDrivers, error: driversError } = await supabase
           .from('drivers')
-          .select('user_id, is_active')
+          .select('user_id, is_active, created_at, phone')
           .in('user_id', userRoles.map(ur => ur.user_id));
 
-        console.log('All drivers:', allDrivers);
+        console.log('2. All drivers with details:', allDrivers);
+
+        // Also get all profiles for these driver users
+        const { data: driverProfiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name, created_at')
+          .in('id', userRoles.map(ur => ur.user_id));
+
+        console.log('3. All driver profiles:', driverProfiles);
 
         // Find users with driver role who have inactive driver records
         const inactiveDriverUserIds = allDrivers
           ?.filter(d => !d.is_active)
           ?.map(d => d.user_id) || [];
 
-        console.log('Inactive driver user IDs:', inactiveDriverUserIds);
+        console.log('4. Inactive driver user IDs:', inactiveDriverUserIds);
 
         if (inactiveDriverUserIds.length > 0) {
           // Get profiles for these users
-          const { data: profilesData, error: profilesError } = await supabase
+          const { data: profilesData, error: profilesError2 } = await supabase
             .from('profiles')
             .select('id, first_name, last_name, created_at')
             .in('id', inactiveDriverUserIds);
 
-          console.log('Profiles data:', profilesData);
+          console.log('5. Inactive driver profiles:', profilesData);
 
-          if (profilesError) {
-            console.error('Error fetching profiles:', profilesError);
+          if (profilesError2) {
+            console.error('Error fetching profiles:', profilesError2);
           } else if (profilesData) {
             // Get emails for pending drivers
             const pendingWithEmails = await Promise.all(
               profilesData.map(async (profile: any) => {
                 const { data: userData } = await supabase.auth.admin.getUserById(profile.id);
+                console.log(`6. User data for ${profile.id}:`, userData.user?.email);
                 return {
                   id: profile.id,
                   first_name: profile.first_name,
@@ -146,11 +155,16 @@ const DriversManagement = () => {
                 };
               })
             );
-            console.log('Pending drivers with emails:', pendingWithEmails);
+            console.log('7. Final pending drivers with emails:', pendingWithEmails);
             setPendingDrivers(pendingWithEmails);
           }
+        } else {
+          console.log('8. No inactive drivers found - all drivers are active');
+          setPendingDrivers([]);
         }
       }
+
+      console.log('=== END DEBUGGING ===');
 
       // Fetch deleted drivers - soft deleted drivers
       await fetchDeletedDrivers();
