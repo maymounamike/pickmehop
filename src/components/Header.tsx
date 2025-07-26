@@ -14,36 +14,55 @@ const Header = () => {
   useEffect(() => {
     // Get initial session and role
     const getSessionAndRole = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        // If there's an error or no session, clear everything
+        if (error || !session) {
+          setUser(null);
+          setUserRole(null);
+          return;
+        }
+        
+        setUser(session.user);
+        
         const { data: roleData } = await supabase
           .from('user_roles')
           .select('role')
           .eq('user_id', session.user.id)
-          .single();
+          .maybeSingle();
         
         setUserRole(roleData?.role || 'user');
-      } else {
+      } catch (error) {
+        console.error('Session check error:', error);
+        setUser(null);
         setUserRole(null);
       }
     };
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setUser(session?.user ?? null);
+      console.log('Auth state change:', event, session);
       
-      if (session?.user) {
+      if (!session) {
+        setUser(null);
+        setUserRole(null);
+        return;
+      }
+      
+      setUser(session.user);
+      
+      try {
         const { data: roleData } = await supabase
           .from('user_roles')
           .select('role')
           .eq('user_id', session.user.id)
-          .single();
+          .maybeSingle();
         
         setUserRole(roleData?.role || 'user');
-      } else {
-        setUserRole(null);
+      } catch (error) {
+        console.error('Role fetch error:', error);
+        setUserRole('user');
       }
     });
 
