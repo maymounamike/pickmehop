@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, UserCheck, Car, Phone, Mail, Calendar, Trash2, Crown } from "lucide-react";
+import { Loader2, UserCheck, Car, Phone, Mail, Calendar, Trash2, Crown, MoreVertical, Eye, UserX } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 interface Driver {
   id: string;
@@ -174,6 +175,36 @@ const DriversManagement = () => {
     }
   };
 
+  const deactivateDriver = async (driverId: string) => {
+    try {
+      const { error } = await supabase
+        .from('drivers')
+        .update({ is_active: false })
+        .eq('user_id', driverId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Driver has been deactivated successfully.",
+      });
+
+      await fetchDrivers();
+    } catch (error) {
+      console.error('Error deactivating driver:', error);
+      toast({
+        title: "Error",
+        description: "Failed to deactivate driver.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const viewDriverProfile = (driverId: string) => {
+    // Navigate to driver profile page
+    navigate(`/driver-profile/${driverId}`);
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -291,40 +322,60 @@ const DriversManagement = () => {
                 {activeDrivers.map((driver) => (
                   <Card key={driver.id} className="border-l-4 border-l-green-500">
                     <CardContent className="p-4">
-                      <div className="flex justify-between items-start">
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-semibold text-lg">Driver #{driver.id.slice(0, 8)}</h3>
-                            <Badge variant="default">ACTIVE</Badge>
-                          </div>
-                          <div className="grid md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2 text-muted-foreground">
-                                <Car className="h-4 w-4" />
-                                <span>{driver.vehicle_make} {driver.vehicle_model} ({driver.vehicle_year})</span>
-                              </div>
-                              <div className="flex items-center gap-2 text-muted-foreground">
-                                <span className="font-medium">License Plate:</span>
-                                <span>{driver.vehicle_license_plate}</span>
-                              </div>
-                            </div>
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2 text-muted-foreground">
-                                <Phone className="h-4 w-4" />
-                                <span>{driver.phone || 'Not provided'}</span>
-                              </div>
-                              <div className="flex items-center gap-2 text-muted-foreground">
-                                <span className="font-medium">License:</span>
-                                <span>{driver.license_number || 'Not provided'}</span>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                            <Calendar className="h-4 w-4" />
-                            <span>Joined: {formatDate(driver.created_at)}</span>
-                          </div>
-                        </div>
-                      </div>
+                       <div className="flex justify-between items-start">
+                         <div className="space-y-2">
+                           <div className="flex items-center gap-2">
+                             <h3 className="font-semibold text-lg">Driver #{driver.id.slice(0, 8)}</h3>
+                             <Badge variant="default">ACTIVE</Badge>
+                           </div>
+                           <div className="grid md:grid-cols-2 gap-4">
+                             <div className="space-y-2">
+                               <div className="flex items-center gap-2 text-muted-foreground">
+                                 <Car className="h-4 w-4" />
+                                 <span>{driver.vehicle_make} {driver.vehicle_model} ({driver.vehicle_year})</span>
+                               </div>
+                               <div className="flex items-center gap-2 text-muted-foreground">
+                                 <span className="font-medium">License Plate:</span>
+                                 <span>{driver.vehicle_license_plate}</span>
+                               </div>
+                             </div>
+                             <div className="space-y-2">
+                               <div className="flex items-center gap-2 text-muted-foreground">
+                                 <Phone className="h-4 w-4" />
+                                 <span>{driver.phone || 'Not provided'}</span>
+                               </div>
+                               <div className="flex items-center gap-2 text-muted-foreground">
+                                 <span className="font-medium">License:</span>
+                                 <span>{driver.license_number || 'Not provided'}</span>
+                               </div>
+                             </div>
+                           </div>
+                           <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                             <Calendar className="h-4 w-4" />
+                             <span>Joined: {formatDate(driver.created_at)}</span>
+                           </div>
+                         </div>
+                         <DropdownMenu>
+                           <DropdownMenuTrigger asChild>
+                             <Button variant="ghost" className="h-8 w-8 p-0">
+                               <MoreVertical className="h-4 w-4" />
+                             </Button>
+                           </DropdownMenuTrigger>
+                           <DropdownMenuContent align="end">
+                             <DropdownMenuItem onClick={() => viewDriverProfile(driver.user_id)}>
+                               <Eye className="mr-2 h-4 w-4" />
+                               View Profile
+                             </DropdownMenuItem>
+                             <DropdownMenuItem 
+                               onClick={() => deactivateDriver(driver.user_id)}
+                               className="text-red-600"
+                             >
+                               <UserX className="mr-2 h-4 w-4" />
+                               Deactivate Driver
+                             </DropdownMenuItem>
+                           </DropdownMenuContent>
+                         </DropdownMenu>
+                       </div>
                     </CardContent>
                   </Card>
                 ))}
