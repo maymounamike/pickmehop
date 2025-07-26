@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, LogOut, Calendar, MapPin, Users, CreditCard } from "lucide-react";
+import { Loader2, LogOut, Calendar, MapPin, Users, CreditCard, ArrowLeft } from "lucide-react";
 import Header from "@/components/Header";
 
 interface Booking {
@@ -112,6 +112,16 @@ const Dashboard = () => {
       <Header />
       
       <div className="container mx-auto px-4 py-8">
+        {/* Back to Home Button */}
+        <Button
+          variant="ghost"
+          className="mb-6 text-muted-foreground hover:text-foreground"
+          onClick={() => navigate("/")}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Home
+        </Button>
+
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold">My Bookings</h1>
