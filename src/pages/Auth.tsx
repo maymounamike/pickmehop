@@ -105,12 +105,17 @@ const Auth = () => {
 
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      console.log('Attempting to sign in with:', email);
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
+      console.log('Sign in result:', { data, error });
+
       if (error) {
+        console.error('Sign in error:', error);
         if (error.message.includes("Invalid login credentials")) {
           toast({
             title: "Error",
@@ -125,6 +130,7 @@ const Auth = () => {
           });
         }
       } else {
+        console.log('Sign in successful:', data);
         toast({
           title: "Success",
           description: "Welcome back!",
@@ -132,6 +138,7 @@ const Auth = () => {
         navigate("/");
       }
     } catch (error) {
+      console.error('Unexpected error during sign in:', error);
       toast({
         title: "Error",
         description: "An unexpected error occurred",
