@@ -327,9 +327,7 @@ const BookingForm = () => {
         // Get Google Maps API key from Supabase function
         const { data: keyData, error: keyError } = await supabase.functions.invoke('get-google-maps-key');
         
-        if (keyError || !keyData?.apiKey) {
-          console.error('Failed to get Google Maps API key:', keyError);
-        } else {
+        if (!keyError && keyData?.apiKey) {
           // Load Google Maps API if not already loaded
           const loader = new Loader({
             apiKey: keyData.apiKey,
@@ -345,8 +343,7 @@ const BookingForm = () => {
           const googleSuggestions = await new Promise<string[]>((resolve) => {
             service.getPlacePredictions({
               input: query,
-              componentRestrictions: { country: 'fr' }, // Restrict to France
-              types: ['address', 'establishment', 'geocode']
+              componentRestrictions: { country: 'fr' }
             }, (predictions, status) => {
               if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
                 const googleResults = predictions.map(prediction => prediction.description);
@@ -359,6 +356,8 @@ const BookingForm = () => {
           });
 
           suggestions.push(...googleSuggestions);
+        } else {
+          console.error('Failed to get Google Maps API key:', keyError);
         }
       } catch (error) {
         console.error('Error fetching Google Maps suggestions:', error);
