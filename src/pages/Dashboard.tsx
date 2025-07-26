@@ -116,7 +116,10 @@ const Dashboard = () => {
         <Button
           variant="ghost"
           className="mb-6 text-muted-foreground hover:text-foreground"
-          onClick={() => navigate("/")}
+          onClick={() => {
+            console.log('Back to Home button clicked');
+            navigate("/");
+          }}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Home
