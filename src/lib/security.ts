@@ -18,7 +18,8 @@ export function sanitizeText(input: string): string {
   return input
     .replace(/[<>]/g, '') // Remove potential HTML tags
     .replace(/[\x00-\x1f\x7f-\x9f]/g, '') // Remove control characters
-    .trim();
+    .trim()
+    .substring(0, 255); // Align with database schema limits
 }
 
 /**

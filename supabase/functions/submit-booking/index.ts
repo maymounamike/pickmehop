@@ -25,7 +25,14 @@ function sanitizeString(input: string): string {
     .replace(/[<>]/g, '') // Remove potential HTML tags
     .replace(/[\x00-\x1f\x7f-\x9f]/g, '') // Remove control characters
     .trim()
-    .substring(0, 1000) // Limit length
+    .substring(0, 255) // Align with database schema limits
+}
+
+// Enhanced CSRF token validation
+function validateCSRFToken(token: string): boolean {
+  if (!token) return false;
+  const tokenPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return tokenPattern.test(token);
 }
 
 function checkRateLimit(clientId: string): boolean {
@@ -85,6 +92,15 @@ serve(async (req) => {
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
+    }
+
+    // CSRF token validation for enhanced security
+    if (requestData.csrfToken && !validateCSRFToken(requestData.csrfToken)) {
+      console.log('Invalid CSRF token provided')
+      return new Response(
+        JSON.stringify({ error: 'Invalid security token' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
     // Honeypot check - if honeypot field is filled, it's likely a bot
