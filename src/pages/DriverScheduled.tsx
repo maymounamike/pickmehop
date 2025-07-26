@@ -2,12 +2,11 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { MapPin, Calendar, Clock, Users, Phone, Mail, Car } from "lucide-react";
+import { MapPin, Calendar, Clock, Users, Phone, Mail } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { format } from "date-fns";
+import { format, isAfter, startOfDay } from "date-fns";
 import DriverNavigation from "@/components/DriverNavigation";
 
 interface Booking {
@@ -26,37 +25,24 @@ interface Booking {
   assigned_at: string;
 }
 
-interface Driver {
-  id: string;
-  license_number: string;
-  vehicle_make: string;
-  vehicle_model: string;
-  vehicle_year: number;
-  vehicle_license_plate: string;
-  phone: string;
-  is_active: boolean;
-}
-
 interface Profile {
   first_name: string | null;
   last_name: string | null;
 }
 
-const DriverDashboard = () => {
+const DriverScheduled = () => {
   const [user, setUser] = useState<any>(null);
-  const [driver, setDriver] = useState<Driver | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    checkUserAndLoadData();
+    loadScheduledRides();
   }, []);
 
-  const checkUserAndLoadData = async () => {
+  const loadScheduledRides = async () => {
     try {
-      // Get current user
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
@@ -83,74 +69,46 @@ const DriverDashboard = () => {
         .single();
 
       if (!roleData || roleData.role !== 'driver') {
-        toast({
-          title: "Access Denied",
-          description: "You don't have driver access.",
-          variant: "destructive",
-        });
         navigate('/');
         return;
       }
 
-      // Load driver profile
+      // Get driver data
       const { data: driverData } = await supabase
         .from('drivers')
-        .select('*')
+        .select('id')
         .eq('user_id', session.user.id)
         .single();
 
-      setDriver(driverData);
-
-      // Load assigned bookings
       if (driverData) {
+        // Load scheduled bookings (future rides that are confirmed)
         const { data: bookingsData } = await supabase
           .from('bookings')
           .select('*')
           .eq('driver_id', driverData.id)
-          .order('date', { ascending: true });
+          .eq('status', 'confirmed')
+          .gte('date', format(new Date(), 'yyyy-MM-dd'))
+          .order('date', { ascending: true })
+          .order('time', { ascending: true });
 
-        setBookings(bookingsData || []);
+        // Filter to only include future rides
+        const futureBookings = (bookingsData || []).filter(booking => {
+          const bookingDate = new Date(booking.date + 'T' + booking.time);
+          return isAfter(bookingDate, new Date());
+        });
+
+        setBookings(futureBookings);
       }
 
     } catch (error) {
-      console.error('Error loading driver data:', error);
+      console.error('Error loading scheduled rides:', error);
       toast({
         title: "Error",
-        description: "Failed to load driver dashboard.",
+        description: "Failed to load scheduled rides.",
         variant: "destructive",
       });
     } finally {
       setLoading(false);
-    }
-  };
-
-
-  const updateBookingStatus = async (bookingId: string, newStatus: string) => {
-    try {
-      const { error } = await supabase
-        .from('bookings')
-        .update({ status: newStatus })
-        .eq('id', bookingId);
-
-      if (error) throw error;
-
-      setBookings(bookings.map(booking => 
-        booking.id === bookingId 
-          ? { ...booking, status: newStatus }
-          : booking
-      ));
-
-      toast({
-        title: "Status Updated",
-        description: `Booking marked as ${newStatus}.`,
-      });
-    } catch (error) {
-      console.error('Error updating booking:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update booking status.",
-        variant: "destructive",
-      });
     }
   };
 
@@ -168,52 +126,23 @@ const DriverDashboard = () => {
 
         {/* Page Title */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Booking Requests</h1>
-          <p className="text-gray-600">View your assigned rides and manage bookings</p>
+          <h1 className="text-3xl font-bold text-gray-900">Scheduled Rides</h1>
+          <p className="text-gray-600">Your upcoming confirmed rides</p>
         </div>
 
-        {/* Driver Profile Card */}
-        {driver && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Car className="w-5 h-5 mr-2" />
-                Your Vehicle Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <p className="text-sm text-gray-600">Vehicle</p>
-                  <p className="font-medium">{driver.vehicle_make} {driver.vehicle_model} ({driver.vehicle_year})</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">License Plate</p>
-                  <p className="font-medium">{driver.vehicle_license_plate}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">License Number</p>
-                  <p className="font-medium">{driver.license_number}</p>
-                </div>
-              </div>
-              <div className="mt-4">
-                <Badge variant={driver.is_active ? "default" : "secondary"}>
-                  {driver.is_active ? "Active" : "Inactive"}
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Bookings */}
+        {/* Scheduled Rides */}
         <Card>
           <CardHeader>
-            <CardTitle>Your Assigned Rides</CardTitle>
-            <p className="text-sm text-gray-600">{bookings.length} ride(s) assigned</p>
+            <CardTitle>Upcoming Rides</CardTitle>
+            <p className="text-sm text-gray-600">{bookings.length} scheduled ride(s)</p>
           </CardHeader>
           <CardContent>
             {bookings.length === 0 ? (
-              <p className="text-center text-gray-500 py-8">No rides assigned yet.</p>
+              <div className="text-center py-12">
+                <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500 text-lg">No scheduled rides</p>
+                <p className="text-gray-400 text-sm">Your future rides will appear here</p>
+              </div>
             ) : (
               <div className="space-y-4">
                 {bookings.map((booking) => (
@@ -222,12 +151,8 @@ const DriverDashboard = () => {
                       <div className="flex justify-between items-start mb-3">
                         <div>
                           <h3 className="font-semibold">Booking #{booking.booking_id}</h3>
-                          <Badge variant={
-                            booking.status === 'confirmed' ? 'default' :
-                            booking.status === 'in_progress' ? 'secondary' :
-                            booking.status === 'completed' ? 'outline' : 'destructive'
-                          }>
-                            {booking.status.replace('_', ' ').toUpperCase()}
+                          <Badge variant="default">
+                            SCHEDULED
                           </Badge>
                         </div>
                         <div className="text-right">
@@ -301,27 +226,6 @@ const DriverDashboard = () => {
                           </div>
                         </div>
                       </div>
-
-                      {/* Action Buttons */}
-                      <div className="flex gap-2 mt-4">
-                        {booking.status === 'confirmed' && (
-                          <Button 
-                            size="sm" 
-                            onClick={() => updateBookingStatus(booking.id, 'in_progress')}
-                          >
-                            Start Ride
-                          </Button>
-                        )}
-                        {booking.status === 'in_progress' && (
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => updateBookingStatus(booking.id, 'completed')}
-                          >
-                            Complete Ride
-                          </Button>
-                        )}
-                      </div>
                     </CardContent>
                   </Card>
                 ))}
@@ -334,4 +238,4 @@ const DriverDashboard = () => {
   );
 };
 
-export default DriverDashboard;
+export default DriverScheduled;

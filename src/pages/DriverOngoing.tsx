@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { MapPin, Calendar, Clock, Users, Phone, Mail, Car } from "lucide-react";
+import { MapPin, Calendar, Clock, Users, Phone, Mail, Navigation } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import DriverNavigation from "@/components/DriverNavigation";
@@ -26,37 +26,24 @@ interface Booking {
   assigned_at: string;
 }
 
-interface Driver {
-  id: string;
-  license_number: string;
-  vehicle_make: string;
-  vehicle_model: string;
-  vehicle_year: number;
-  vehicle_license_plate: string;
-  phone: string;
-  is_active: boolean;
-}
-
 interface Profile {
   first_name: string | null;
   last_name: string | null;
 }
 
-const DriverDashboard = () => {
+const DriverOngoing = () => {
   const [user, setUser] = useState<any>(null);
-  const [driver, setDriver] = useState<Driver | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    checkUserAndLoadData();
+    loadOngoingRides();
   }, []);
 
-  const checkUserAndLoadData = async () => {
+  const loadOngoingRides = async () => {
     try {
-      // Get current user
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
@@ -83,40 +70,35 @@ const DriverDashboard = () => {
         .single();
 
       if (!roleData || roleData.role !== 'driver') {
-        toast({
-          title: "Access Denied",
-          description: "You don't have driver access.",
-          variant: "destructive",
-        });
         navigate('/');
         return;
       }
 
-      // Load driver profile
+      // Get driver data
       const { data: driverData } = await supabase
         .from('drivers')
-        .select('*')
+        .select('id')
         .eq('user_id', session.user.id)
         .single();
 
-      setDriver(driverData);
-
-      // Load assigned bookings
       if (driverData) {
+        // Load ongoing bookings (in_progress status)
         const { data: bookingsData } = await supabase
           .from('bookings')
           .select('*')
           .eq('driver_id', driverData.id)
-          .order('date', { ascending: true });
+          .eq('status', 'in_progress')
+          .order('date', { ascending: true })
+          .order('time', { ascending: true });
 
         setBookings(bookingsData || []);
       }
 
     } catch (error) {
-      console.error('Error loading driver data:', error);
+      console.error('Error loading ongoing rides:', error);
       toast({
         title: "Error",
-        description: "Failed to load driver dashboard.",
+        description: "Failed to load ongoing rides.",
         variant: "destructive",
       });
     } finally {
@@ -124,31 +106,26 @@ const DriverDashboard = () => {
     }
   };
 
-
-  const updateBookingStatus = async (bookingId: string, newStatus: string) => {
+  const completeRide = async (bookingId: string) => {
     try {
       const { error } = await supabase
         .from('bookings')
-        .update({ status: newStatus })
+        .update({ status: 'completed' })
         .eq('id', bookingId);
 
       if (error) throw error;
 
-      setBookings(bookings.map(booking => 
-        booking.id === bookingId 
-          ? { ...booking, status: newStatus }
-          : booking
-      ));
+      setBookings(bookings.filter(booking => booking.id !== bookingId));
 
       toast({
-        title: "Status Updated",
-        description: `Booking marked as ${newStatus}.`,
+        title: "Ride Completed",
+        description: "The ride has been marked as completed.",
       });
     } catch (error) {
-      console.error('Error updating booking:', error);
+      console.error('Error completing ride:', error);
       toast({
         title: "Error",
-        description: "Failed to update booking status.",
+        description: "Failed to complete ride.",
         variant: "destructive",
       });
     }
@@ -168,72 +145,39 @@ const DriverDashboard = () => {
 
         {/* Page Title */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Booking Requests</h1>
-          <p className="text-gray-600">View your assigned rides and manage bookings</p>
+          <h1 className="text-3xl font-bold text-gray-900">Ongoing Rides</h1>
+          <p className="text-gray-600">Currently active rides in progress</p>
         </div>
 
-        {/* Driver Profile Card */}
-        {driver && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Car className="w-5 h-5 mr-2" />
-                Your Vehicle Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <p className="text-sm text-gray-600">Vehicle</p>
-                  <p className="font-medium">{driver.vehicle_make} {driver.vehicle_model} ({driver.vehicle_year})</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">License Plate</p>
-                  <p className="font-medium">{driver.vehicle_license_plate}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">License Number</p>
-                  <p className="font-medium">{driver.license_number}</p>
-                </div>
-              </div>
-              <div className="mt-4">
-                <Badge variant={driver.is_active ? "default" : "secondary"}>
-                  {driver.is_active ? "Active" : "Inactive"}
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Bookings */}
+        {/* Ongoing Rides */}
         <Card>
           <CardHeader>
-            <CardTitle>Your Assigned Rides</CardTitle>
-            <p className="text-sm text-gray-600">{bookings.length} ride(s) assigned</p>
+            <CardTitle>Active Rides</CardTitle>
+            <p className="text-sm text-gray-600">{bookings.length} ongoing ride(s)</p>
           </CardHeader>
           <CardContent>
             {bookings.length === 0 ? (
-              <p className="text-center text-gray-500 py-8">No rides assigned yet.</p>
+              <div className="text-center py-12">
+                <Navigation className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500 text-lg">No ongoing rides</p>
+                <p className="text-gray-400 text-sm">Active rides will appear here when you start them</p>
+              </div>
             ) : (
               <div className="space-y-4">
                 {bookings.map((booking) => (
-                  <Card key={booking.id} className="border-l-4 border-l-blue-500">
+                  <Card key={booking.id} className="border-l-4 border-l-orange-500 bg-orange-50/50">
                     <CardContent className="p-4">
                       <div className="flex justify-between items-start mb-3">
                         <div>
                           <h3 className="font-semibold">Booking #{booking.booking_id}</h3>
-                          <Badge variant={
-                            booking.status === 'confirmed' ? 'default' :
-                            booking.status === 'in_progress' ? 'secondary' :
-                            booking.status === 'completed' ? 'outline' : 'destructive'
-                          }>
-                            {booking.status.replace('_', ' ').toUpperCase()}
+                          <Badge variant="secondary" className="bg-orange-100 text-orange-800">
+                            IN PROGRESS
                           </Badge>
                         </div>
                         <div className="text-right">
                           <p className="text-lg font-bold text-green-600">€{booking.estimated_price}</p>
                           <p className="text-xs text-gray-500">
-                            Assigned: {format(new Date(booking.assigned_at), 'MMM d, HH:mm')}
+                            Started: {format(new Date(booking.assigned_at), 'MMM d, HH:mm')}
                           </p>
                         </div>
                       </div>
@@ -302,25 +246,14 @@ const DriverDashboard = () => {
                         </div>
                       </div>
 
-                      {/* Action Buttons */}
-                      <div className="flex gap-2 mt-4">
-                        {booking.status === 'confirmed' && (
-                          <Button 
-                            size="sm" 
-                            onClick={() => updateBookingStatus(booking.id, 'in_progress')}
-                          >
-                            Start Ride
-                          </Button>
-                        )}
-                        {booking.status === 'in_progress' && (
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => updateBookingStatus(booking.id, 'completed')}
-                          >
-                            Complete Ride
-                          </Button>
-                        )}
+                      {/* Action Button */}
+                      <div className="flex justify-end mt-4">
+                        <Button 
+                          onClick={() => completeRide(booking.id)}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          Complete Ride
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -334,4 +267,4 @@ const DriverDashboard = () => {
   );
 };
 
-export default DriverDashboard;
+export default DriverOngoing;

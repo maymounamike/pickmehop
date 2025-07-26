@@ -12,6 +12,9 @@ import PaymentCanceled from "./pages/PaymentCanceled";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import DriverDashboard from "./pages/DriverDashboard";
+import DriverProfile from "./pages/DriverProfile";
+import DriverScheduled from "./pages/DriverScheduled";
+import DriverOngoing from "./pages/DriverOngoing";
 import AdminDashboard from "./pages/AdminDashboard";
 import BookingConfirmation from "./pages/BookingConfirmation";
 
@@ -30,6 +33,9 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/driver" element={<DriverDashboard />} />
+            <Route path="/driver/profile" element={<DriverProfile />} />
+            <Route path="/driver/scheduled" element={<DriverScheduled />} />
+            <Route path="/driver/ongoing" element={<DriverOngoing />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/booking-confirmation" element={<BookingConfirmation />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />

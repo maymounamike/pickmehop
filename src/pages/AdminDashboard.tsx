@@ -196,17 +196,18 @@ const AdminDashboard = () => {
       if (authError) throw authError;
       if (!authData.user) throw new Error("Failed to create user");
 
-      // Create driver profile
+      // Create driver profile - start as inactive until profile is complete
       const { error: driverError } = await supabase
         .from('drivers')
         .insert({
           user_id: authData.user.id,
-          license_number: newDriverData.license_number,
-          vehicle_make: newDriverData.vehicle_make,
-          vehicle_model: newDriverData.vehicle_model,
-          vehicle_year: parseInt(newDriverData.vehicle_year),
-          vehicle_license_plate: newDriverData.vehicle_license_plate,
-          phone: newDriverData.phone,
+          license_number: newDriverData.license_number || '',
+          vehicle_make: newDriverData.vehicle_make || '',
+          vehicle_model: newDriverData.vehicle_model || '',
+          vehicle_year: newDriverData.vehicle_year ? parseInt(newDriverData.vehicle_year) : null,
+          vehicle_license_plate: newDriverData.vehicle_license_plate || '',
+          phone: newDriverData.phone || '',
+          is_active: false // Start as inactive until profile is complete
         });
 
       if (driverError) throw driverError;
@@ -221,10 +222,36 @@ const AdminDashboard = () => {
 
       if (roleError) throw roleError;
 
-      toast({
-        title: "Driver Created",
-        description: "New driver has been successfully created.",
-      });
+      // Send welcome email with login credentials
+      try {
+        const { error: emailError } = await supabase.functions.invoke('send-driver-welcome', {
+          body: {
+            email: newDriverData.email,
+            temporaryPassword: newDriverData.password
+          }
+        });
+
+        if (emailError) {
+          console.error('Email error:', emailError);
+          toast({
+            title: "Driver Created",
+            description: "Driver account created but email notification failed. Please contact the driver manually.",
+            variant: "default",
+          });
+        } else {
+          toast({
+            title: "Success",
+            description: "Driver account created and welcome email sent successfully.",
+          });
+        }
+      } catch (emailError) {
+        console.error('Email error:', emailError);
+        toast({
+          title: "Driver Created",
+          description: "Driver account created but email notification failed. Please contact the driver manually.",
+          variant: "default",
+        });
+      }
 
       // Reset form and refresh data
       setNewDriverData({
