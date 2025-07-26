@@ -1359,7 +1359,7 @@ const BookingForm = () => {
                   )}
                 </div>
 
-                <div className="flex gap-2 mt-4">
+                <div className="flex gap-2 mt-8">
                   <Button 
                     type="button"
                     variant="outline"
