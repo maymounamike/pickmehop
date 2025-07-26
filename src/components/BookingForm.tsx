@@ -71,10 +71,25 @@ const BookingForm = () => {
   const [validFromSelected, setValidFromSelected] = useState(false);
   const [validToSelected, setValidToSelected] = useState(false);
   const [allSuggestions, setAllSuggestions] = useState<string[]>([]); // Track all generated suggestions
+  const [selectedCountryCode, setSelectedCountryCode] = useState("+33"); // Default to France
   const [formKey, setFormKey] = useState(0); // Key to force form remount
   const [user, setUser] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
   const rateLimit = new ClientRateLimit();
+
+  // Country codes with USA and France first
+  const countryCodes = [
+    { code: "+1", country: "🇺🇸 USA", flag: "🇺🇸" },
+    { code: "+33", country: "🇫🇷 France", flag: "🇫🇷" },
+    { code: "+44", country: "🇬🇧 UK", flag: "🇬🇧" },
+    { code: "+49", country: "🇩🇪 Germany", flag: "🇩🇪" },
+    { code: "+39", country: "🇮🇹 Italy", flag: "🇮🇹" },
+    { code: "+34", country: "🇪🇸 Spain", flag: "🇪🇸" },
+    { code: "+32", country: "🇧🇪 Belgium", flag: "🇧🇪" },
+    { code: "+31", country: "🇳🇱 Netherlands", flag: "🇳🇱" },
+    { code: "+41", country: "🇨🇭 Switzerland", flag: "🇨🇭" },
+    { code: "+43", country: "🇦🇹 Austria", flag: "🇦🇹" },
+  ];
 
   const form = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
@@ -998,20 +1013,45 @@ const BookingForm = () => {
                           Phone <span className="text-destructive" aria-label="required">*</span>
                         </FormLabel>
                         <FormControl>
-                          <div className="relative">
-                            <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" aria-hidden="true" />
-                            <Input
-                              type="tel"
-                              placeholder="+33 6 12 34 56 78"
-                              className="pl-10 h-10 text-sm"
-                              value={field.value || ""}
-                              onChange={field.onChange}
-                              onBlur={field.onBlur}
-                              name={field.name}
-                              aria-describedby={field.name + "-error"}
-                              aria-invalid={!!form.formState.errors.phone}
-                              autoComplete="tel"
-                            />
+                          <div className="flex gap-2">
+                            {/* Country Code Dropdown */}
+                            <Select value={selectedCountryCode} onValueChange={setSelectedCountryCode}>
+                              <SelectTrigger className="w-[120px] h-10">
+                                <SelectValue placeholder="Code" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-background border border-border shadow-lg z-50">
+                                {countryCodes.map((country) => (
+                                  <SelectItem key={country.code} value={country.code}>
+                                    <span className="flex items-center gap-2">
+                                      <span>{country.flag}</span>
+                                      <span>{country.code}</span>
+                                    </span>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            
+                            {/* Phone Number Input */}
+                            <div className="relative flex-1">
+                              <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" aria-hidden="true" />
+                              <Input
+                                type="tel"
+                                placeholder={selectedCountryCode === "+1" ? "555 123 4567" : "6 12 34 56 78"}
+                                className="pl-10 h-10 text-sm"
+                                value={field.value || ""}
+                                onChange={(e) => {
+                                  // Combine country code with phone number
+                                  const phoneNumber = e.target.value;
+                                  const fullNumber = `${selectedCountryCode} ${phoneNumber}`;
+                                  field.onChange(fullNumber);
+                                }}
+                                onBlur={field.onBlur}
+                                name={field.name}
+                                aria-describedby={field.name + "-error"}
+                                aria-invalid={!!form.formState.errors.phone}
+                                autoComplete="tel"
+                              />
+                            </div>
                           </div>
                         </FormControl>
                         <FormMessage id={field.name + "-error"} />
