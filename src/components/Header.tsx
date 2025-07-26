@@ -83,17 +83,17 @@ const Header = () => {
 
   const handleSignOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error('Sign out error:', error);
-        return;
-      }
-      // Clear local state immediately
+      // Always clear local state first
       setUser(null);
       setUserRole(null);
-      navigate("/");
+      
+      // Attempt to sign out from server, but don't fail if session is invalid
+      await supabase.auth.signOut();
     } catch (error) {
-      console.error('Unexpected sign out error:', error);
+      console.log('Sign out completed (session was already invalid)');
+    } finally {
+      // Always navigate to home regardless of server response
+      navigate("/");
     }
   };
 
