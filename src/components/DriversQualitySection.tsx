@@ -45,7 +45,7 @@ const DriversQualitySection = () => {
           <Card className="border-0 shadow-lg bg-gradient-to-r from-green-50 to-emerald-50">
             <CardContent className="p-8 lg:p-12">
               <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-                <div>
+                <div className="text-center lg:text-left">
                   <h3 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-6">
                     Each driver is carefully handpicked and vetted by our team
                   </h3>
