@@ -656,7 +656,7 @@ const BookingForm = () => {
           body: {
             ...sanitizedData,
             amount: estimatedPrice ? estimatedPrice * 100 : 5000, // Convert to cents
-            paymentMethod: data.paymentMethod === 'card' ? 'card_online' : data.paymentMethod,
+            paymentMethod: 'card_online', // Default to card for online payments
           },
         });
 
@@ -1459,48 +1459,6 @@ const BookingForm = () => {
                                 Pay Online
                               </label>
                             </div>
-                            
-                            {/* Online Payment Sub-options */}
-                            {form.watch("paymentCategory") === "online" && (
-                              <div className="px-3 pb-3 ml-6 space-y-2 border-t bg-secondary/20">
-                                <div className="text-xs text-muted-foreground pt-2 mb-2">Choose payment option:</div>
-                                <FormField
-                                  control={form.control}
-                                  name="paymentMethod"
-                                  render={({ field: subField }) => (
-                                    <RadioGroup
-                                      onValueChange={subField.onChange}
-                                      value={subField.value}
-                                      className="space-y-2"
-                                    >
-                                      <div className="flex items-center space-x-2 p-2 border rounded hover:bg-background transition-colors">
-                                        <RadioGroupItem value="cash" id="cash_online" />
-                                        <label htmlFor="cash_online" className="flex items-center gap-2 text-sm cursor-pointer flex-1">
-                                          <DollarSign className="h-3 w-3 text-muted-foreground" />
-                                          Cash
-                                        </label>
-                                      </div>
-                                      
-                                      <div className="flex items-center space-x-2 p-2 border rounded hover:bg-background transition-colors">
-                                        <RadioGroupItem value="card" id="card_online" />
-                                        <label htmlFor="card_online" className="flex items-center gap-2 text-sm cursor-pointer flex-1">
-                                          <CreditCard className="h-3 w-3 text-muted-foreground" />
-                                          Card
-                                        </label>
-                                      </div>
-                                      
-                                      <div className="flex items-center space-x-2 p-2 border rounded hover:bg-background transition-colors">
-                                        <RadioGroupItem value="paypal" id="paypal_online" />
-                                        <label htmlFor="paypal_online" className="flex items-center gap-2 text-sm cursor-pointer flex-1">
-                                          <Wallet className="h-3 w-3 text-muted-foreground" />
-                                          PayPal
-                                        </label>
-                                      </div>
-                                    </RadioGroup>
-                                  )}
-                                />
-                              </div>
-                            )}
                           </div>
                         </RadioGroup>
                       </FormControl>
@@ -1521,7 +1479,7 @@ const BookingForm = () => {
                   <Button 
                     type="submit" 
                     className="flex-1 bg-accent hover:bg-accent/90 text-accent-foreground h-12 text-sm font-medium touch-manipulation"
-                    disabled={isSubmitting || !form.getValues('paymentCategory') || !form.getValues('paymentMethod')}
+                    disabled={isSubmitting || !form.getValues('paymentCategory') || (form.getValues('paymentCategory') === 'driver_direct' && !form.getValues('paymentMethod'))}
                   >
                     {isSubmitting ? (
                       <>
