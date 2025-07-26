@@ -27,6 +27,7 @@ interface PendingDriver {
   first_name: string;
   last_name: string;
   email: string;
+  phone: string;
   created_at: string;
   is_active: boolean;
 }
@@ -132,7 +133,7 @@ const DriversManagement = () => {
           // Get profiles for these users
           const { data: profilesData, error: profilesError2 } = await supabase
             .from('profiles')
-            .select('id, first_name, last_name, created_at')
+            .select('id, first_name, last_name, created_at, phone')
             .in('id', inactiveDriverUserIds);
 
           console.log('5. Inactive driver profiles:', profilesData);
@@ -140,16 +141,25 @@ const DriversManagement = () => {
           if (profilesError2) {
             console.error('Error fetching profiles:', profilesError2);
           } else if (profilesData) {
-            // Get emails for pending drivers
+            // Get emails and driver details for pending drivers
             const pendingWithEmails = await Promise.all(
               profilesData.map(async (profile: any) => {
                 const { data: userData } = await supabase.auth.admin.getUserById(profile.id);
+                
+                // Get driver record for phone number if not in profile
+                const { data: driverData } = await supabase
+                  .from('drivers')
+                  .select('phone')
+                  .eq('user_id', profile.id)
+                  .single();
+
                 console.log(`6. User data for ${profile.id}:`, userData.user?.email);
                 return {
                   id: profile.id,
                   first_name: profile.first_name,
                   last_name: profile.last_name,
                   email: userData.user?.email || 'Unknown',
+                  phone: profile.phone || driverData?.phone || 'Not provided',
                   created_at: profile.created_at,
                   is_active: false
                 };
@@ -202,7 +212,7 @@ const DriversManagement = () => {
 
       toast({
         title: "Success",
-        description: "Driver has been activated successfully.",
+        description: "Driver has been approved and activated successfully.",
       });
 
       await fetchDrivers();
@@ -211,6 +221,40 @@ const DriversManagement = () => {
       toast({
         title: "Error",
         description: "Failed to activate driver.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const declineDriver = async (driverId: string) => {
+    try {
+      // Delete the driver record and user role
+      const { error: driverError } = await supabase
+        .from('drivers')
+        .delete()
+        .eq('user_id', driverId);
+
+      if (driverError) throw driverError;
+
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', driverId)
+        .eq('role', 'driver');
+
+      if (roleError) throw roleError;
+
+      toast({
+        title: "Driver Declined",
+        description: "Driver application has been declined and removed from the system.",
+      });
+
+      await fetchDrivers();
+    } catch (error) {
+      console.error('Error declining driver:', error);
+      toast({
+        title: "Error",
+        description: "Failed to decline driver application.",
         variant: "destructive",
       });
     }
@@ -321,16 +365,28 @@ const DriversManagement = () => {
                             <span>{driver.email}</span>
                           </div>
                           <div className="flex items-center gap-2 text-muted-foreground">
+                            <Phone className="h-4 w-4" />
+                            <span>{driver.phone}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-muted-foreground">
                             <Calendar className="h-4 w-4" />
                             <span>Applied: {formatDate(driver.created_at)}</span>
                           </div>
                         </div>
-                        <Button 
-                          onClick={() => activateDriver(driver.id)}
-                          className="bg-green-600 hover:bg-green-700"
-                        >
-                          Approve Driver
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button 
+                            onClick={() => activateDriver(driver.id)}
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            Approve Driver
+                          </Button>
+                          <Button 
+                            onClick={() => declineDriver(driver.id)}
+                            variant="destructive"
+                          >
+                            Decline
+                          </Button>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>

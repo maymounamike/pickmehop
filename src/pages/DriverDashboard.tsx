@@ -114,6 +114,27 @@ const DriverDashboard = () => {
         .eq('user_id', session.user.id)
         .single();
 
+      if (!driverData) {
+        toast({
+          title: "Driver Profile Not Found",
+          description: "Please complete your driver registration.",
+          variant: "destructive",
+        });
+        navigate('/driver-signup');
+        return;
+      }
+
+      // Check if driver is approved/active
+      if (!driverData.is_active) {
+        toast({
+          title: "Account Pending Approval",
+          description: "Your driver application is pending admin approval. You'll receive access once approved.",
+          variant: "destructive",
+        });
+        navigate('/');
+        return;
+      }
+
       setDriver(driverData);
 
       // Load assigned bookings

@@ -73,12 +73,22 @@ const DriverScheduled = () => {
         return;
       }
 
-      // Get driver data
+      // Get driver data and check if approved
       const { data: driverData } = await supabase
         .from('drivers')
-        .select('id')
+        .select('id, is_active')
         .eq('user_id', session.user.id)
         .single();
+
+      if (!driverData?.is_active) {
+        toast({
+          title: "Account Pending Approval",
+          description: "Your driver application is pending admin approval.",
+          variant: "destructive",
+        });
+        navigate('/');
+        return;
+      }
 
       if (driverData) {
         // Load scheduled bookings (future rides that are confirmed)
