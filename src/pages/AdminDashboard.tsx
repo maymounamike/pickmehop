@@ -9,9 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { MapPin, Calendar, Clock, Users, Car, Phone, Mail, UserPlus, LogOut, Settings, Home } from "lucide-react";
+import { MapPin, Calendar, Clock, Users, Car, Phone, Mail, UserPlus, LogOut, Settings, Home, TrendingUp, Activity, AlertTriangle, CheckCircle, BarChart3, PieChart, ArrowRight } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { format } from "date-fns";
+import { format, subDays, isAfter } from "date-fns";
 
 interface Booking {
   id: string;
@@ -28,6 +28,7 @@ interface Booking {
   status: string;
   driver_id: string | null;
   assigned_at: string | null;
+  created_at: string;
   drivers?: {
     id: string;
     vehicle_make: string;
@@ -250,17 +251,39 @@ const AdminDashboard = () => {
 
   const unassignedBookings = bookings.filter(booking => !booking.driver_id);
   const assignedBookings = bookings.filter(booking => booking.driver_id);
+  
+  // Analytics calculations
+  const thirtyDaysAgo = subDays(new Date(), 30);
+  const bookingsLast30Days = bookings.filter(booking => 
+    isAfter(new Date(booking.created_at), thirtyDaysAgo)
+  );
+  const totalRevenueLast30Days = bookingsLast30Days.reduce((sum, booking) => 
+    sum + Number(booking.estimated_price), 0
+  );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 p-4">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
+        {/* Welcome Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-foreground mb-2">
+            Welcome Back, Admin! 👋
+          </h1>
+          <p className="text-muted-foreground text-lg">
+            Your Pick Me Hop command center is ready
+          </p>
+        </div>
+
+        {/* Quick Actions Header */}
         <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-            <p className="text-gray-600">Manage bookings and drivers</p>
-          </div>
           <div className="flex gap-2">
+            <Button 
+              onClick={() => navigate("/drivers")}
+              className="bg-gradient-to-r from-primary to-primary/80"
+            >
+              <Settings className="w-4 h-4 mr-2" />
+              God Mode
+            </Button>
             <Button 
               variant="outline"
               onClick={() => navigate("/dashboard")}
@@ -268,43 +291,131 @@ const AdminDashboard = () => {
               <Home className="w-4 h-4 mr-2" />
               Home
             </Button>
-            <Button onClick={handleSignOut} variant="outline">
-              <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
-            </Button>
           </div>
+          <Button onClick={handleSignOut} variant="outline">
+            <LogOut className="w-4 h-4 mr-2" />
+            Sign Out
+          </Button>
         </div>
 
-        {/* Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-          <Card>
-            <CardContent className="p-4">
-              <div className="text-2xl font-bold">{bookings.length}</div>
-              <p className="text-sm text-gray-600">Total Bookings</p>
+        {/* Analytics Dashboard */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-3xl font-bold text-green-700">{bookingsLast30Days.length}</div>
+                  <p className="text-sm text-green-600 font-medium">Bookings (30 days)</p>
+                </div>
+                <TrendingUp className="w-8 h-8 text-green-600" />
+              </div>
+              <div className="mt-2 text-xs text-green-600">
+                €{totalRevenueLast30Days.toFixed(2)} revenue
+              </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="text-2xl font-bold text-orange-600">{unassignedBookings.length}</div>
-              <p className="text-sm text-gray-600">Unassigned</p>
+
+          <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-3xl font-bold text-orange-700">{unassignedBookings.length}</div>
+                  <p className="text-sm text-orange-600 font-medium">Unassigned Rides</p>
+                </div>
+                <AlertTriangle className="w-8 h-8 text-orange-600" />
+              </div>
+              <div className="mt-2 text-xs text-orange-600">
+                {unassignedBookings.length > 0 ? 'Needs attention' : 'All good!'}
+              </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="text-2xl font-bold text-green-600">{assignedBookings.length}</div>
-              <p className="text-sm text-gray-600">Assigned</p>
+
+          <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-3xl font-bold text-yellow-700">{pendingDrivers.length}</div>
+                  <p className="text-sm text-yellow-600 font-medium">Pending Drivers</p>
+                </div>
+                <Clock className="w-8 h-8 text-yellow-600" />
+              </div>
+              <div className="mt-2 text-xs text-yellow-600">
+                Awaiting activation
+              </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="text-2xl font-bold text-blue-600">{drivers.length}</div>
-              <p className="text-sm text-gray-600">Active Drivers</p>
+
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-3xl font-bold text-blue-700">{drivers.length}</div>
+                  <p className="text-sm text-blue-600 font-medium">Active Drivers</p>
+                </div>
+                <CheckCircle className="w-8 h-8 text-blue-600" />
+              </div>
+              <div className="mt-2 text-xs text-blue-600">
+                Ready to serve
+              </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="text-2xl font-bold text-yellow-600">{pendingDrivers.length}</div>
-              <p className="text-sm text-gray-600">Pending Drivers</p>
+        </div>
+
+        {/* Quick Navigation Section */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/drivers")}>
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center text-lg">
+                <Settings className="w-5 h-5 mr-2 text-primary" />
+                God Mode
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Manage drivers, view profiles, and handle activations
+              </p>
+              <div className="flex items-center text-primary text-sm font-medium">
+                Access Control Panel <ArrowRight className="w-4 h-4 ml-2" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center text-lg">
+                <Activity className="w-5 h-5 mr-2 text-primary" />
+                Assignment Center
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Assign drivers to unassigned bookings quickly
+              </p>
+              <div className="text-sm">
+                <span className="font-semibold text-orange-600">{unassignedBookings.length}</span> rides need drivers
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center text-lg">
+                <BarChart3 className="w-5 h-5 mr-2 text-primary" />
+                Analytics
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Performance metrics and business insights
+              </p>
+              <div className="text-sm">
+                <div className="flex justify-between">
+                  <span>Success Rate:</span>
+                  <span className="font-semibold text-green-600">
+                    {bookings.length > 0 ? Math.round((assignedBookings.length / bookings.length) * 100) : 0}%
+                  </span>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
