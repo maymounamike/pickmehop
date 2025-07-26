@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useNavigate } from "react-router-dom";
 import { Loader } from "@googlemaps/js-api-loader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -51,6 +52,7 @@ const bookingSchema = z.object({
 type BookingFormData = z.infer<typeof bookingSchema>;
 
 const BookingForm = () => {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [estimatedPrice, setEstimatedPrice] = useState<number | null>(null);
@@ -476,10 +478,8 @@ const BookingForm = () => {
           throw new Error(error.message);
         }
 
-        toast({
-          title: "Booking Confirmed!",
-          description: `Thank you ${data.name}! Your booking is confirmed. We'll contact you shortly to arrange your ride from ${data.fromLocation} to ${data.toLocation}.`,
-        });
+        // Redirect to confirmation page instead of showing toast
+        navigate('/booking-confirmation');
         
         // Reset form after successful submission
         form.reset();
