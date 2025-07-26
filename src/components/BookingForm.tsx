@@ -183,8 +183,8 @@ const BookingForm = () => {
     const isOrlyRoute = (fromLower.includes('orly') || fromLower.includes('ory')) ||
                         (toLower.includes('orly') || toLower.includes('ory'));
     
-    // Van service pricing (5-8 passengers, ≤8 luggage)
-    if (passengers >= 5 && passengers <= 8 && luggage <= 8) {
+    // Van service pricing (5-8 passengers OR >4 luggage, luggage ≤8)
+    if ((passengers >= 5 && passengers <= 8 && luggage <= 8) || (luggage > 4 && luggage <= 8)) {
       if (isBeauvaisRoute) {
         return 220; // Van price for Beauvais
       }
