@@ -53,6 +53,15 @@ const bookingSchema = z.object({
 }, {
   message: "Flight number is required when pickup location is an airport",
   path: ["flightNumber"]
+}).refine((data) => {
+  // Cannot accept rides with more than 8 passengers OR more than 10 pieces of luggage
+  if (data.passengers > 8 || data.luggage > 10) {
+    return false;
+  }
+  return true;
+}, {
+  message: "We cannot accept rides with more than 8 passengers or more than 10 pieces of luggage",
+  path: ["passengers"]
 });
 
 type BookingFormData = z.infer<typeof bookingSchema>;
@@ -171,6 +180,9 @@ const BookingForm = () => {
   // Calculate estimated price with special airport rules
   const calculatePrice = (from: string, to: string, passengers: number, luggage: number = 1) => {
     if (!from || !to) return null;
+    
+    // Cannot accept rides with more than 8 passengers or more than 10 pieces of luggage
+    if (passengers > 8 || luggage > 10) return null;
     
     const fromLower = from.toLowerCase();
     const toLower = to.toLowerCase();
