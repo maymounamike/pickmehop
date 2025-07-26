@@ -143,45 +143,67 @@ const BookingForm = () => {
   });
 
   // Calculate estimated price with special airport rules
-  const calculatePrice = (from: string, to: string, passengers: number) => {
+  const calculatePrice = (from: string, to: string, passengers: number, luggage: number = 1) => {
     if (!from || !to) return null;
     
     const fromLower = from.toLowerCase();
     const toLower = to.toLowerCase();
     
-    // Check for Charles de Gaulle Airport + Paris (75xxx) combination
-    const isCDGRoute = (fromLower.includes('charles de gaulle') || fromLower.includes('cdg')) ||
-                       (toLower.includes('charles de gaulle') || toLower.includes('cdg'));
-    const isParisAddress = from.includes('75') || to.includes('75');
+    // Fixed pricing rules only apply when passengers ≤ 4 and luggage ≤ 4
+    const qualifiesForFixedPricing = passengers <= 4 && luggage <= 4;
     
-    if (isCDGRoute && isParisAddress) {
-      return 75; // Fixed price for CDG + Paris
+    if (qualifiesForFixedPricing) {
+      // Check for Beauvais Airport (150€ fixed price)
+      const isBeauvaisRoute = (fromLower.includes('beauvais') || fromLower.includes('bva') || fromLower.includes('tillé')) ||
+                              (toLower.includes('beauvais') || toLower.includes('bva') || toLower.includes('tillé'));
+      
+      if (isBeauvaisRoute) {
+        return 150; // Fixed price for Beauvais
+      }
+      
+      // Check for Charles de Gaulle Airport + Paris (75xxx) combination
+      const isCDGRoute = (fromLower.includes('charles de gaulle') || fromLower.includes('cdg')) ||
+                         (toLower.includes('charles de gaulle') || toLower.includes('cdg'));
+      const isParisAddress = from.includes('75') || to.includes('75');
+      
+      if (isCDGRoute && isParisAddress) {
+        return 75; // Fixed price for CDG + Paris
+      }
+      
+      // Check for Orly Airport + Paris (75xxx) combination
+      const isOrlyRoute = (fromLower.includes('orly') || fromLower.includes('ory')) ||
+                          (toLower.includes('orly') || toLower.includes('ory'));
+      
+      if (isOrlyRoute && isParisAddress) {
+        return 65; // Fixed price for Orly + Paris
+      }
     }
     
-    // Check for Orly Airport + Paris (75xxx) combination
-    const isOrlyRoute = (fromLower.includes('orly') || fromLower.includes('ory')) ||
-                        (toLower.includes('orly') || toLower.includes('ory'));
-    
-    if (isOrlyRoute && isParisAddress) {
-      return 65; // Fixed price for Orly + Paris
-    }
-    
-    // Standard price calculation for other routes
+    // Standard price calculation for other routes or when fixed pricing doesn't apply
     const basePrice = 25;
     const perKmRate = 1.5;
     const passengerSurcharge = passengers > 4 ? (passengers - 4) * 5 : 0;
-    const estimatedKm = fromLower.includes('airport') || toLower.includes('airport') ? 35 : 20;
+    const luggageSurcharge = luggage > 4 ? (luggage - 4) * 3 : 0;
     
-    return Math.round(basePrice + (estimatedKm * perKmRate) + passengerSurcharge);
+    // Estimate distance based on route type
+    let estimatedKm = 20; // Default city distance
+    if (fromLower.includes('airport') || toLower.includes('airport') || 
+        fromLower.includes('cdg') || toLower.includes('cdg') ||
+        fromLower.includes('orly') || toLower.includes('orly') ||
+        fromLower.includes('beauvais') || toLower.includes('beauvais')) {
+      estimatedKm = 35; // Airport distance
+    }
+    
+    return Math.round(basePrice + (estimatedKm * perKmRate) + passengerSurcharge + luggageSurcharge);
   };
 
   // Watch form values to calculate price
-  const watchedValues = form.watch(['fromLocation', 'toLocation', 'passengers']);
+  const watchedValues = form.watch(['fromLocation', 'toLocation', 'passengers', 'luggage']);
   
   // Update price when form values change
   useEffect(() => {
-    const [from, to, passengers] = watchedValues;
-    const price = calculatePrice(from, to, passengers);
+    const [from, to, passengers, luggage] = watchedValues;
+    const price = calculatePrice(from, to, passengers, luggage);
     setEstimatedPrice(price);
   }, [watchedValues]);
 
