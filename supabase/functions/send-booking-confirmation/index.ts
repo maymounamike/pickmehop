@@ -57,6 +57,22 @@ interface BookingConfirmationRequest {
   flightNumber?: string;
 }
 
+// Helper function to get payment method with icon
+const getPaymentMethodDisplay = (paymentMethod: string): string => {
+  switch(paymentMethod?.toLowerCase()) {
+    case 'cash':
+      return '💵 Cash Payment';
+    case 'card_onboard':
+      return '💳 Card Payment (On Board)';
+    case 'card_online':
+      return '💳 Card Payment (Online)';
+    case 'paypal':
+      return '🅿️ PayPal';
+    default:
+      return `💳 ${paymentMethod}`;
+  }
+};
+
 const generateCustomerEmailHTML = (booking: BookingConfirmationRequest) => {
   // Format date to remove the T22:00:00.000Z part
   const formattedDate = booking.date ? new Date(booking.date).toLocaleDateString('en-GB', {
@@ -130,10 +146,10 @@ const generateCustomerEmailHTML = (booking: BookingConfirmationRequest) => {
           <span class="detail-label">Luggage:</span>
           <span class="detail-value">${booking.luggage} pieces</span>
         </div>
-        <div class="detail-row">
-          <span class="detail-label">Payment Method:</span>
-          <span class="detail-value">${booking.paymentMethod}</span>
-        </div>
+         <div class="detail-row">
+           <span class="detail-label">Payment Method:</span>
+           <span class="detail-value">${getPaymentMethodDisplay(booking.paymentMethod)}</span>
+         </div>
         ${booking.flightNumber ? `<div class="detail-row"><span class="detail-label">Flight Number:</span><span class="detail-value">${booking.flightNumber}</span></div>` : ''}
         
         <div class="price-highlight">
@@ -246,10 +262,10 @@ const generateBusinessEmailHTML = (booking: BookingConfirmationRequest) => {
           <span class="detail-label">Estimated Price:</span>
           <span class="detail-value">€${booking.estimatedPrice}</span>
         </div>
-        <div class="detail-row">
-          <span class="detail-label">Payment Method:</span>
-          <span class="detail-value">${booking.paymentMethod}</span>
-        </div>
+         <div class="detail-row">
+           <span class="detail-label">Payment Method:</span>
+           <span class="detail-value">${getPaymentMethodDisplay(booking.paymentMethod)}</span>
+         </div>
         ${booking.flightNumber ? `<div class="detail-row"><span class="detail-label">Flight Number:</span><span class="detail-value">${booking.flightNumber}</span></div>` : ''}
       </div>
       
