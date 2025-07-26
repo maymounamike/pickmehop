@@ -5,8 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft, UserCheck, Car, Phone, Mail, Calendar, User } from "lucide-react";
-import Header from "@/components/Header";
+import { Loader2, UserCheck, Car, Phone, Mail, Calendar, Trash2, Crown } from "lucide-react";
 
 interface Driver {
   id: string;
@@ -30,20 +29,22 @@ interface PendingDriver {
   is_active: boolean;
 }
 
-interface RegularUser {
+interface DeletedDriver {
   id: string;
+  user_id: string;
   first_name: string;
   last_name: string;
   email: string;
-  created_at: string;
+  deleted_at: string;
+  vehicle_make?: string;
+  vehicle_model?: string;
 }
 
 const DriversManagement = () => {
   const [user, setUser] = useState<any>(null);
   const [activeDrivers, setActiveDrivers] = useState<Driver[]>([]);
   const [pendingDrivers, setPendingDrivers] = useState<PendingDriver[]>([]);
-  const [regularUsers, setRegularUsers] = useState<RegularUser[]>([]);
-  const [showRegularUsers, setShowRegularUsers] = useState(false);
+  const [deletedDrivers, setDeletedDrivers] = useState<DeletedDriver[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -123,10 +124,8 @@ const DriversManagement = () => {
         setPendingDrivers(pendingWithEmails);
       }
 
-      // Fetch regular users (users without driver role) - only when requested
-      if (showRegularUsers) {
-        await fetchRegularUsers();
-      }
+      // Fetch deleted drivers - soft deleted drivers
+      await fetchDeletedDrivers();
 
     } catch (error) {
       console.error('Unexpected error:', error);
@@ -140,55 +139,13 @@ const DriversManagement = () => {
     }
   };
 
-  const fetchRegularUsers = async () => {
+  const fetchDeletedDrivers = async () => {
     try {
-      // Get all profiles that don't have driver role
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select(`
-          id,
-          first_name,
-          last_name,
-          created_at
-        `)
-        .order('created_at', { ascending: false });
-
-      if (profilesError) {
-        console.error('Error fetching profiles:', profilesError);
-        return;
-      }
-
-      if (profilesData) {
-        // Filter out users who already have driver role
-        const usersWithoutDriverRole = [];
-        
-        for (const profile of profilesData) {
-          const { data: roleData } = await supabase
-            .from('user_roles')
-            .select('role')
-            .eq('user_id', profile.id)
-            .eq('role', 'driver')
-            .single();
-          
-          if (!roleData) {
-            // Get email from auth.users
-            const { data: userData } = await supabase.auth.admin.getUserById(profile.id);
-            if (userData.user) {
-              usersWithoutDriverRole.push({
-                id: profile.id,
-                first_name: profile.first_name,
-                last_name: profile.last_name,
-                email: userData.user.email,
-                created_at: profile.created_at
-              });
-            }
-          }
-        }
-        
-        setRegularUsers(usersWithoutDriverRole);
-      }
+      // For now, we'll create a placeholder for deleted drivers
+      // In a real app, you'd have a deleted_at timestamp or separate table
+      setDeletedDrivers([]);
     } catch (error) {
-      console.error('Error fetching regular users:', error);
+      console.error('Error fetching deleted drivers:', error);
     }
   };
 
@@ -217,128 +174,6 @@ const DriversManagement = () => {
     }
   };
 
-  const createTestDriverAccount = async () => {
-    if (!user) {
-      toast({
-        title: "Error",
-        description: "You must be logged in to create a test driver account.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      // Check if user already has driver role
-      const { data: existingRole } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .eq('role', 'driver')
-        .single();
-
-      // Add driver role if not exists
-      if (!existingRole) {
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .insert({
-            user_id: user.id,
-            role: 'driver'
-          });
-
-        if (roleError) throw roleError;
-      }
-
-      // Check if driver profile already exists
-      const { data: existingDriver } = await supabase
-        .from('drivers')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
-
-      // Create driver profile if not exists
-      if (!existingDriver) {
-        const { error: driverError } = await supabase
-          .from('drivers')
-          .insert({
-            user_id: user.id,
-            license_number: 'TEST-LICENSE-123',
-            vehicle_make: 'Toyota',
-            vehicle_model: 'Camry',
-            vehicle_year: 2023,
-            vehicle_license_plate: 'TEST-123',
-            phone: '+33 1 23 45 67 89',
-            is_active: true
-          });
-
-        if (driverError) throw driverError;
-      } else {
-        // If exists but inactive, activate it
-        const { error: updateError } = await supabase
-          .from('drivers')
-          .update({ is_active: true })
-          .eq('user_id', user.id);
-
-        if (updateError) throw updateError;
-      }
-
-      toast({
-        title: "Success!",
-        description: "You are now set up as a test driver with sample vehicle information.",
-      });
-
-      await fetchDrivers();
-    } catch (error) {
-      console.error('Error creating test driver account:', error);
-      toast({
-        title: "Error",
-        description: "Failed to create test driver account. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const convertToPendingDriver = async (userId: string) => {
-    try {
-      // 1. Assign driver role
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .insert({
-          user_id: userId,
-          role: 'driver'
-        });
-
-      if (roleError) throw roleError;
-
-      // 2. Create driver entry (inactive by default)
-      const { error: driverError } = await supabase
-        .from('drivers')
-        .insert({
-          user_id: userId,
-          is_active: false
-        });
-
-      if (driverError) throw driverError;
-
-      toast({
-        title: "Success",
-        description: "User has been converted to a pending driver successfully.",
-      });
-
-      // Refresh the lists
-      await fetchDrivers();
-      if (showRegularUsers) {
-        await fetchRegularUsers();
-      }
-    } catch (error) {
-      console.error('Error converting user to pending driver:', error);
-      toast({
-        title: "Error",
-        description: "Failed to convert user to pending driver.",
-        variant: "destructive",
-      });
-    }
-  };
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -357,119 +192,41 @@ const DriversManagement = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
-      <Header />
-      
       <div className="container mx-auto px-4 py-8">
-        {/* Back to Dashboard Button */}
-        <Button
-          variant="ghost"
-          className="mb-6 text-muted-foreground hover:text-foreground"
-          onClick={() => navigate("/dashboard")}
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Dashboard
-        </Button>
-
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold">Drivers Management</h1>
-            <p className="text-muted-foreground">Manage active and pending drivers</p>
+            <h1 className="text-3xl font-bold flex items-center">
+              <Crown className="mr-3 h-8 w-8 text-yellow-500" />
+              God Mode
+            </h1>
+            <p className="text-muted-foreground">Ultimate control over drivers and system</p>
           </div>
-          <div className="flex items-center gap-4">
-            <Button
-              variant={showRegularUsers ? "default" : "outline"}
-              onClick={() => {
-                setShowRegularUsers(!showRegularUsers);
-                if (!showRegularUsers) {
-                  fetchRegularUsers();
-                }
-              }}
-              className="bg-purple-600 hover:bg-purple-700"
-            >
-              <User className="mr-2 h-4 w-4" />
-              {showRegularUsers ? "Hide Regular Users" : "Show Regular Users"}
-            </Button>
-            <div className="flex items-center gap-6">
-              <Button
-                onClick={createTestDriverAccount}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                <UserCheck className="mr-2 h-4 w-4" />
-                Make Me a Test Driver
-              </Button>
-              <div className="flex gap-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">{activeDrivers.length}</div>
-                  <p className="text-sm text-muted-foreground">Active Drivers</p>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-yellow-600">{pendingDrivers.length}</div>
-                  <p className="text-sm text-muted-foreground">Pending Activation</p>
-                </div>
-              </div>
+          <div className="flex gap-6">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">{activeDrivers.length}</div>
+              <p className="text-sm text-muted-foreground">Active Drivers</p>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-yellow-600">{pendingDrivers.length}</div>
+              <p className="text-sm text-muted-foreground">Pending Requests</p>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-red-600">{deletedDrivers.length}</div>
+              <p className="text-sm text-muted-foreground">Deleted Drivers</p>
             </div>
           </div>
         </div>
 
-        {/* Regular Users Section - Convert to Pending Drivers */}
-        {showRegularUsers && regularUsers.length > 0 && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="text-purple-600 flex items-center">
-                <User className="mr-2 h-5 w-5" />
-                Regular Users ({regularUsers.length})
-              </CardTitle>
-              <CardDescription>
-                Convert these regular users to pending drivers
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4">
-                {regularUsers.map((user) => (
-                  <Card key={user.id} className="border-l-4 border-l-purple-500">
-                    <CardContent className="p-4">
-                      <div className="flex justify-between items-center">
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-semibold text-lg">
-                              {user.first_name} {user.last_name}
-                            </h3>
-                            <Badge variant="outline">REGULAR USER</Badge>
-                          </div>
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <Mail className="h-4 w-4" />
-                            <span>{user.email}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <Calendar className="h-4 w-4" />
-                            <span>Registered: {formatDate(user.created_at)}</span>
-                          </div>
-                        </div>
-                        <Button 
-                          onClick={() => convertToPendingDriver(user.id)}
-                          className="bg-purple-600 hover:bg-purple-700"
-                        >
-                          Convert to Pending Driver
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Pending Drivers Section */}
+        {/* Pending Requests Section */}
         {pendingDrivers.length > 0 && (
           <Card className="mb-8">
             <CardHeader>
               <CardTitle className="text-yellow-600 flex items-center">
                 <UserCheck className="mr-2 h-5 w-5" />
-                Pending Driver Activations ({pendingDrivers.length})
+                Pending Requests ({pendingDrivers.length})
               </CardTitle>
               <CardDescription>
-                These drivers have signed up and are waiting for activation
+                Driver applications awaiting approval
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -491,14 +248,14 @@ const DriversManagement = () => {
                           </div>
                           <div className="flex items-center gap-2 text-muted-foreground">
                             <Calendar className="h-4 w-4" />
-                            <span>Registered: {formatDate(driver.created_at)}</span>
+                            <span>Applied: {formatDate(driver.created_at)}</span>
                           </div>
                         </div>
                         <Button 
                           onClick={() => activateDriver(driver.id)}
                           className="bg-green-600 hover:bg-green-700"
                         >
-                          Activate Driver
+                          Approve Driver
                         </Button>
                       </div>
                     </CardContent>
@@ -510,7 +267,7 @@ const DriversManagement = () => {
         )}
 
         {/* Active Drivers Section */}
-        <Card>
+        <Card className="mb-8">
           <CardHeader>
             <CardTitle className="text-green-600 flex items-center">
               <Car className="mr-2 h-5 w-5" />
@@ -565,6 +322,57 @@ const DriversManagement = () => {
                           <div className="flex items-center gap-2 text-muted-foreground text-sm">
                             <Calendar className="h-4 w-4" />
                             <span>Joined: {formatDate(driver.created_at)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Deleted Drivers Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-red-600 flex items-center">
+              <Trash2 className="mr-2 h-5 w-5" />
+              Deleted Drivers ({deletedDrivers.length})
+            </CardTitle>
+            <CardDescription>
+              Drivers who have been removed from the system
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {deletedDrivers.length === 0 ? (
+              <div className="text-center py-12">
+                <Trash2 className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No deleted drivers</h3>
+                <p className="text-muted-foreground">
+                  Deleted drivers will appear here for record keeping.
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-4">
+                {deletedDrivers.map((driver) => (
+                  <Card key={driver.id} className="border-l-4 border-l-red-500 opacity-60">
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-start">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-lg">
+                              {driver.first_name} {driver.last_name}
+                            </h3>
+                            <Badge variant="destructive">DELETED</Badge>
+                          </div>
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <Mail className="h-4 w-4" />
+                            <span>{driver.email}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <Calendar className="h-4 w-4" />
+                            <span>Deleted: {formatDate(driver.deleted_at)}</span>
                           </div>
                         </div>
                       </div>
