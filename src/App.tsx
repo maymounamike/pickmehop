@@ -18,6 +18,7 @@ import DriversManagement from "./pages/DriversManagement";
 import DriverOngoing from "./pages/DriverOngoing";
 import AdminDashboard from "./pages/AdminDashboard";
 import BookingConfirmation from "./pages/BookingConfirmation";
+import DriverAuth from "./pages/DriverAuth";
 
 const queryClient = new QueryClient();
 
@@ -32,7 +33,8 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
-        <Route path="/drivers" element={<DriversManagement />} />
+            <Route path="/driver-signup" element={<DriverAuth />} />
+            <Route path="/drivers" element={<DriversManagement />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/driver" element={<DriverDashboard />} />
             <Route path="/driver/profile" element={<DriverProfile />} />
