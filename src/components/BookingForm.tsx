@@ -211,13 +211,57 @@ const BookingForm = () => {
     return presets;
   };
 
-  // Address suggestion function using Google Places API
+  // Hotel suggestion function for Paris hotels
+  const fetchHotelSuggestions = async (query: string) => {
+    if (query.length < 2) return [];
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('get-paris-hotels', {
+        body: { query }
+      });
+      
+      if (error) {
+        console.error('Error fetching hotel suggestions:', error);
+        return [];
+      }
+      
+      return data?.hotels || [];
+    } catch (error) {
+      console.error('Error fetching hotel suggestions:', error);
+      return [];
+    }
+  };
+
+  // Enhanced address suggestion function that includes hotels
   const fetchAddressSuggestions = async (query: string) => {
     // First check for airport presets (minimum 2 characters)
     if (query.length >= 2) {
       const airportPresets = getAirportPresets(query);
       if (airportPresets.length > 0) {
         return airportPresets;
+      }
+    }
+
+    // Check for hotel suggestions if query might be a hotel
+    if (query.length >= 2 && (
+      query.toLowerCase().includes('hotel') || 
+      query.toLowerCase().includes('ritz') ||
+      query.toLowerCase().includes('plaza') ||
+      query.toLowerCase().includes('hilton') ||
+      query.toLowerCase().includes('marriott') ||
+      query.toLowerCase().includes('hyatt') ||
+      query.toLowerCase().includes('bristol') ||
+      query.toLowerCase().includes('costes') ||
+      query.toLowerCase().includes('georges') ||
+      query.toLowerCase().includes('george') ||
+      query.toLowerCase().includes('peninsula') ||
+      query.toLowerCase().includes('meurice') ||
+      query.toLowerCase().includes('crillon') ||
+      query.toLowerCase().includes('shangri')
+    )) {
+      const hotelSuggestions = await fetchHotelSuggestions(query);
+      if (hotelSuggestions.length > 0) {
+        return hotelSuggestions;
       }
     }
 
