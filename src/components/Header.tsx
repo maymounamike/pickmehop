@@ -8,6 +8,7 @@ import HelpDialog from "./HelpDialog";
 const Header = () => {
   const [user, setUser] = useState<any>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [isScrolled, setIsScrolled] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -51,13 +52,27 @@ const Header = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Listen for scroll events to add/remove separation
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate("/");
   };
 
   return (
-    <header className="absolute top-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-sm border-b border-white/10">
+    <header className={`absolute top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      isScrolled 
+        ? 'bg-black/90 backdrop-blur-sm border-b border-white/10 shadow-lg' 
+        : 'bg-transparent'
+    }`}>
       <div className="container mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <img 
