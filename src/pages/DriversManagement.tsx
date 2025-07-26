@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft, UserCheck, Car, Phone, Mail, Calendar } from "lucide-react";
+import { Loader2, ArrowLeft, UserCheck, Car, Phone, Mail, Calendar, User } from "lucide-react";
 import Header from "@/components/Header";
 
 interface Driver {
@@ -30,10 +30,20 @@ interface PendingDriver {
   is_active: boolean;
 }
 
+interface RegularUser {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  created_at: string;
+}
+
 const DriversManagement = () => {
   const [user, setUser] = useState<any>(null);
   const [activeDrivers, setActiveDrivers] = useState<Driver[]>([]);
   const [pendingDrivers, setPendingDrivers] = useState<PendingDriver[]>([]);
+  const [regularUsers, setRegularUsers] = useState<RegularUser[]>([]);
+  const [showRegularUsers, setShowRegularUsers] = useState(false);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -113,6 +123,11 @@ const DriversManagement = () => {
         setPendingDrivers(pendingWithEmails);
       }
 
+      // Fetch regular users (users without driver role) - only when requested
+      if (showRegularUsers) {
+        await fetchRegularUsers();
+      }
+
     } catch (error) {
       console.error('Unexpected error:', error);
       toast({
@@ -122,6 +137,58 @@ const DriversManagement = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchRegularUsers = async () => {
+    try {
+      // Get all profiles that don't have driver role
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select(`
+          id,
+          first_name,
+          last_name,
+          created_at
+        `)
+        .order('created_at', { ascending: false });
+
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+        return;
+      }
+
+      if (profilesData) {
+        // Filter out users who already have driver role
+        const usersWithoutDriverRole = [];
+        
+        for (const profile of profilesData) {
+          const { data: roleData } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', profile.id)
+            .eq('role', 'driver')
+            .single();
+          
+          if (!roleData) {
+            // Get email from auth.users
+            const { data: userData } = await supabase.auth.admin.getUserById(profile.id);
+            if (userData.user) {
+              usersWithoutDriverRole.push({
+                id: profile.id,
+                first_name: profile.first_name,
+                last_name: profile.last_name,
+                email: userData.user.email,
+                created_at: profile.created_at
+              });
+            }
+          }
+        }
+        
+        setRegularUsers(usersWithoutDriverRole);
+      }
+    } catch (error) {
+      console.error('Error fetching regular users:', error);
     }
   };
 
@@ -230,6 +297,48 @@ const DriversManagement = () => {
     }
   };
 
+  const convertToPendingDriver = async (userId: string) => {
+    try {
+      // 1. Assign driver role
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .insert({
+          user_id: userId,
+          role: 'driver'
+        });
+
+      if (roleError) throw roleError;
+
+      // 2. Create driver entry (inactive by default)
+      const { error: driverError } = await supabase
+        .from('drivers')
+        .insert({
+          user_id: userId,
+          is_active: false
+        });
+
+      if (driverError) throw driverError;
+
+      toast({
+        title: "Success",
+        description: "User has been converted to a pending driver successfully.",
+      });
+
+      // Refresh the lists
+      await fetchDrivers();
+      if (showRegularUsers) {
+        await fetchRegularUsers();
+      }
+    } catch (error) {
+      console.error('Error converting user to pending driver:', error);
+      toast({
+        title: "Error",
+        description: "Failed to convert user to pending driver.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -266,26 +375,90 @@ const DriversManagement = () => {
             <h1 className="text-3xl font-bold">Drivers Management</h1>
             <p className="text-muted-foreground">Manage active and pending drivers</p>
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
             <Button
-              onClick={createTestDriverAccount}
-              className="bg-blue-600 hover:bg-blue-700"
+              variant={showRegularUsers ? "default" : "outline"}
+              onClick={() => {
+                setShowRegularUsers(!showRegularUsers);
+                if (!showRegularUsers) {
+                  fetchRegularUsers();
+                }
+              }}
+              className="bg-purple-600 hover:bg-purple-700"
             >
-              <UserCheck className="mr-2 h-4 w-4" />
-              Make Me a Test Driver
+              <User className="mr-2 h-4 w-4" />
+              {showRegularUsers ? "Hide Regular Users" : "Show Regular Users"}
             </Button>
-            <div className="flex gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">{activeDrivers.length}</div>
-                <p className="text-sm text-muted-foreground">Active Drivers</p>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-yellow-600">{pendingDrivers.length}</div>
-                <p className="text-sm text-muted-foreground">Pending Activation</p>
+            <div className="flex items-center gap-6">
+              <Button
+                onClick={createTestDriverAccount}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <UserCheck className="mr-2 h-4 w-4" />
+                Make Me a Test Driver
+              </Button>
+              <div className="flex gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">{activeDrivers.length}</div>
+                  <p className="text-sm text-muted-foreground">Active Drivers</p>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-yellow-600">{pendingDrivers.length}</div>
+                  <p className="text-sm text-muted-foreground">Pending Activation</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Regular Users Section - Convert to Pending Drivers */}
+        {showRegularUsers && regularUsers.length > 0 && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="text-purple-600 flex items-center">
+                <User className="mr-2 h-5 w-5" />
+                Regular Users ({regularUsers.length})
+              </CardTitle>
+              <CardDescription>
+                Convert these regular users to pending drivers
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4">
+                {regularUsers.map((user) => (
+                  <Card key={user.id} className="border-l-4 border-l-purple-500">
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-center">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-lg">
+                              {user.first_name} {user.last_name}
+                            </h3>
+                            <Badge variant="outline">REGULAR USER</Badge>
+                          </div>
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <Mail className="h-4 w-4" />
+                            <span>{user.email}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <Calendar className="h-4 w-4" />
+                            <span>Registered: {formatDate(user.created_at)}</span>
+                          </div>
+                        </div>
+                        <Button 
+                          onClick={() => convertToPendingDriver(user.id)}
+                          className="bg-purple-600 hover:bg-purple-700"
+                        >
+                          Convert to Pending Driver
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Pending Drivers Section */}
         {pendingDrivers.length > 0 && (
