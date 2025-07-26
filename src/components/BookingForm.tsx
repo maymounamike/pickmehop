@@ -1139,7 +1139,7 @@ const BookingForm = () => {
                 </div>
 
                 {/* Special Requests */}
-                <div className="space-y-4">
+                <div className="space-y-2">
                   <div className="text-xs font-medium">Special Requests (Optional)</div>
                   
                   {/* Child Seat Option */}
@@ -1166,39 +1166,39 @@ const BookingForm = () => {
 
                   {/* Child Seat Type Options - Show when child seat is checked */}
                   {form.watch("childSeat") && (
-                    <div className="ml-7 space-y-4">
-                      <div className="text-xs text-muted-foreground">Select quantities needed:</div>
+                    <div className="ml-6 space-y-2">
+                      <div className="text-xs text-muted-foreground mb-1">Select quantities:</div>
                       
                       {/* Infant Carrier Quantity */}
                       <FormField
                         control={form.control}
                         name="infantCarrierQty"
                         render={({ field }) => (
-                          <FormItem>
-                            <div className="flex items-center justify-between">
-                              <FormLabel className="text-sm">Infant carrier (0-6 months)</FormLabel>
-                              <div className="flex items-center gap-2">
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  className="h-8 w-8 p-0"
+                           <FormItem className="py-1">
+                             <div className="flex items-center justify-between">
+                               <FormLabel className="text-xs">Infant (0-6m)</FormLabel>
+                               <div className="flex items-center gap-1">
+                                 <Button
+                                   type="button"
+                                   variant="outline"
+                                   size="sm"
+                                   className="h-6 w-6 p-0"
                                   onClick={() => field.onChange(Math.max(0, (field.value || 0) - 1))}
                                   disabled={(field.value || 0) <= 0}
                                 >
-                                  <Minus className="h-3 w-3" />
-                                </Button>
-                                <span className="w-8 text-center text-sm">{field.value || 0}</span>
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  className="h-8 w-8 p-0"
+                                   <Minus className="h-2 w-2" />
+                                 </Button>
+                                 <span className="w-6 text-center text-xs">{field.value || 0}</span>
+                                 <Button
+                                   type="button"
+                                   variant="outline"
+                                   size="sm"
+                                   className="h-6 w-6 p-0"
                                   onClick={() => field.onChange(Math.min(4, (field.value || 0) + 1))}
                                   disabled={(field.value || 0) >= 4}
                                 >
-                                  <Plus className="h-3 w-3" />
-                                </Button>
+                                   <Plus className="h-2 w-2" />
+                                 </Button>
                               </div>
                             </div>
                             <FormMessage />
@@ -1207,36 +1207,36 @@ const BookingForm = () => {
                       />
 
                       {/* Child Seat Quantity */}
-                      <FormField
-                        control={form.control}
-                        name="childSeatQty"
-                        render={({ field }) => (
-                          <FormItem>
-                            <div className="flex items-center justify-between">
-                              <FormLabel className="text-sm">Child seat (6 months - 3 years)</FormLabel>
-                              <div className="flex items-center gap-2">
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  className="h-8 w-8 p-0"
-                                  onClick={() => field.onChange(Math.max(0, (field.value || 0) - 1))}
-                                  disabled={(field.value || 0) <= 0}
-                                >
-                                  <Minus className="h-3 w-3" />
-                                </Button>
-                                <span className="w-8 text-center text-sm">{field.value || 0}</span>
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  className="h-8 w-8 p-0"
-                                  onClick={() => field.onChange(Math.min(4, (field.value || 0) + 1))}
-                                  disabled={(field.value || 0) >= 4}
-                                >
-                                  <Plus className="h-3 w-3" />
-                                </Button>
-                              </div>
+                       <FormField
+                         control={form.control}
+                         name="childSeatQty"
+                         render={({ field }) => (
+                           <FormItem className="py-1">
+                             <div className="flex items-center justify-between">
+                               <FormLabel className="text-xs">Child (6m-3y)</FormLabel>
+                               <div className="flex items-center gap-1">
+                                 <Button
+                                   type="button"
+                                   variant="outline"
+                                   size="sm"
+                                   className="h-6 w-6 p-0"
+                                   onClick={() => field.onChange(Math.max(0, (field.value || 0) - 1))}
+                                   disabled={(field.value || 0) <= 0}
+                                 >
+                                   <Minus className="h-2 w-2" />
+                                 </Button>
+                                 <span className="w-6 text-center text-xs">{field.value || 0}</span>
+                                 <Button
+                                   type="button"
+                                   variant="outline"
+                                   size="sm"
+                                   className="h-6 w-6 p-0"
+                                   onClick={() => field.onChange(Math.min(4, (field.value || 0) + 1))}
+                                   disabled={(field.value || 0) >= 4}
+                                 >
+                                   <Plus className="h-2 w-2" />
+                                 </Button>
+                               </div>
                             </div>
                             <FormMessage />
                           </FormItem>
@@ -1244,36 +1244,36 @@ const BookingForm = () => {
                       />
 
                       {/* Booster Quantity */}
-                      <FormField
-                        control={form.control}
-                        name="boosterQty"
-                        render={({ field }) => (
-                          <FormItem>
-                            <div className="flex items-center justify-between">
-                              <FormLabel className="text-sm">Booster (3-12 years)</FormLabel>
-                              <div className="flex items-center gap-2">
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  className="h-8 w-8 p-0"
-                                  onClick={() => field.onChange(Math.max(0, (field.value || 0) - 1))}
-                                  disabled={(field.value || 0) <= 0}
-                                >
-                                  <Minus className="h-3 w-3" />
-                                </Button>
-                                <span className="w-8 text-center text-sm">{field.value || 0}</span>
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  className="h-8 w-8 p-0"
-                                  onClick={() => field.onChange(Math.min(4, (field.value || 0) + 1))}
-                                  disabled={(field.value || 0) >= 4}
-                                >
-                                  <Plus className="h-3 w-3" />
-                                </Button>
-                              </div>
+                       <FormField
+                         control={form.control}
+                         name="boosterQty"
+                         render={({ field }) => (
+                           <FormItem className="py-1">
+                             <div className="flex items-center justify-between">
+                               <FormLabel className="text-xs">Booster (3-12y)</FormLabel>
+                               <div className="flex items-center gap-1">
+                                 <Button
+                                   type="button"
+                                   variant="outline"
+                                   size="sm"
+                                   className="h-6 w-6 p-0"
+                                   onClick={() => field.onChange(Math.max(0, (field.value || 0) - 1))}
+                                   disabled={(field.value || 0) <= 0}
+                                 >
+                                   <Minus className="h-2 w-2" />
+                                 </Button>
+                                 <span className="w-6 text-center text-xs">{field.value || 0}</span>
+                                 <Button
+                                   type="button"
+                                   variant="outline"
+                                   size="sm"
+                                   className="h-6 w-6 p-0"
+                                   onClick={() => field.onChange(Math.min(4, (field.value || 0) + 1))}
+                                   disabled={(field.value || 0) >= 4}
+                                 >
+                                   <Plus className="h-2 w-2" />
+                                 </Button>
+                               </div>
                             </div>
                             <FormMessage />
                           </FormItem>
