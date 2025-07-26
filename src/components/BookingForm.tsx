@@ -14,7 +14,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { CalendarIcon, MapPin, Minus, Plus, Users, Luggage, Loader2, Euro, Phone, Mail, CreditCard, DollarSign, Wallet, Baby, Accessibility, FileText, User, UserCheck } from "lucide-react";
+import { CalendarIcon, MapPin, Minus, Plus, Users, Luggage, Loader2, Euro, Phone, Mail, CreditCard, DollarSign, Wallet, Baby, Accessibility, FileText, User, UserCheck, Car, Globe } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
@@ -46,7 +46,8 @@ const bookingSchema = z.object({
   wheelchairAccess: z.boolean().optional(),
   notesToDriver: z.boolean().optional(),
   driverNotes: z.string().max(500, "Notes too long").optional(),
-  paymentMethod: z.enum(["cash", "card_onboard", "card_online", "paypal"]).optional(),
+  paymentCategory: z.enum(["driver_direct", "online"]).optional(),
+  paymentMethod: z.enum(["cash", "card", "paypal"]).optional(),
   honeypot: z.string().optional(), // Hidden field for bot detection
 }).refine((data) => {
   // If from location is an airport, flight number is required
@@ -127,6 +128,7 @@ const BookingForm = () => {
       wheelchairAccess: false,
       notesToDriver: false,
       driverNotes: "",
+      paymentCategory: undefined,
       honeypot: "", // Hidden honeypot field
     },
   });
@@ -626,10 +628,13 @@ const BookingForm = () => {
       };
 
       // Handle different payment methods
-      if (data.paymentMethod === 'cash' || data.paymentMethod === 'card_onboard') {
-        // Direct booking for cash or card on board
+      if (data.paymentCategory === 'driver_direct') {
+        // Direct booking for payments to driver (cash or card on board)
         const { data: result, error } = await supabase.functions.invoke('submit-booking', {
-          body: sanitizedData,
+          body: {
+            ...sanitizedData,
+            paymentMethod: data.paymentCategory === 'driver_direct' && data.paymentMethod === 'card' ? 'card_onboard' : data.paymentMethod,
+          },
         });
 
         if (error) {
@@ -645,13 +650,13 @@ const BookingForm = () => {
         setCurrentStep(1);
         rateLimit.reset('booking-form');
         
-      } else if (data.paymentMethod === 'card_online' || data.paymentMethod === 'paypal') {
+      } else if (data.paymentCategory === 'online') {
         // Create payment gateway session for online payments
         const { data: paymentResult, error: paymentError } = await supabase.functions.invoke('create-payment', {
           body: {
             ...sanitizedData,
             amount: estimatedPrice ? estimatedPrice * 100 : 5000, // Convert to cents
-            paymentMethod: data.paymentMethod,
+            paymentMethod: data.paymentMethod === 'card' ? 'card_online' : data.paymentMethod,
           },
         });
 
@@ -1385,9 +1390,10 @@ const BookingForm = () => {
                   {estimatedPrice && <span className="block">€{estimatedPrice}</span>}
                 </div>
 
+                {/* Payment Category Selection */}
                 <FormField
                   control={form.control}
-                  name="paymentMethod"
+                  name="paymentCategory"
                   render={({ field }) => (
                     <FormItem className="space-y-3">
                       <FormLabel className="text-xs font-medium">
@@ -1400,34 +1406,18 @@ const BookingForm = () => {
                           className="grid gap-3"
                         >
                           <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-secondary/50 transition-colors">
-                            <RadioGroupItem value="cash" id="cash" />
-                            <label htmlFor="cash" className="flex items-center gap-2 text-sm font-medium cursor-pointer flex-1">
-                              <DollarSign className="h-4 w-4 text-muted-foreground" />
-                              Cash (Pay the driver)
+                            <RadioGroupItem value="driver_direct" id="driver_direct" />
+                            <label htmlFor="driver_direct" className="flex items-center gap-2 text-sm font-medium cursor-pointer flex-1">
+                              <Car className="h-4 w-4 text-muted-foreground" />
+                              Pay Driver Directly
                             </label>
                           </div>
                           
                           <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-secondary/50 transition-colors">
-                            <RadioGroupItem value="card_onboard" id="card_onboard" />
-                            <label htmlFor="card_onboard" className="flex items-center gap-2 text-sm font-medium cursor-pointer flex-1">
-                              <CreditCard className="h-4 w-4 text-muted-foreground" />
-                              Card on board (Pay in vehicle)
-                            </label>
-                          </div>
-                          
-                          <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-secondary/50 transition-colors">
-                            <RadioGroupItem value="card_online" id="card_online" />
-                            <label htmlFor="card_online" className="flex items-center gap-2 text-sm font-medium cursor-pointer flex-1">
-                              <CreditCard className="h-4 w-4 text-muted-foreground" />
-                              Card online (Pay now)
-                            </label>
-                          </div>
-                          
-                          <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-secondary/50 transition-colors">
-                            <RadioGroupItem value="paypal" id="paypal" />
-                            <label htmlFor="paypal" className="flex items-center gap-2 text-sm font-medium cursor-pointer flex-1">
-                              <Wallet className="h-4 w-4 text-muted-foreground" />
-                              PayPal (Pay now)
+                            <RadioGroupItem value="online" id="online" />
+                            <label htmlFor="online" className="flex items-center gap-2 text-sm font-medium cursor-pointer flex-1">
+                              <Globe className="h-4 w-4 text-muted-foreground" />
+                              Pay Online
                             </label>
                           </div>
                         </RadioGroup>
@@ -1436,6 +1426,79 @@ const BookingForm = () => {
                     </FormItem>
                   )}
                 />
+
+                {/* Payment Method Selection - Show when category is selected */}
+                {form.watch("paymentCategory") && (
+                  <FormField
+                    control={form.control}
+                    name="paymentMethod"
+                    render={({ field }) => (
+                      <FormItem className="space-y-3">
+                        <FormLabel className="text-xs font-medium">
+                          Choose payment option <span className="text-destructive" aria-label="required">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            value={field.value}
+                            className="grid gap-2 ml-4"
+                          >
+                            {/* Driver Direct Payment Options */}
+                            {form.watch("paymentCategory") === "driver_direct" && (
+                              <>
+                                <div className="flex items-center space-x-3 p-2 border rounded-lg hover:bg-secondary/50 transition-colors">
+                                  <RadioGroupItem value="cash" id="cash_driver" />
+                                  <label htmlFor="cash_driver" className="flex items-center gap-2 text-sm cursor-pointer flex-1">
+                                    <DollarSign className="h-3 w-3 text-muted-foreground" />
+                                    Cash
+                                  </label>
+                                </div>
+                                
+                                <div className="flex items-center space-x-3 p-2 border rounded-lg hover:bg-secondary/50 transition-colors">
+                                  <RadioGroupItem value="card" id="card_driver" />
+                                  <label htmlFor="card_driver" className="flex items-center gap-2 text-sm cursor-pointer flex-1">
+                                    <CreditCard className="h-3 w-3 text-muted-foreground" />
+                                    Card
+                                  </label>
+                                </div>
+                              </>
+                            )}
+
+                            {/* Online Payment Options */}
+                            {form.watch("paymentCategory") === "online" && (
+                              <>
+                                <div className="flex items-center space-x-3 p-2 border rounded-lg hover:bg-secondary/50 transition-colors">
+                                  <RadioGroupItem value="cash" id="cash_online" />
+                                  <label htmlFor="cash_online" className="flex items-center gap-2 text-sm cursor-pointer flex-1">
+                                    <DollarSign className="h-3 w-3 text-muted-foreground" />
+                                    Cash
+                                  </label>
+                                </div>
+                                
+                                <div className="flex items-center space-x-3 p-2 border rounded-lg hover:bg-secondary/50 transition-colors">
+                                  <RadioGroupItem value="card" id="card_online" />
+                                  <label htmlFor="card_online" className="flex items-center gap-2 text-sm cursor-pointer flex-1">
+                                    <CreditCard className="h-3 w-3 text-muted-foreground" />
+                                    Card
+                                  </label>
+                                </div>
+                                
+                                <div className="flex items-center space-x-3 p-2 border rounded-lg hover:bg-secondary/50 transition-colors">
+                                  <RadioGroupItem value="paypal" id="paypal_online" />
+                                  <label htmlFor="paypal_online" className="flex items-center gap-2 text-sm cursor-pointer flex-1">
+                                    <Wallet className="h-3 w-3 text-muted-foreground" />
+                                    PayPal
+                                  </label>
+                                </div>
+                              </>
+                            )}
+                          </RadioGroup>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
 
                 <div className="flex gap-2 mt-4">
                   <Button 
@@ -1449,7 +1512,7 @@ const BookingForm = () => {
                   <Button 
                     type="submit" 
                     className="flex-1 bg-accent hover:bg-accent/90 text-accent-foreground h-12 text-sm font-medium touch-manipulation"
-                    disabled={isSubmitting || !form.getValues('paymentMethod')}
+                    disabled={isSubmitting || !form.getValues('paymentCategory') || !form.getValues('paymentMethod')}
                   >
                     {isSubmitting ? (
                       <>
