@@ -61,9 +61,9 @@ const Header = () => {
       <div className="container mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <img 
-            src="/lovable-uploads/298c0d83-9fd2-4556-aeff-ab20854f90c7.png" 
+            src="/lovable-uploads/fd647c9d-74ed-4206-99d0-9b04a8f86b41.png" 
             alt="Pick Me Hop Logo" 
-            className="w-8 h-8 sm:w-10 sm:h-10 rounded-full"
+            className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
           />
           <span className="text-white font-semibold text-base sm:text-lg">Pick Me Hop</span>
         </div>

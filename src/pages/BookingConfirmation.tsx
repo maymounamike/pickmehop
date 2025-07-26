@@ -23,9 +23,11 @@ const BookingConfirmation = () => {
         </Button>
         
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-            <span className="text-white font-bold text-lg">🚗</span>
-          </div>
+          <img 
+            src="/lovable-uploads/fd647c9d-74ed-4206-99d0-9b04a8f86b41.png" 
+            alt="PickMeHop Logo" 
+            className="w-10 h-10 rounded-full object-cover"
+          />
           <h1 className="text-2xl font-bold text-primary">PickMeHop</h1>
         </div>
         
