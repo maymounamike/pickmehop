@@ -154,8 +154,15 @@ serve(async (req) => {
   }
 
   try {
-    const url = new URL(req.url);
-    const query = url.searchParams.get('query')?.toLowerCase() || '';
+    let query = '';
+    
+    if (req.method === 'GET') {
+      const url = new URL(req.url);
+      query = url.searchParams.get('query')?.toLowerCase() || '';
+    } else if (req.method === 'POST') {
+      const body = await req.json();
+      query = body.query?.toLowerCase() || '';
+    }
 
     if (query.length < 2) {
       return new Response(

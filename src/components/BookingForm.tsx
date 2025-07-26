@@ -558,18 +558,23 @@ const BookingForm = () => {
                               value={field.value || ""}
                               onChange={(e) => handleFromLocationChange(e.target.value)}
                               onBlur={() => setTimeout(() => setShowFromSuggestions(false), 200)}
-                              onFocus={() => field.value && field.value.length >= 3 && setShowFromSuggestions(true)}
+                              onFocus={() => {
+                                if (field.value && field.value.length >= 2) {
+                                  setShowFromSuggestions(true);
+                                }
+                              }}
                               aria-describedby={field.name + "-error"}
                               aria-invalid={!!form.formState.errors.fromLocation}
                             />
                             {showFromSuggestions && fromSuggestions.length > 0 && (
-                              <div className="absolute top-full left-0 right-0 z-50 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                              <div className="absolute top-full left-0 right-0 z-[100] bg-white border border-gray-200 rounded-md shadow-xl max-h-48 overflow-y-auto mt-1">
                                 {fromSuggestions.map((suggestion, index) => (
                                   <button
                                     key={index}
                                     type="button"
-                                    className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 border-b border-gray-100 last:border-b-0"
+                                    className="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 hover:text-blue-900 border-b border-gray-100 last:border-b-0 focus:bg-blue-50 focus:text-blue-900 focus:outline-none transition-colors"
                                     onClick={() => selectFromSuggestion(suggestion)}
+                                    onMouseDown={(e) => e.preventDefault()} // Prevent input blur
                                   >
                                     {suggestion}
                                   </button>
@@ -597,18 +602,23 @@ const BookingForm = () => {
                               value={field.value || ""}
                               onChange={(e) => handleToLocationChange(e.target.value)}
                               onBlur={() => setTimeout(() => setShowToSuggestions(false), 200)}
-                              onFocus={() => field.value && field.value.length >= 3 && setShowToSuggestions(true)}
+                              onFocus={() => {
+                                if (field.value && field.value.length >= 2) {
+                                  setShowToSuggestions(true);
+                                }
+                              }}
                               aria-describedby={field.name + "-error"}
                               aria-invalid={!!form.formState.errors.toLocation}
                             />
                             {showToSuggestions && toSuggestions.length > 0 && (
-                              <div className="absolute top-full left-0 right-0 z-50 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                              <div className="absolute top-full left-0 right-0 z-[100] bg-white border border-gray-200 rounded-md shadow-xl max-h-48 overflow-y-auto mt-1">
                                 {toSuggestions.map((suggestion, index) => (
                                   <button
                                     key={index}
                                     type="button"
-                                    className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 border-b border-gray-100 last:border-b-0"
+                                    className="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 hover:text-blue-900 border-b border-gray-100 last:border-b-0 focus:bg-blue-50 focus:text-blue-900 focus:outline-none transition-colors"
                                     onClick={() => selectToSuggestion(suggestion)}
+                                    onMouseDown={(e) => e.preventDefault()} // Prevent input blur
                                   >
                                     {suggestion}
                                   </button>
