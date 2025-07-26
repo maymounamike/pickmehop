@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, LogOut, Calendar, MapPin, Users, CreditCard, ArrowLeft } from "lucide-react";
+import { Loader2, Calendar, MapPin, Users, CreditCard, ArrowLeft, FileX, CheckCircle } from "lucide-react";
 import Header from "@/components/Header";
 
 interface Booking {
@@ -78,18 +78,6 @@ const Dashboard = () => {
     }
   };
 
-  const handleSignOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to sign out",
-        variant: "destructive",
-      });
-    } else {
-      navigate("/");
-    }
-  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -130,10 +118,16 @@ const Dashboard = () => {
             <h1 className="text-3xl font-bold">My Bookings</h1>
             <p className="text-muted-foreground">Welcome back, {user?.email}</p>
           </div>
-          <Button variant="outline" onClick={handleSignOut}>
-            <LogOut className="mr-2 h-4 w-4" />
-            Sign Out
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate("/unassigned-rides")}>
+              <FileX className="mr-2 h-4 w-4" />
+              Unassigned Rides
+            </Button>
+            <Button variant="outline" onClick={() => navigate("/confirmed-rides")}>
+              <CheckCircle className="mr-2 h-4 w-4" />
+              Confirmed Rides
+            </Button>
+          </div>
         </div>
 
         {bookings.length === 0 ? (
