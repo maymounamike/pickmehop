@@ -63,8 +63,19 @@ const Header = () => {
   }, []);
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    navigate("/");
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Sign out error:', error);
+        return;
+      }
+      // Clear local state immediately
+      setUser(null);
+      setUserRole(null);
+      navigate("/");
+    } catch (error) {
+      console.error('Unexpected sign out error:', error);
+    }
   };
 
   return (
