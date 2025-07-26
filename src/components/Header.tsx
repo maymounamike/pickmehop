@@ -92,7 +92,7 @@ const Header = () => {
     } catch (error) {
       console.log('Sign out completed (session was already invalid)');
     } finally {
-      // Always navigate to home regardless of server response
+      // Always redirect to Pick Me Hop home page
       navigate("/");
     }
   };
