@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft, Car } from "lucide-react";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -163,14 +163,14 @@ const Auth = () => {
       
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">PickMeHop Driver Portal</CardTitle>
-          <CardDescription>Driver access only - Sign in or register as a driver</CardDescription>
+          <CardTitle className="text-2xl font-bold">Welcome to Pick Me Hop</CardTitle>
+          <CardDescription>Customer login or apply to become a driver</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              <TabsTrigger value="signin">Customer Login</TabsTrigger>
+              <TabsTrigger value="driver">Become a Driver</TabsTrigger>
             </TabsList>
             
             <TabsContent value="signin">
@@ -204,55 +204,49 @@ const Auth = () => {
               </form>
             </TabsContent>
             
-            <TabsContent value="signup">
-              <form onSubmit={handleSignUp} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="first-name">First Name</Label>
-                    <Input
-                      id="first-name"
-                      placeholder="John"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                    />
+            <TabsContent value="driver">
+              <div className="space-y-6 text-center">
+                <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                  <Car className="h-8 w-8 text-primary" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Join Our Driver Team</h3>
+                  <p className="text-muted-foreground text-sm mb-4">
+                    Earn money driving with Pick Me Hop. Flexible hours, competitive rates, and reliable passengers.
+                  </p>
+                </div>
+                <div className="space-y-3">
+                  <div className="text-left bg-secondary/50 p-3 rounded-md">
+                    <h4 className="font-medium text-sm">What you get:</h4>
+                    <ul className="text-xs text-muted-foreground mt-1 space-y-1">
+                      <li>• Competitive payment rates</li>
+                      <li>• Flexible scheduling</li>
+                      <li>• Pre-screened passengers</li>
+                      <li>• 24/7 support</li>
+                    </ul>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="last-name">Last Name</Label>
-                    <Input
-                      id="last-name"
-                      placeholder="Doe"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                    />
+                  <div className="text-left bg-secondary/50 p-3 rounded-md">
+                    <h4 className="font-medium text-sm">Requirements:</h4>
+                    <ul className="text-xs text-muted-foreground mt-1 space-y-1">
+                      <li>• Valid driver's license</li>
+                      <li>• Clean driving record</li>
+                      <li>• Vehicle in good condition</li>
+                      <li>• Background check approval</li>
+                    </ul>
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
-                  <Input
-                    id="signup-email"
-                    type="email"
-                    placeholder="your@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password</Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    placeholder="Create a password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Create Account
+                <Button 
+                  onClick={() => navigate("/driver-signup")}
+                  className="w-full"
+                  size="lg"
+                >
+                  <Car className="mr-2 h-4 w-4" />
+                  Apply to Become a Driver
                 </Button>
-              </form>
+                <p className="text-xs text-muted-foreground">
+                  Already a driver? <button onClick={() => navigate("/driver-signup")} className="text-primary hover:underline">Sign in here</button>
+                </p>
+              </div>
             </TabsContent>
           </Tabs>
         </CardContent>

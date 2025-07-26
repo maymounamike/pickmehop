@@ -125,16 +125,7 @@ const Header = () => {
                 Sign Out
               </Button>
             </>
-          ) : (
-            <Button 
-              variant="ghost" 
-              className="text-white hover:text-accent hover:bg-white/10"
-              onClick={() => navigate("/driver-signup")}
-            >
-              <User className="mr-2 h-4 w-4" />
-              Become a Driver
-            </Button>
-          )}
+          ) : null}
           
           <HelpDialog>
             <Button variant="ghost" className="text-white hover:text-accent hover:bg-white/10 text-sm sm:text-base min-h-[44px] px-3 sm:px-4">
