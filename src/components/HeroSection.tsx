@@ -19,9 +19,9 @@ const HeroSection = () => {
       <div className="absolute inset-0 bg-black/60 hidden lg:block" aria-hidden="true" />
       
       {/* Content */}
-      <div className="relative z-10 container mx-auto px-4 py-4 sm:py-6 lg:py-8 flex flex-col items-center justify-center gap-8 max-h-screen">
+      <div className="relative z-10 container mx-auto px-4 py-4 sm:py-6 lg:py-8 flex flex-col items-center justify-center gap-8 max-h-screen lg:flex-row lg:items-start lg:justify-between lg:pt-20">
         {/* Hero Text */}
-        <div className="text-center max-w-2xl">
+        <div className="text-center lg:text-left max-w-2xl lg:flex-1 lg:pr-8">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-white mb-4 sm:mb-5 lg:mb-6 leading-tight">
             Pick Me Hop Before<br />We Go Go
           </h1>
@@ -31,7 +31,7 @@ const HeroSection = () => {
         </div>
         
         {/* Booking Form */}
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-md lg:max-w-sm lg:flex-shrink-0">
           <BookingForm />
         </div>
       </div>
