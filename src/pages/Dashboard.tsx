@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Calendar, MapPin, Users, CreditCard, ArrowLeft, FileX, CheckCircle } from "lucide-react";
+import { Loader2, Calendar, MapPin, Users, CreditCard, ArrowLeft, FileX, CheckCircle, UserCheck } from "lucide-react";
 import Header from "@/components/Header";
 
 interface Booking {
@@ -126,6 +126,10 @@ const Dashboard = () => {
             <Button variant="outline" onClick={() => navigate("/confirmed-rides")}>
               <CheckCircle className="mr-2 h-4 w-4" />
               Confirmed Rides
+            </Button>
+            <Button variant="outline" onClick={() => navigate("/drivers")}>
+              <UserCheck className="mr-2 h-4 w-4" />
+              Drivers
             </Button>
           </div>
         </div>

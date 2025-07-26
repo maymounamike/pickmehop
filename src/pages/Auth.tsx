@@ -163,8 +163,8 @@ const Auth = () => {
       
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">PickMeHop</CardTitle>
-          <CardDescription>Sign in to manage your bookings</CardDescription>
+          <CardTitle className="text-2xl font-bold">PickMeHop Driver Portal</CardTitle>
+          <CardDescription>Driver access only - Sign in or register as a driver</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">

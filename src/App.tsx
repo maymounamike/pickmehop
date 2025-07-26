@@ -14,6 +14,7 @@ import Dashboard from "./pages/Dashboard";
 import DriverDashboard from "./pages/DriverDashboard";
 import DriverProfile from "./pages/DriverProfile";
 import DriverScheduled from "./pages/DriverScheduled";
+import DriversManagement from "./pages/DriversManagement";
 import DriverOngoing from "./pages/DriverOngoing";
 import AdminDashboard from "./pages/AdminDashboard";
 import BookingConfirmation from "./pages/BookingConfirmation";
@@ -31,7 +32,8 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/collaborateurs" element={<Auth />} />
+        <Route path="/collaborateurs" element={<Auth />} />
+        <Route path="/drivers" element={<DriversManagement />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/driver" element={<DriverDashboard />} />
             <Route path="/driver/profile" element={<DriverProfile />} />
