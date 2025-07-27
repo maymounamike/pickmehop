@@ -50,14 +50,18 @@ const Footer = () => {
             {/* Social Media Icons */}
             <div className="flex space-x-4">
               <a 
-                href="#" 
+                href="https://www.facebook.com/share/16fdFjqCsh/?mibextid=wwXIfr" 
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-gray-600 transition-colors"
                 aria-label="Facebook"
               >
                 <Facebook className="w-5 h-5" />
               </a>
               <a 
-                href="#" 
+                href="https://www.instagram.com/pickmehop?igsh=M3NyN2xvamc5cml6&utm_source=qr"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-gray-600 transition-colors"
                 aria-label="Instagram"
               >

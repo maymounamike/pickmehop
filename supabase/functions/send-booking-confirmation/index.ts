@@ -55,6 +55,13 @@ interface BookingConfirmationRequest {
   bookingId: string;
   phone?: string;
   flightNumber?: string;
+  childSeat?: boolean;
+  infantCarrierQty?: number;
+  childSeatQty?: number;
+  boosterQty?: number;
+  wheelchairAccess?: boolean;
+  notesToDriver?: boolean;
+  driverNotes?: string;
 }
 
 // Helper function to get payment method with icon
@@ -71,6 +78,21 @@ const getPaymentMethodDisplay = (paymentMethod: string): string => {
     default:
       return `💳 ${paymentMethod}`;
   }
+};
+
+// Helper function to generate child seat information
+const generateChildSeatInfo = (booking: BookingConfirmationRequest): string => {
+  const childSeatDetails = [];
+  if (booking.infantCarrierQty && booking.infantCarrierQty > 0) {
+    childSeatDetails.push(`${booking.infantCarrierQty} Infant carrier(s) (0-6 months)`);
+  }
+  if (booking.childSeatQty && booking.childSeatQty > 0) {
+    childSeatDetails.push(`${booking.childSeatQty} Child seat(s) (6 months - 3 years)`);
+  }
+  if (booking.boosterQty && booking.boosterQty > 0) {
+    childSeatDetails.push(`${booking.boosterQty} Booster(s) (3-12 years)`);
+  }
+  return childSeatDetails.length > 0 ? childSeatDetails.join(', ') : 'Child seat required';
 };
 
 const generateCustomerEmailHTML = (booking: BookingConfirmationRequest) => {
@@ -150,9 +172,12 @@ const generateCustomerEmailHTML = (booking: BookingConfirmationRequest) => {
            <span class="detail-label">Payment Method:</span>
            <span class="detail-value">${getPaymentMethodDisplay(booking.paymentMethod)}</span>
          </div>
-        ${booking.flightNumber ? `<div class="detail-row"><span class="detail-label">Flight Number:</span><span class="detail-value">${booking.flightNumber}</span></div>` : ''}
-        
-        <div class="price-highlight">
+         ${booking.flightNumber ? `<div class="detail-row"><span class="detail-label">Flight Number:</span><span class="detail-value">${booking.flightNumber}</span></div>` : ''}
+         ${booking.childSeat ? `<div class="detail-row"><span class="detail-label">Child Seats:</span><span class="detail-value">${generateChildSeatInfo(booking)}</span></div>` : ''}
+         ${booking.wheelchairAccess ? `<div class="detail-row"><span class="detail-label">Special Access:</span><span class="detail-value">♿ Wheelchair Access Required</span></div>` : ''}
+         ${booking.notesToDriver && booking.driverNotes ? `<div class="detail-row"><span class="detail-label">Notes to Driver:</span><span class="detail-value">${booking.driverNotes}</span></div>` : ''}
+         
+         <div class="price-highlight">
           <div>Total Price</div>
           <div class="price">€${booking.estimatedPrice}</div>
         </div>
@@ -266,7 +291,10 @@ const generateBusinessEmailHTML = (booking: BookingConfirmationRequest) => {
            <span class="detail-label">Payment Method:</span>
            <span class="detail-value">${getPaymentMethodDisplay(booking.paymentMethod)}</span>
          </div>
-        ${booking.flightNumber ? `<div class="detail-row"><span class="detail-label">Flight Number:</span><span class="detail-value">${booking.flightNumber}</span></div>` : ''}
+         ${booking.flightNumber ? `<div class="detail-row"><span class="detail-label">Flight Number:</span><span class="detail-value">${booking.flightNumber}</span></div>` : ''}
+         ${booking.childSeat ? `<div class="detail-row"><span class="detail-label">Child Seats:</span><span class="detail-value">${generateChildSeatInfo(booking)}</span></div>` : ''}
+         ${booking.wheelchairAccess ? `<div class="detail-row"><span class="detail-label">Special Access:</span><span class="detail-value">♿ Wheelchair Access Required</span></div>` : ''}
+         ${booking.notesToDriver && booking.driverNotes ? `<div class="detail-row"><span class="detail-label">Notes to Driver:</span><span class="detail-value">${booking.driverNotes}</span></div>` : ''}
       </div>
       
       <div class="action-required">
