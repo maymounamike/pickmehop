@@ -104,13 +104,12 @@ const Header = () => {
         : 'bg-black/80 backdrop-blur-sm'
     }`}>
       <div className="container mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center">
           <img 
             src="/lovable-uploads/fd647c9d-74ed-4206-99d0-9b04a8f86b41.png" 
             alt="Pick Me Hop Logo" 
             className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
           />
-          <span className="text-white font-semibold text-base sm:text-lg">Pick Me Hop</span>
         </div>
         
         <div className="flex items-center space-x-3">
