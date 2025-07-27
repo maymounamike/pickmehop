@@ -4,7 +4,7 @@ const Footer = () => {
   return (
     <footer className="bg-slate-800 text-white py-12">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Company Logo and Help */}
           <div className="space-y-6">
             <div className="flex items-center space-x-2">
@@ -27,25 +27,6 @@ const Footer = () => {
             <h3 className="font-semibold text-lg mb-4">ABOUT</h3>
             <ul className="space-y-3 text-gray-300">
               <li><a href="#" className="hover:text-white transition-colors">Company</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Newsroom</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Terms of Use</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Refer a friend</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Careers</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Cookie Settings</a></li>
-            </ul>
-          </div>
-
-          {/* Network Section */}
-          <div>
-            <h3 className="font-semibold text-lg mb-4">NETWORK</h3>
-            <ul className="space-y-3 text-gray-300">
-              <li><a href="#" className="hover:text-white transition-colors">Hotels</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Vacation Rentals</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Affiliates</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Individual Drivers</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Driver Companies</a></li>
             </ul>
           </div>
 
