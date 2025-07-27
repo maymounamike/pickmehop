@@ -218,6 +218,42 @@ serve(async (req) => {
 
     // Send confirmation emails
     try {
+      // Parse special requests to extract individual fields
+      const specialRequests = sanitizedData.specialRequests || '';
+      
+      // Extract child seat information
+      let childSeat = false;
+      let infantCarrierQty = 0;
+      let childSeatQty = 0;
+      let boosterQty = 0;
+      let wheelchairAccess = false;
+      let notesToDriver = false;
+      let driverNotes = '';
+
+      if (specialRequests) {
+        // Check for child seats
+        if (specialRequests.includes('Child seats:')) {
+          childSeat = true;
+          const childSeatMatch = specialRequests.match(/(\d+) Infant carrier\(s\)/);
+          if (childSeatMatch) infantCarrierQty = parseInt(childSeatMatch[1]);
+          
+          const childSeatQtyMatch = specialRequests.match(/(\d+) Child seat\(s\)/);
+          if (childSeatQtyMatch) childSeatQty = parseInt(childSeatQtyMatch[1]);
+          
+          const boosterMatch = specialRequests.match(/(\d+) Booster\(s\)/);
+          if (boosterMatch) boosterQty = parseInt(boosterMatch[1]);
+        }
+        
+        // Check for wheelchair access
+        wheelchairAccess = specialRequests.includes('Wheelchair access required');
+        
+        // Extract driver notes
+        const notesMatch = specialRequests.match(/Notes: (.+?)(?:;|$)/);
+        if (notesMatch) {
+          notesToDriver = true;
+          driverNotes = notesMatch[1].trim();
+        }
+      }
 
       const { error: emailError } = await supabase.functions.invoke('send-booking-confirmation', {
         body: {
@@ -234,6 +270,13 @@ serve(async (req) => {
           bookingId: bookingId,
           phone: sanitizedData.phone,
           flightNumber: sanitizedData.flightNumber,
+          childSeat,
+          infantCarrierQty,
+          childSeatQty,
+          boosterQty,
+          wheelchairAccess,
+          notesToDriver,
+          driverNotes,
         },
       });
 
