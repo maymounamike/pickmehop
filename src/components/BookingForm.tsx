@@ -665,13 +665,8 @@ const BookingForm = () => {
         }
 
         if (paymentResult?.url) {
-          // Redirect to payment gateway
-          window.open(paymentResult.url, '_blank');
-          
-          toast({
-            title: "Redirecting to Payment",
-            description: "Please complete your payment in the new tab. Your booking will be confirmed once payment is processed.",
-          });
+          // Redirect to payment gateway in the same tab
+          window.location.href = paymentResult.url;
         } else {
           throw new Error("Payment session could not be created");
         }
