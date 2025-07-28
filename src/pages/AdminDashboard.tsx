@@ -5,13 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, Calendar, Clock, Users, Car, Phone, Mail, UserPlus, LogOut, Settings, Home, TrendingUp, Activity, AlertTriangle, CheckCircle, BarChart3, PieChart, ArrowRight, DollarSign } from "lucide-react";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { MapPin, Calendar, Clock, Users, Car, Phone, Mail, UserPlus, LogOut, TrendingUp, AlertTriangle, CheckCircle, BarChart3, DollarSign } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import AdminSidebar from "@/components/AdminSidebar";
 import { format, subDays, isAfter } from "date-fns";
 
 interface Booking {
@@ -88,6 +86,7 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [selectedDriverForBooking, setSelectedDriverForBooking] = useState<string>("");
   const [selectedBookingId, setSelectedBookingId] = useState<string>("");
+  const [activeTab, setActiveTab] = useState("bookings");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -96,7 +95,6 @@ const AdminDashboard = () => {
 
   const checkUserAndLoadData = async () => {
     try {
-      // Get current user
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
@@ -106,7 +104,6 @@ const AdminDashboard = () => {
 
       setUser(session.user);
 
-      // Load admin profile
       const { data: profileData } = await supabase
         .from('profiles')
         .select('first_name, last_name')
@@ -115,7 +112,6 @@ const AdminDashboard = () => {
 
       setProfile(profileData);
 
-      // Check if user is an admin
       const { data: roleData } = await supabase
         .from('user_roles')
         .select('role')
@@ -132,7 +128,6 @@ const AdminDashboard = () => {
         return;
       }
 
-      // Load bookings with driver information
       const { data: bookingsData } = await supabase
         .from('bookings')
         .select(`
@@ -148,7 +143,6 @@ const AdminDashboard = () => {
 
       setBookings(bookingsData || []);
 
-      // Load drivers
       const { data: driversData } = await supabase
         .from('drivers')
         .select('*')
@@ -157,7 +151,6 @@ const AdminDashboard = () => {
 
       setDrivers(driversData || []);
 
-      // Load pending drivers (users with driver role but incomplete profiles)
       const { data: pendingData } = await supabase
         .from('profiles')
         .select(`
@@ -173,7 +166,6 @@ const AdminDashboard = () => {
         .order('created_at', { ascending: false });
 
       if (pendingData) {
-        // Get emails for pending drivers
         const pendingWithEmails = await Promise.all(
           pendingData.map(async (pending: any) => {
             const { data: userData } = await supabase.auth.admin.getUserById(pending.id);
@@ -191,7 +183,6 @@ const AdminDashboard = () => {
         setPendingDrivers(pendingWithEmails);
       }
 
-      // Calculate analytics
       calculateStats(bookingsData || [], driversData || [], pendingData ? await Promise.all(
         pendingData.map(async (pending: any) => {
           const { data: userData } = await supabase.auth.admin.getUserById(pending.id);
@@ -280,7 +271,6 @@ const AdminDashboard = () => {
 
       if (error) throw error;
 
-      // Refresh bookings
       await checkUserAndLoadData();
 
       toast({
@@ -325,187 +315,29 @@ const AdminDashboard = () => {
     }
   };
 
-  if (loading) {
-    return <div className="flex justify-center items-center h-64">Loading...</div>;
-  }
+  const getTabContent = () => {
+    const unassignedBookings = bookings.filter(booking => !booking.driver_id);
+    const assignedBookings = bookings.filter(booking => booking.driver_id);
 
-  const unassignedBookings = bookings.filter(booking => !booking.driver_id);
-  const assignedBookings = bookings.filter(booking => booking.driver_id);
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      {/* Black Header */}
-      <header className="bg-black text-white p-4 shadow-lg">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <img 
-              src="/lovable-uploads/fd647c9d-74ed-4206-99d0-9b04a8f86b41.png" 
-              alt="Pick Me Hop Logo" 
-              className="w-8 h-8 rounded-full object-cover"
-            />
-            <span className="text-white font-semibold text-lg">Pick Me Hop Admin</span>
-          </div>
-          
-          <div className="flex items-center space-x-6">
-            <span className="text-sm">
-              Welcome, {profile?.first_name} {profile?.last_name}
-            </span>
-            <Button 
-              variant="ghost" 
-              className="text-white hover:text-accent hover:bg-white/10"
-              onClick={handleSignOut}
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <div className="max-w-7xl mx-auto p-4">
-        {/* Welcome Section */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Welcome back, {profile?.first_name}! 🚀
-          </h1>
-          <p className="text-gray-600">Your Pick Me Hop command center overview</p>
-        </div>
-
-        {/* Analytics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-blue-100 text-sm">30-Day Bookings</p>
-                  <p className="text-2xl font-bold">{stats.monthlyBookings}</p>
-                </div>
-                <Calendar className="h-8 w-8 text-blue-200" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-green-100 text-sm">30-Day Revenue</p>
-                  <p className="text-2xl font-bold">€{stats.monthlyRevenue.toFixed(2)}</p>
-                </div>
-                <DollarSign className="h-8 w-8 text-green-200" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-orange-100 text-sm">Unassigned Rides</p>
-                  <p className="text-2xl font-bold">{stats.unassignedRides}</p>
-                </div>
-                <AlertTriangle className="h-8 w-8 text-orange-200" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-purple-100 text-sm">Active Drivers</p>
-                  <p className="text-2xl font-bold">{stats.activeDrivers}</p>
-                </div>
-                <Car className="h-8 w-8 text-purple-200" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Navigation Tabs */}
-        <Tabs defaultValue="bookings" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-black">
-            <TabsTrigger value="bookings" className="text-white data-[state=active]:bg-white data-[state=active]:text-black">
-              Bookings
-            </TabsTrigger>
-            <TabsTrigger value="drivers" className="text-white data-[state=active]:bg-white data-[state=active]:text-black">
-              Drivers
-            </TabsTrigger>
-            <TabsTrigger value="assignments" className="text-white data-[state=active]:bg-white data-[state=active]:text-black">
-              Assignments
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="text-white data-[state=active]:bg-white data-[state=active]:text-black">
-              Analytics
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Bookings Tab */}
-          <TabsContent value="bookings" className="mt-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Unassigned Bookings */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-orange-600">Unassigned Rides ({unassignedBookings.length})</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {unassignedBookings.length === 0 ? (
-                    <div className="text-center py-8">
-                      <CheckCircle className="w-16 h-16 mx-auto text-green-300 mb-4" />
-                      <p className="text-gray-500 text-lg mb-2">All rides assigned!</p>
-                      <p className="text-sm text-gray-400">Great job managing the fleet</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4 max-h-96 overflow-y-auto">
-                      {unassignedBookings.slice(0, 5).map((booking) => (
-                        <Card key={booking.id} className="border-l-4 border-l-orange-500">
-                          <CardContent className="p-4">
-                            <div className="flex justify-between items-start">
-                              <div className="flex-1">
-                                <h3 className="font-semibold">#{booking.booking_id}</h3>
-                                <p className="text-sm text-gray-600 mb-2">{booking.customer_name}</p>
-                                <div className="space-y-1 text-sm">
-                                  <div className="flex items-center">
-                                    <MapPin className="w-3 h-3 mr-1 text-green-600" />
-                                    <span className="truncate">{booking.from_location}</span>
-                                  </div>
-                                  <div className="flex items-center">
-                                    <MapPin className="w-3 h-3 mr-1 text-red-600" />
-                                    <span className="truncate">{booking.to_location}</span>
-                                  </div>
-                                  <div className="flex items-center gap-4">
-                                    <div className="flex items-center">
-                                      <Calendar className="w-3 h-3 mr-1" />
-                                      <span>{format(new Date(booking.date), 'MMM d')}</span>
-                                    </div>
-                                    <div className="flex items-center">
-                                      <Clock className="w-3 h-3 mr-1" />
-                                      <span>{booking.time}</span>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="text-right ml-4">
-                                <p className="font-bold text-green-600">€{booking.estimated_price}</p>
-                                <Badge variant="secondary">{booking.passengers} passengers</Badge>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Recent Assigned Bookings */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-blue-600">Recent Assignments ({assignedBookings.length})</CardTitle>
-                </CardHeader>
-                <CardContent>
+    switch (activeTab) {
+      case "bookings":
+        return (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-orange-600">Unassigned Rides ({unassignedBookings.length})</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {unassignedBookings.length === 0 ? (
+                  <div className="text-center py-8">
+                    <CheckCircle className="w-16 h-16 mx-auto text-green-300 mb-4" />
+                    <p className="text-gray-500 text-lg mb-2">All rides assigned!</p>
+                    <p className="text-sm text-gray-400">Great job managing the fleet</p>
+                  </div>
+                ) : (
                   <div className="space-y-4 max-h-96 overflow-y-auto">
-                    {assignedBookings.slice(0, 5).map((booking) => (
-                      <Card key={booking.id} className="border-l-4 border-l-blue-500">
+                    {unassignedBookings.slice(0, 5).map((booking) => (
+                      <Card key={booking.id} className="border-l-4 border-l-orange-500">
                         <CardContent className="p-4">
                           <div className="flex justify-between items-start">
                             <div className="flex-1">
@@ -513,11 +345,12 @@ const AdminDashboard = () => {
                               <p className="text-sm text-gray-600 mb-2">{booking.customer_name}</p>
                               <div className="space-y-1 text-sm">
                                 <div className="flex items-center">
-                                  <Car className="w-3 h-3 mr-1" />
-                                  <span>
-                                    {booking.drivers?.vehicle_make} {booking.drivers?.vehicle_model} 
-                                    ({booking.drivers?.vehicle_license_plate})
-                                  </span>
+                                  <MapPin className="w-3 h-3 mr-1 text-green-600" />
+                                  <span className="truncate">{booking.from_location}</span>
+                                </div>
+                                <div className="flex items-center">
+                                  <MapPin className="w-3 h-3 mr-1 text-red-600" />
+                                  <span className="truncate">{booking.to_location}</span>
                                 </div>
                                 <div className="flex items-center gap-4">
                                   <div className="flex items-center">
@@ -533,215 +366,361 @@ const AdminDashboard = () => {
                             </div>
                             <div className="text-right ml-4">
                               <p className="font-bold text-green-600">€{booking.estimated_price}</p>
-                              <Badge variant={
-                                booking.status === 'confirmed' ? 'default' :
-                                booking.status === 'in_progress' ? 'secondary' : 'outline'
-                              }>
-                                {booking.status.replace('_', ' ').toUpperCase()}
-                              </Badge>
+                              <Badge variant="secondary">{booking.passengers} passengers</Badge>
                             </div>
                           </div>
                         </CardContent>
                       </Card>
                     ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          {/* Drivers Tab */}
-          <TabsContent value="drivers" className="mt-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Pending Drivers */}
-              {pendingDrivers.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-yellow-600">Pending Activations ({pendingDrivers.length})</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {pendingDrivers.map((driver) => (
-                        <Card key={driver.id} className="border-l-4 border-l-yellow-500">
-                          <CardContent className="p-4">
-                            <div className="flex justify-between items-center">
-                              <div>
-                                <h3 className="font-semibold">{driver.first_name} {driver.last_name}</h3>
-                                <p className="text-sm text-gray-600">{driver.email}</p>
-                                <p className="text-xs text-gray-500">
-                                  Registered: {format(new Date(driver.created_at), 'MMM d, yyyy')}
-                                </p>
-                                <Badge variant="secondary" className="mt-1">PENDING</Badge>
-                              </div>
-                              <Button 
-                                onClick={() => activateDriver(driver.id)}
-                                size="sm"
-                                className="bg-green-600 hover:bg-green-700"
-                              >
-                                Activate
-                              </Button>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Active Drivers */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-blue-600">Active Drivers ({drivers.length})</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4 max-h-96 overflow-y-auto">
-                    {drivers.map((driver) => (
-                      <Card key={driver.id} className="border-l-4 border-l-blue-500">
-                        <CardContent className="p-4">
-                          <div className="flex justify-between items-start">
-                            <div className="flex-1">
-                              <h3 className="font-semibold">{driver.vehicle_make} {driver.vehicle_model}</h3>
-                              <p className="text-sm text-gray-600">{driver.vehicle_license_plate}</p>
-                              <p className="text-xs text-gray-500">License: {driver.license_number}</p>
-                              <div className="flex items-center mt-2">
-                                <Phone className="w-3 h-3 mr-1" />
-                                <span className="text-sm">{driver.phone}</span>
-                              </div>
-                            </div>
-                            <Badge variant="default">ACTIVE</Badge>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          {/* Assignments Tab */}
-          <TabsContent value="assignments" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Assign Driver to Booking</CardTitle>
-                <p className="text-sm text-gray-600">Quickly assign available drivers to unassigned bookings</p>
-              </CardHeader>
-              <CardContent>
-                {unassignedBookings.length === 0 ? (
-                  <div className="text-center py-12">
-                    <CheckCircle className="w-16 h-16 mx-auto text-green-300 mb-4" />
-                    <p className="text-gray-500 text-lg mb-2">All rides assigned!</p>
-                    <p className="text-sm text-gray-400">No pending assignments needed</p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                    <div>
-                      <Label>Select Booking</Label>
-                      <Select value={selectedBookingId} onValueChange={setSelectedBookingId}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Choose a booking" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {unassignedBookings.map((booking) => (
-                            <SelectItem key={booking.id} value={booking.id}>
-                              {booking.booking_id} - {booking.customer_name} ({format(new Date(booking.date), 'MMM d')})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label>Select Driver</Label>
-                      <Select value={selectedDriverForBooking} onValueChange={setSelectedDriverForBooking}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Choose a driver" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {drivers.map((driver) => (
-                            <SelectItem key={driver.id} value={driver.id}>
-                              {driver.vehicle_make} {driver.vehicle_model} ({driver.vehicle_license_plate})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <Button onClick={assignDriverToBooking} className="w-full">
-                      Assign Driver
-                    </Button>
                   </div>
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
 
-          {/* Analytics Tab */}
-          <TabsContent value="analytics" className="mt-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-blue-600">Recent Assignments ({assignedBookings.length})</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4 max-h-96 overflow-y-auto">
+                  {assignedBookings.slice(0, 5).map((booking) => (
+                    <Card key={booking.id} className="border-l-4 border-l-blue-500">
+                      <CardContent className="p-4">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <h3 className="font-semibold">#{booking.booking_id}</h3>
+                            <p className="text-sm text-gray-600 mb-2">{booking.customer_name}</p>
+                            <div className="space-y-1 text-sm">
+                              <div className="flex items-center">
+                                <Car className="w-3 h-3 mr-1" />
+                                <span>
+                                  {booking.drivers?.vehicle_make} {booking.drivers?.vehicle_model} 
+                                  ({booking.drivers?.vehicle_license_plate})
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-right ml-4">
+                            <p className="font-bold text-green-600">€{booking.estimated_price}</p>
+                            <Badge variant={
+                              booking.status === 'confirmed' ? 'default' :
+                              booking.status === 'in_progress' ? 'secondary' : 'outline'
+                            }>
+                              {booking.status.replace('_', ' ').toUpperCase()}
+                            </Badge>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        );
+
+      case "drivers":
+        return (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {pendingDrivers.length > 0 && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <BarChart3 className="w-5 h-5 mr-2" />
-                    Business Overview
-                  </CardTitle>
+                  <CardTitle className="text-yellow-600">Pending Activations ({pendingDrivers.length})</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="text-center p-4 bg-blue-50 rounded-lg">
-                        <p className="text-2xl font-bold text-blue-600">{stats.totalBookings}</p>
-                        <p className="text-sm text-gray-600">Total Bookings</p>
-                      </div>
-                      <div className="text-center p-4 bg-green-50 rounded-lg">
-                        <p className="text-2xl font-bold text-green-600">€{stats.totalRevenue.toFixed(2)}</p>
-                        <p className="text-sm text-gray-600">Total Revenue</p>
-                      </div>
-                    </div>
-                    <div className="text-center p-4 bg-purple-50 rounded-lg">
-                      <p className="text-2xl font-bold text-purple-600">
-                        €{stats.totalBookings > 0 ? (stats.totalRevenue / stats.totalBookings).toFixed(2) : '0.00'}
-                      </p>
-                      <p className="text-sm text-gray-600">Average Booking Value</p>
-                    </div>
+                    {pendingDrivers.map((driver) => (
+                      <Card key={driver.id} className="border-l-4 border-l-yellow-500">
+                        <CardContent className="p-4">
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <h3 className="font-semibold">{driver.first_name} {driver.last_name}</h3>
+                              <p className="text-sm text-gray-600">{driver.email}</p>
+                              <p className="text-xs text-gray-500">
+                                Registered: {format(new Date(driver.created_at), 'MMM d, yyyy')}
+                              </p>
+                              <Badge variant="secondary" className="mt-1">PENDING</Badge>
+                            </div>
+                            <Button 
+                              onClick={() => activateDriver(driver.id)}
+                              size="sm"
+                              className="bg-green-600 hover:bg-green-700"
+                            >
+                              Activate
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
+            )}
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <TrendingUp className="w-5 h-5 mr-2" />
-                    Performance Metrics
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                      <span className="text-sm font-medium">Assignment Rate</span>
-                      <span className="font-bold text-green-600">
-                        {bookings.length > 0 ? Math.round((assignedBookings.length / bookings.length) * 100) : 0}%
-                      </span>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-blue-600">Active Drivers ({drivers.length})</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4 max-h-96 overflow-y-auto">
+                  {drivers.map((driver) => (
+                    <Card key={driver.id} className="border-l-4 border-l-blue-500">
+                      <CardContent className="p-4">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <h3 className="font-semibold">{driver.vehicle_make} {driver.vehicle_model}</h3>
+                            <p className="text-sm text-gray-600">{driver.vehicle_license_plate}</p>
+                            <p className="text-xs text-gray-500">License: {driver.license_number}</p>
+                            <div className="flex items-center mt-2">
+                              <Phone className="w-3 h-3 mr-1" />
+                              <span className="text-sm">{driver.phone}</span>
+                            </div>
+                          </div>
+                          <Badge variant="default">ACTIVE</Badge>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        );
+
+      case "assignments":
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle>Assign Driver to Booking</CardTitle>
+              <p className="text-sm text-gray-600">Quickly assign available drivers to unassigned bookings</p>
+            </CardHeader>
+            <CardContent>
+              {unassignedBookings.length === 0 ? (
+                <div className="text-center py-12">
+                  <CheckCircle className="w-16 h-16 mx-auto text-green-300 mb-4" />
+                  <p className="text-gray-500 text-lg mb-2">All rides assigned!</p>
+                  <p className="text-sm text-gray-400">No pending assignments needed</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                  <div>
+                    <Label>Select Booking</Label>
+                    <Select value={selectedBookingId} onValueChange={setSelectedBookingId}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choose a booking" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {unassignedBookings.map((booking) => (
+                          <SelectItem key={booking.id} value={booking.id}>
+                            {booking.booking_id} - {booking.customer_name} ({format(new Date(booking.date), 'MMM d')})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Select Driver</Label>
+                    <Select value={selectedDriverForBooking} onValueChange={setSelectedDriverForBooking}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choose a driver" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {drivers.map((driver) => (
+                          <SelectItem key={driver.id} value={driver.id}>
+                            {driver.vehicle_make} {driver.vehicle_model} ({driver.vehicle_license_plate})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button onClick={assignDriverToBooking} className="w-full">
+                    Assign Driver
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        );
+
+      case "analytics":
+        return (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <BarChart3 className="w-5 h-5 mr-2" />
+                  Business Overview
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center p-4 bg-blue-50 rounded-lg">
+                      <p className="text-2xl font-bold text-blue-600">{stats.totalBookings}</p>
+                      <p className="text-sm text-gray-600">Total Bookings</p>
                     </div>
-                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                      <span className="text-sm font-medium">Driver Utilization</span>
-                      <span className="font-bold text-blue-600">
-                        {drivers.length > 0 ? Math.round((assignedBookings.length / drivers.length) * 100) : 0}%
-                      </span>
+                    <div className="text-center p-4 bg-green-50 rounded-lg">
+                      <p className="text-2xl font-bold text-green-600">€{stats.totalRevenue.toFixed(2)}</p>
+                      <p className="text-sm text-gray-600">Total Revenue</p>
                     </div>
-                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                      <span className="text-sm font-medium">Pending Actions</span>
-                      <span className="font-bold text-orange-600">
-                        {stats.unassignedRides + stats.pendingDrivers}
-                      </span>
+                  </div>
+                  <div className="text-center p-4 bg-purple-50 rounded-lg">
+                    <p className="text-2xl font-bold text-purple-600">
+                      €{stats.totalBookings > 0 ? (stats.totalRevenue / stats.totalBookings).toFixed(2) : '0.00'}
+                    </p>
+                    <p className="text-sm text-gray-600">Average Booking Value</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <TrendingUp className="w-5 h-5 mr-2" />
+                  Performance Metrics
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                    <span className="text-sm font-medium">Assignment Rate</span>
+                    <span className="font-bold text-green-600">
+                      {bookings.length > 0 ? Math.round(((bookings.length - stats.unassignedRides) / bookings.length) * 100) : 0}%
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                    <span className="text-sm font-medium">Driver Utilization</span>
+                    <span className="font-bold text-blue-600">
+                      {drivers.length > 0 ? Math.round(((bookings.length - stats.unassignedRides) / drivers.length) * 100) : 0}%
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                    <span className="text-sm font-medium">Pending Actions</span>
+                    <span className="font-bold text-orange-600">
+                      {stats.unassignedRides + stats.pendingDrivers}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  if (loading) {
+    return <div className="flex justify-center items-center h-64">Loading...</div>;
+  }
+
+  return (
+    <SidebarProvider>
+      <div className="min-h-screen w-full flex bg-gray-50">
+        <AdminSidebar 
+          activeTab={activeTab} 
+          onTabChange={setActiveTab} 
+          stats={stats} 
+        />
+
+        <div className="flex-1 flex flex-col">
+          <header className="bg-slate-900 text-white p-4 shadow-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <SidebarTrigger className="text-white hover:bg-white/10" />
+                <div className="flex items-center space-x-2">
+                  <img 
+                    src="/lovable-uploads/fd647c9d-74ed-4206-99d0-9b04a8f86b41.png" 
+                    alt="Pick Me Hop Logo" 
+                    className="w-8 h-8 rounded-full object-cover"
+                  />
+                  <span className="text-white font-semibold text-lg">ADMIN</span>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-6">
+                <span className="text-sm">
+                  Welcome back {profile?.first_name}!
+                </span>
+                <Button 
+                  variant="ghost" 
+                  className="text-white hover:text-red-400 hover:bg-red-50/10"
+                  onClick={handleSignOut}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  SIGN OUT
+                </Button>
+              </div>
+            </div>
+          </header>
+
+          <main className="flex-1 p-6 bg-white overflow-y-auto">
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                Welcome Back {profile?.first_name}! 🚀
+              </h1>
+              <p className="text-gray-600">Your command center overview for Pick Me Hop</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+              <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-blue-100 text-sm">30-Day Bookings</p>
+                      <p className="text-2xl font-bold">{stats.monthlyBookings}</p>
                     </div>
+                    <Calendar className="h-8 w-8 text-blue-200" />
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-green-100 text-sm">30-Day Revenue</p>
+                      <p className="text-2xl font-bold">€{stats.monthlyRevenue.toFixed(2)}</p>
+                    </div>
+                    <DollarSign className="h-8 w-8 text-green-200" />
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-orange-100 text-sm">Unassigned Rides</p>
+                      <p className="text-2xl font-bold">{stats.unassignedRides}</p>
+                    </div>
+                    <AlertTriangle className="h-8 w-8 text-orange-200" />
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-purple-100 text-sm">Active Drivers</p>
+                      <p className="text-2xl font-bold">{stats.activeDrivers}</p>
+                    </div>
+                    <Car className="h-8 w-8 text-purple-200" />
                   </div>
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
-        </Tabs>
+
+            <div className="space-y-6">
+              {getTabContent()}
+            </div>
+          </main>
+        </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 

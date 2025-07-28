@@ -5,9 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, Calendar, Clock, Users, Phone, Mail, Car, DollarSign, TrendingUp, UserCircle, ListTodo, LogOut } from "lucide-react";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { MapPin, Calendar, Clock, Users, Phone, Mail, Car, DollarSign, TrendingUp, UserCircle, LogOut } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import DriverSidebar from "@/components/DriverSidebar";
 import { format, subDays, isAfter } from "date-fns";
 
 interface Booking {
@@ -63,6 +64,7 @@ const DriverDashboard = () => {
     pendingRides: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("confirmed");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -71,7 +73,6 @@ const DriverDashboard = () => {
 
   const checkUserAndLoadData = async () => {
     try {
-      // Get current user
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
@@ -81,7 +82,6 @@ const DriverDashboard = () => {
 
       setUser(session.user);
 
-      // Load profile
       const { data: profileData } = await supabase
         .from('profiles')
         .select('first_name, last_name')
@@ -90,7 +90,6 @@ const DriverDashboard = () => {
 
       setProfile(profileData);
 
-      // Check if user is a driver
       const { data: roleData } = await supabase
         .from('user_roles')
         .select('role')
@@ -107,7 +106,6 @@ const DriverDashboard = () => {
         return;
       }
 
-      // Load driver profile
       const { data: driverData } = await supabase
         .from('drivers')
         .select('*')
@@ -124,7 +122,6 @@ const DriverDashboard = () => {
         return;
       }
 
-      // Check if driver is approved/active
       if (!driverData.is_active) {
         toast({
           title: "Account Pending Approval",
@@ -137,7 +134,6 @@ const DriverDashboard = () => {
 
       setDriver(driverData);
 
-      // Load assigned bookings
       if (driverData) {
         const { data: bookingsData } = await supabase
           .from('bookings')
@@ -146,8 +142,6 @@ const DriverDashboard = () => {
           .order('date', { ascending: true });
 
         setBookings(bookingsData || []);
-        
-        // Calculate analytics
         calculateStats(bookingsData || []);
       }
 
@@ -168,7 +162,6 @@ const DriverDashboard = () => {
     const completedBookings = bookingsData.filter(b => b.status === 'completed');
     const pendingBookings = bookingsData.filter(b => b.status === 'confirmed');
     
-    // Monthly stats (last 30 days)
     const monthlyBookings = completedBookings.filter(b => 
       isAfter(new Date(b.date), thirtyDaysAgo)
     );
@@ -230,15 +223,6 @@ const DriverDashboard = () => {
     }
   };
 
-  if (loading) {
-    return <div className="flex justify-center items-center h-64">Loading...</div>;
-  }
-
-  // Separate bookings by status
-  const pendingBookings = bookings.filter(b => b.status === 'confirmed');
-  const ongoingBookings = bookings.filter(b => b.status === 'in_progress');
-  const completedBookings = bookings.filter(b => b.status === 'completed');
-
   const renderBookingCard = (booking: Booking) => (
     <Card key={booking.id} className="border-l-4 border-l-blue-500">
       <CardContent className="p-4">
@@ -264,7 +248,6 @@ const DriverDashboard = () => {
         <Separator className="my-3" />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Route Information */}
           <div className="space-y-2">
             <div className="flex items-center text-sm">
               <MapPin className="w-4 h-4 mr-2 text-green-600" />
@@ -279,7 +262,6 @@ const DriverDashboard = () => {
             <p className="text-sm text-gray-700 ml-6">{booking.to_location}</p>
           </div>
 
-          {/* Booking Details */}
           <div className="space-y-2">
             <div className="flex items-center text-sm">
               <Calendar className="w-4 h-4 mr-2" />
@@ -301,7 +283,6 @@ const DriverDashboard = () => {
           </div>
         </div>
 
-        {/* Customer Information */}
         <Separator className="my-3" />
         <div className="space-y-2">
           <h4 className="font-medium text-sm">Customer Information</h4>
@@ -325,7 +306,6 @@ const DriverDashboard = () => {
           </div>
         </div>
 
-        {/* Action Buttons */}
         <div className="flex gap-2 mt-4">
           {booking.status === 'confirmed' && (
             <Button 
@@ -349,251 +329,276 @@ const DriverDashboard = () => {
     </Card>
   );
 
+  const getTabContent = () => {
+    const pendingBookings = bookings.filter(b => b.status === 'confirmed');
+    const completedBookings = bookings.filter(b => b.status === 'completed');
+
+    switch (activeTab) {
+      case "unassigned":
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle>Available Rides</CardTitle>
+              <p className="text-sm text-gray-600">Rides available for assignment</p>
+            </CardHeader>
+            <CardContent>
+              <p className="text-center text-gray-500 py-8">
+                No unassigned rides available at the moment.
+              </p>
+            </CardContent>
+          </Card>
+        );
+
+      case "confirmed":
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle>Your Confirmed Rides</CardTitle>
+              <p className="text-sm text-gray-600">{bookings.length} total ride(s)</p>
+            </CardHeader>
+            <CardContent>
+              {bookings.length === 0 ? (
+                <div className="text-center py-12">
+                  <Calendar className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+                  <p className="text-gray-500 text-lg mb-2">No rides assigned yet</p>
+                  <p className="text-sm text-gray-400">Check back soon for new ride assignments</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {bookings.map(renderBookingCard)}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        );
+
+      case "completed":
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle>Completed Rides</CardTitle>
+              <p className="text-sm text-gray-600">{completedBookings.length} completed ride(s)</p>
+            </CardHeader>
+            <CardContent>
+              {completedBookings.length === 0 ? (
+                <div className="text-center py-12">
+                  <Calendar className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+                  <p className="text-gray-500 text-lg mb-2">No completed rides yet</p>
+                  <p className="text-sm text-gray-400">Your completed rides will appear here</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {completedBookings.map(renderBookingCard)}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        );
+
+      case "profile":
+        return driver ? (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <TrendingUp className="w-5 h-5 mr-2" />
+                  Performance Overview
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center p-4 bg-blue-50 rounded-lg">
+                    <p className="text-2xl font-bold text-blue-600">{stats.completedRides}</p>
+                    <p className="text-sm text-gray-600">Total Rides</p>
+                  </div>
+                  <div className="text-center p-4 bg-green-50 rounded-lg">
+                    <p className="text-2xl font-bold text-green-600">€{stats.totalEarnings.toFixed(2)}</p>
+                    <p className="text-sm text-gray-600">Total Earnings</p>
+                  </div>
+                  <div className="text-center p-4 bg-purple-50 rounded-lg">
+                    <p className="text-2xl font-bold text-purple-600">
+                      €{stats.completedRides > 0 ? (stats.totalEarnings / stats.completedRides).toFixed(2) : '0.00'}
+                    </p>
+                    <p className="text-sm text-gray-600">Avg. per Ride</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Car className="w-5 h-5 mr-2" />
+                  Vehicle Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Vehicle</p>
+                    <p className="text-lg">{driver.vehicle_make} {driver.vehicle_model} ({driver.vehicle_year})</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">License Plate</p>
+                    <p className="text-lg">{driver.vehicle_license_plate}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Driver License</p>
+                    <p className="text-lg">{driver.license_number}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Phone</p>
+                    <p className="text-lg">{driver.phone}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <UserCircle className="w-5 h-5 mr-2" />
+                  Personal Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Name</p>
+                    <p className="text-lg">{profile?.first_name} {profile?.last_name}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Status</p>
+                    <Badge variant="default" className="bg-green-600">ACTIVE</Badge>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <Button 
+                    variant="outline"
+                    onClick={() => navigate('/driver/profile')}
+                  >
+                    Edit Profile
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        ) : null;
+
+      default:
+        return null;
+    }
+  };
+
+  if (loading) {
+    return <div className="flex justify-center items-center h-64">Loading...</div>;
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      {/* Black Header */}
-      <header className="bg-black text-white p-4 shadow-lg">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <img 
-              src="/lovable-uploads/fd647c9d-74ed-4206-99d0-9b04a8f86b41.png" 
-              alt="Pick Me Hop Logo" 
-              className="w-8 h-8 rounded-full object-cover"
-            />
-            <span className="text-white font-semibold text-lg">Pick Me Hop</span>
-          </div>
-          
-          <div className="flex items-center space-x-6">
-            <span className="text-sm">
-              Welcome, {profile?.first_name} {profile?.last_name}
-            </span>
-            <Button 
-              variant="ghost" 
-              className="text-white hover:text-accent hover:bg-white/10"
-              onClick={handleSignOut}
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
-            </Button>
-          </div>
-        </div>
-      </header>
+    <SidebarProvider>
+      <div className="min-h-screen w-full flex bg-gray-50">
+        <DriverSidebar 
+          activeTab={activeTab} 
+          onTabChange={setActiveTab} 
+          stats={stats} 
+        />
 
-      <div className="max-w-6xl mx-auto p-4">
-        {/* Welcome Section */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Welcome back, {profile?.first_name}! 👋
-          </h1>
-          <p className="text-gray-600">Here's your driving performance overview</p>
-        </div>
-
-        {/* Analytics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-blue-100 text-sm">30-Day Bookings</p>
-                  <p className="text-2xl font-bold">{stats.monthlyBookings}</p>
+        <div className="flex-1 flex flex-col">
+          <header className="bg-slate-900 text-white p-4 shadow-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <SidebarTrigger className="text-white hover:bg-white/10" />
+                <div className="flex items-center space-x-2">
+                  <img 
+                    src="/lovable-uploads/fd647c9d-74ed-4206-99d0-9b04a8f86b41.png" 
+                    alt="Pick Me Hop Logo" 
+                    className="w-8 h-8 rounded-full object-cover"
+                  />
+                  <span className="text-white font-semibold text-lg">DRIVER</span>
                 </div>
-                <Calendar className="h-8 w-8 text-blue-200" />
               </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-green-100 text-sm">30-Day Revenue</p>
-                  <p className="text-2xl font-bold">€{stats.monthlyRevenue.toFixed(2)}</p>
-                </div>
-                <DollarSign className="h-8 w-8 text-green-200" />
+              
+              <div className="flex items-center space-x-6">
+                <span className="text-sm">
+                  Welcome back {profile?.first_name}!
+                </span>
+                <Button 
+                  variant="ghost" 
+                  className="text-white hover:text-red-400 hover:bg-red-50/10"
+                  onClick={handleSignOut}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  SIGN OUT
+                </Button>
               </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-purple-100 text-sm">Total Earnings</p>
-                  <p className="text-2xl font-bold">€{stats.totalEarnings.toFixed(2)}</p>
-                </div>
-                <TrendingUp className="h-8 w-8 text-purple-200" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-orange-100 text-sm">Pending Rides</p>
-                  <p className="text-2xl font-bold">{stats.pendingRides}</p>
-                </div>
-                <Clock className="h-8 w-8 text-orange-200" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </header>
 
-        {/* Navigation Tabs */}
-        <Tabs defaultValue="unassigned" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-black">
-            <TabsTrigger value="unassigned" className="text-white data-[state=active]:bg-white data-[state=active]:text-black">
-              Unassigned Rides
-            </TabsTrigger>
-            <TabsTrigger value="confirmed" className="text-white data-[state=active]:bg-white data-[state=active]:text-black">
-              Confirmed Rides
-            </TabsTrigger>
-            <TabsTrigger value="profile" className="text-white data-[state=active]:bg-white data-[state=active]:text-black">
-              My Profile
-            </TabsTrigger>
-          </TabsList>
+          <main className="flex-1 p-6 bg-white overflow-y-auto">
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                Welcome Back {profile?.first_name}! 👋
+              </h1>
+              <p className="text-gray-600">Here's your driving performance overview</p>
+            </div>
 
-          {/* Unassigned Rides Tab */}
-          <TabsContent value="unassigned" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Available Rides</CardTitle>
-                <p className="text-sm text-gray-600">Rides available for assignment</p>
-              </CardHeader>
-              <CardContent>
-                <p className="text-center text-gray-500 py-8">
-                  No unassigned rides available at the moment.
-                </p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Confirmed Rides Tab */}
-          <TabsContent value="confirmed" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Your Confirmed Rides</CardTitle>
-                <p className="text-sm text-gray-600">{bookings.length} total ride(s)</p>
-              </CardHeader>
-              <CardContent>
-                {bookings.length === 0 ? (
-                  <div className="text-center py-12">
-                    <Calendar className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-                    <p className="text-gray-500 text-lg mb-2">No rides assigned yet</p>
-                    <p className="text-sm text-gray-400">Check back soon for new ride assignments</p>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+              <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-blue-100 text-sm">30-Day Bookings</p>
+                      <p className="text-2xl font-bold">{stats.monthlyBookings}</p>
+                    </div>
+                    <Calendar className="h-8 w-8 text-blue-200" />
                   </div>
-                ) : (
-                  <div className="space-y-4">
-                    {bookings.map(renderBookingCard)}
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-green-100 text-sm">30-Day Revenue</p>
+                      <p className="text-2xl font-bold">€{stats.monthlyRevenue.toFixed(2)}</p>
+                    </div>
+                    <DollarSign className="h-8 w-8 text-green-200" />
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-purple-100 text-sm">Total Earnings</p>
+                      <p className="text-2xl font-bold">€{stats.totalEarnings.toFixed(2)}</p>
+                    </div>
+                    <TrendingUp className="h-8 w-8 text-purple-200" />
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-orange-100 text-sm">Pending Rides</p>
+                      <p className="text-2xl font-bold">{stats.pendingRides}</p>
+                    </div>
+                    <Clock className="h-8 w-8 text-orange-200" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
 
-          {/* My Profile Tab */}
-          <TabsContent value="profile" className="mt-6">
-            {driver && (
-              <div className="space-y-6">
-                {/* Performance Overview */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <TrendingUp className="w-5 h-5 mr-2" />
-                      Performance Overview
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div className="text-center p-4 bg-blue-50 rounded-lg">
-                        <p className="text-2xl font-bold text-blue-600">{stats.completedRides}</p>
-                        <p className="text-sm text-gray-600">Total Completed Rides</p>
-                      </div>
-                      <div className="text-center p-4 bg-green-50 rounded-lg">
-                        <p className="text-2xl font-bold text-green-600">€{stats.totalEarnings.toFixed(2)}</p>
-                        <p className="text-sm text-gray-600">Total Earnings</p>
-                      </div>
-                      <div className="text-center p-4 bg-purple-50 rounded-lg">
-                        <p className="text-2xl font-bold text-purple-600">
-                          {stats.completedRides > 0 ? (stats.totalEarnings / stats.completedRides).toFixed(2) : '0.00'}
-                        </p>
-                        <p className="text-sm text-gray-600">Avg. Earnings per Ride</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Driver Profile Card */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <Car className="w-5 h-5 mr-2" />
-                      Vehicle Information
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <p className="text-sm text-gray-600">Vehicle</p>
-                        <p className="font-medium">{driver.vehicle_make} {driver.vehicle_model} ({driver.vehicle_year})</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">License Plate</p>
-                        <p className="font-medium">{driver.vehicle_license_plate}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">License Number</p>
-                        <p className="font-medium">{driver.license_number}</p>
-                      </div>
-                    </div>
-                    <div className="mt-4 flex items-center justify-between">
-                      <Badge variant={driver.is_active ? "default" : "secondary"}>
-                        {driver.is_active ? "Active Driver" : "Inactive"}
-                      </Badge>
-                      <Button variant="outline" onClick={() => navigate('/driver/profile')}>
-                        Edit Profile
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Personal Information */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <UserCircle className="w-5 h-5 mr-2" />
-                      Personal Information
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm text-gray-600">Full Name</p>
-                        <p className="font-medium text-lg">
-                          {profile?.first_name} {profile?.last_name}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Phone Number</p>
-                        <p className="font-medium">{driver.phone}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Email</p>
-                        <p className="font-medium">{user?.email}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Member Since</p>
-                        <p className="font-medium">{format(new Date(user?.created_at), 'MMM d, yyyy')}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
+            <div className="space-y-6">
+              {getTabContent()}
+            </div>
+          </main>
+        </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 
