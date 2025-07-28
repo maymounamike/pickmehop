@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import BookingForm from "./BookingForm";
 import heroBackground from "@/assets/hero-background.jpg";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const HeroSection = () => {
   const [scrollY, setScrollY] = useState(0);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
@@ -15,7 +17,9 @@ const HeroSection = () => {
   const heroHeight = window.innerHeight * 1.6; // 160vh
   const maxScroll = heroHeight - window.innerHeight;
   const scrollProgress = Math.min(scrollY / maxScroll, 1);
-  const translateY = scrollProgress * 200; // Move up to 200px
+  // Enhanced mobile scrolling - move further down on mobile devices
+  const maxTranslateY = isMobile ? 400 : 200; // More movement on mobile
+  const translateY = scrollProgress * maxTranslateY;
 
   return (
     <section 
