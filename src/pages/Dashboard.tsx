@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Calendar, MapPin, Users, CreditCard, ArrowLeft, FileX, CheckCircle, UserCheck } from "lucide-react";
-import Header from "@/components/Header";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { Loader2, Calendar, MapPin, Users, CreditCard, LogOut, Plus, User, CheckCircle } from "lucide-react";
+import CustomerSidebar from "@/components/CustomerSidebar";
 
 interface Booking {
   id: string;
@@ -26,6 +27,7 @@ const Dashboard = () => {
   const [user, setUser] = useState<any>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("bookings");
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -87,6 +89,49 @@ const Dashboard = () => {
     });
   };
 
+  const handleSignOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to sign out",
+        variant: "destructive",
+      });
+    } else {
+      navigate("/auth");
+    }
+  };
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    if (tab === "new-booking") {
+      navigate("/");
+    } else if (tab === "profile") {
+      // Navigate to profile page when implemented
+      toast({
+        title: "Coming Soon",
+        description: "Profile page is under development",
+      });
+    }
+  };
+
+  const stats = {
+    totalBookings: bookings.length,
+    confirmedBookings: bookings.filter(b => b.status === 'confirmed').length,
+    completedBookings: bookings.filter(b => b.status === 'completed').length,
+  };
+
+  const filteredBookings = () => {
+    switch (activeTab) {
+      case "confirmed":
+        return bookings.filter(b => b.status === 'confirmed');
+      case "completed":
+        return bookings.filter(b => b.status === 'completed');
+      default:
+        return bookings;
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -96,134 +141,211 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
-      <Header />
-      
-      <div className="container mx-auto px-4 py-8">
-        {/* Back to Home Button */}
-        <Button
-          variant="ghost"
-          className="mb-6 text-muted-foreground hover:text-foreground"
-          onClick={() => {
-            console.log('Back to Home button clicked');
-            navigate("/");
-          }}
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Home
-        </Button>
-
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold">My Bookings</h1>
-            <p className="text-muted-foreground">Welcome back, {user?.email}</p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => navigate("/unassigned-rides")}>
-              <FileX className="mr-2 h-4 w-4" />
-              Unassigned Rides
-            </Button>
-            <Button variant="outline" onClick={() => navigate("/confirmed-rides")}>
-              <CheckCircle className="mr-2 h-4 w-4" />
-              Confirmed Rides
-            </Button>
-            <Button variant="outline" onClick={() => navigate("/drivers")}>
-              <UserCheck className="mr-2 h-4 w-4" />
-              Drivers
-            </Button>
-          </div>
-        </div>
-
-        {bookings.length === 0 ? (
-          <Card>
-            <CardContent className="text-center py-12">
-              <Calendar className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No bookings yet</h3>
-              <p className="text-muted-foreground mb-4">
-                You haven't made any bookings yet. Start planning your next trip!
-              </p>
-              <Button onClick={() => navigate("/")}>
-                Book a Ride
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full">
+        <CustomerSidebar 
+          activeTab={activeTab} 
+          onTabChange={handleTabChange}
+          stats={stats}
+        />
+        
+        <div className="flex-1 flex flex-col">
+          {/* Header */}
+          <header className="h-16 bg-slate-900 text-white flex items-center justify-between px-6 border-b">
+            <div className="flex items-center gap-4">
+              <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center">
+                <span className="text-white font-bold text-sm">P</span>
+              </div>
+              <span className="font-semibold text-lg">PickMeHop</span>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-300">Welcome, {user?.email}</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSignOut}
+                className="text-white hover:bg-white/10"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
               </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid gap-6">
-            {bookings.map((booking) => (
-              <Card key={booking.id}>
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-lg">
-                        Booking #{booking.booking_id}
-                      </CardTitle>
-                      <CardDescription>
-                        Booked on {formatDate(booking.created_at)}
-                      </CardDescription>
-                    </div>
-                    <div className="flex gap-2">
-                      <Badge variant={booking.status === 'confirmed' ? 'default' : 'secondary'}>
-                        {booking.status}
-                      </Badge>
-                      <Badge variant={booking.payment_status === 'paid' ? 'default' : 'destructive'}>
-                        {booking.payment_status}
-                      </Badge>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-3">
-                        <MapPin className="h-5 w-5 text-muted-foreground" />
-                        <div>
-                          <p className="font-medium">Route</p>
-                          <p className="text-sm text-muted-foreground">
-                            {booking.from_location} → {booking.to_location}
-                          </p>
-                        </div>
+            </div>
+          </header>
+
+          {/* Main Content */}
+          <main className="flex-1 p-6 bg-gray-50">
+            <div className="max-w-7xl mx-auto">
+              <div className="mb-6">
+                <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                  {activeTab === "bookings" && "My Bookings"}
+                  {activeTab === "confirmed" && "Confirmed Rides"}
+                  {activeTab === "completed" && "Completed Rides"}
+                </h1>
+                <p className="text-gray-600">
+                  {activeTab === "bookings" && "Manage all your ride bookings"}
+                  {activeTab === "confirmed" && "Your confirmed upcoming rides"}
+                  {activeTab === "completed" && "Your ride history"}
+                </p>
+              </div>
+
+              {/* Quick Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <Card className="bg-white border-0 shadow-sm">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600 mb-1">Total Bookings</p>
+                        <p className="text-2xl font-bold text-gray-900">{stats.totalBookings}</p>
                       </div>
-                      
-                      <div className="flex items-center gap-3">
-                        <Calendar className="h-5 w-5 text-muted-foreground" />
-                        <div>
-                          <p className="font-medium">Date & Time</p>
-                          <p className="text-sm text-muted-foreground">
-                            {booking.date} at {booking.time}
-                          </p>
-                        </div>
+                      <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
+                        <Calendar className="h-6 w-6 text-emerald-600" />
                       </div>
                     </div>
-                    
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-3">
-                        <Users className="h-5 w-5 text-muted-foreground" />
-                        <div>
-                          <p className="font-medium">Passengers</p>
-                          <p className="text-sm text-muted-foreground">
-                            {booking.passengers} {booking.passengers === 1 ? 'person' : 'people'}
-                          </p>
-                        </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-white border-0 shadow-sm">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600 mb-1">Confirmed</p>
+                        <p className="text-2xl font-bold text-gray-900">{stats.confirmedBookings}</p>
                       </div>
-                      
-                      <div className="flex items-center gap-3">
-                        <CreditCard className="h-5 w-5 text-muted-foreground" />
-                        <div>
-                          <p className="font-medium">Price</p>
-                          <p className="text-sm text-muted-foreground">
-                            €{booking.estimated_price}
-                          </p>
-                        </div>
+                      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <CheckCircle className="h-6 w-6 text-blue-600" />
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-white border-0 shadow-sm">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600 mb-1">Completed</p>
+                        <p className="text-2xl font-bold text-gray-900">{stats.completedBookings}</p>
+                      </div>
+                      <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <CheckCircle className="h-6 w-6 text-green-600" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Bookings List */}
+              {filteredBookings().length === 0 ? (
+                <Card className="bg-white border-0 shadow-sm">
+                  <CardContent className="text-center py-12">
+                    <Calendar className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">
+                      {activeTab === "confirmed" && "No confirmed rides"}
+                      {activeTab === "completed" && "No completed rides yet"}
+                      {activeTab === "bookings" && "No bookings yet"}
+                    </h3>
+                    <p className="text-gray-600 mb-4">
+                      {activeTab === "bookings" && "You haven't made any bookings yet. Start planning your next trip!"}
+                      {activeTab === "confirmed" && "You don't have any confirmed rides at the moment."}
+                      {activeTab === "completed" && "You haven't completed any rides yet."}
+                    </p>
+                    <Button onClick={() => navigate("/")} className="bg-emerald-600 hover:bg-emerald-700">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Book a Ride
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid gap-6">
+                  {filteredBookings().map((booking) => (
+                    <Card key={booking.id} className="bg-white border-0 shadow-sm hover:shadow-md transition-shadow">
+                      <CardHeader className="pb-4">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <CardTitle className="text-lg font-semibold text-gray-900">
+                              Booking #{booking.booking_id}
+                            </CardTitle>
+                            <CardDescription className="text-gray-600">
+                              Booked on {formatDate(booking.created_at)}
+                            </CardDescription>
+                          </div>
+                          <div className="flex gap-2">
+                            <Badge 
+                              variant={booking.status === 'confirmed' ? 'default' : 'secondary'}
+                              className={booking.status === 'confirmed' ? 'bg-emerald-100 text-emerald-800' : ''}
+                            >
+                              {booking.status}
+                            </Badge>
+                            <Badge variant={booking.payment_status === 'paid' ? 'default' : 'destructive'}>
+                              {booking.payment_status}
+                            </Badge>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid md:grid-cols-2 gap-6">
+                          <div className="space-y-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                                <MapPin className="h-5 w-5 text-gray-600" />
+                              </div>
+                              <div>
+                                <p className="font-medium text-gray-900">Route</p>
+                                <p className="text-sm text-gray-600">
+                                  {booking.from_location} → {booking.to_location}
+                                </p>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                                <Calendar className="h-5 w-5 text-gray-600" />
+                              </div>
+                              <div>
+                                <p className="font-medium text-gray-900">Date & Time</p>
+                                <p className="text-sm text-gray-600">
+                                  {booking.date} at {booking.time}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                                <Users className="h-5 w-5 text-gray-600" />
+                              </div>
+                              <div>
+                                <p className="font-medium text-gray-900">Passengers</p>
+                                <p className="text-sm text-gray-600">
+                                  {booking.passengers} {booking.passengers === 1 ? 'person' : 'people'}
+                                </p>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                                <CreditCard className="h-5 w-5 text-gray-600" />
+                              </div>
+                              <div>
+                                <p className="font-medium text-gray-900">Price</p>
+                                <p className="text-sm text-gray-600">
+                                  €{booking.estimated_price}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+          </main>
+        </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 
