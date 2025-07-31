@@ -23,7 +23,7 @@ const HeroSection = () => {
 
   return (
     <section 
-      className="relative min-h-[160vh] flex items-start justify-center overflow-hidden pt-16 sm:pt-24 pb-16 sm:pb-20 bg-black lg:bg-transparent"
+      className="relative min-h-screen lg:min-h-[160vh] flex items-start justify-center overflow-hidden pt-16 sm:pt-24 pb-16 sm:pb-20 bg-black lg:bg-transparent"
       aria-label="Book a ride service"
     >
       {/* Background Image - Hidden on mobile/tablet, visible on desktop */}
