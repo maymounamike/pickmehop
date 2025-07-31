@@ -19,6 +19,11 @@ import DriverOngoing from "./pages/DriverOngoing";
 import AdminDashboard from "./pages/AdminDashboard";
 import BookingConfirmation from "./pages/BookingConfirmation";
 import DriverAuth from "./pages/DriverAuth";
+import About from "./pages/About";
+import Services from "./pages/Services";
+import Contact from "./pages/Contact";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +49,11 @@ const App = () => (
             <Route path="/booking-confirmation" element={<BookingConfirmation />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/payment-canceled" element={<PaymentCanceled />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/services" element={<Services />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<Privacy />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

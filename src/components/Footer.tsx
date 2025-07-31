@@ -1,6 +1,9 @@
 import { Facebook, Instagram, HelpCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Footer = () => {
+  const navigate = useNavigate();
+
   return (
     <footer className="bg-slate-800 text-white py-12">
       <div className="container mx-auto px-4">
@@ -22,11 +25,13 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* About Section */}
+          {/* Quick Links */}
           <div>
-            <h3 className="font-semibold text-lg mb-4">ABOUT</h3>
+            <h3 className="font-semibold text-lg mb-4">QUICK LINKS</h3>
             <ul className="space-y-3 text-gray-300">
-              <li><a href="#" className="hover:text-white transition-colors">Company</a></li>
+              <li><button onClick={() => navigate("/services")} className="hover:text-white transition-colors text-left">Services</button></li>
+              <li><button onClick={() => navigate("/about")} className="hover:text-white transition-colors text-left">About Us</button></li>
+              <li><button onClick={() => navigate("/contact")} className="hover:text-white transition-colors text-left">Contact</button></li>
             </ul>
           </div>
 
@@ -69,9 +74,23 @@ const Footer = () => {
               </a>
             </div>
 
-            {/* Copyright */}
-            <div className="text-gray-400 text-sm">
-              © 2024 - 2025 All rights reserved.
+            {/* Copyright and Legal Links */}
+            <div className="text-gray-400 text-sm flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-4">
+              <span>© 2024 - 2025 All rights reserved.</span>
+              <div className="flex space-x-4">
+                <button 
+                  onClick={() => navigate("/terms")} 
+                  className="hover:text-white transition-colors"
+                >
+                  Terms & Conditions
+                </button>
+                <button 
+                  onClick={() => navigate("/privacy")} 
+                  className="hover:text-white transition-colors"
+                >
+                  Privacy Policy
+                </button>
+              </div>
             </div>
           </div>
         </div>

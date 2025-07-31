@@ -108,9 +108,37 @@ const Header = () => {
           <img 
             src="/lovable-uploads/fd647c9d-74ed-4206-99d0-9b04a8f86b41.png" 
             alt="Pick Me Hop Logo" 
-            className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
+            className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover cursor-pointer"
+            onClick={() => navigate("/")}
           />
         </div>
+        
+        {/* Navigation Menu - Only show on homepage when not logged in */}
+        {!user && window.location.pathname === "/" && (
+          <nav className="hidden md:flex items-center space-x-6">
+            <Button 
+              variant="ghost" 
+              className="text-white hover:text-accent hover:bg-white/10"
+              onClick={() => navigate("/services")}
+            >
+              Services
+            </Button>
+            <Button 
+              variant="ghost" 
+              className="text-white hover:text-accent hover:bg-white/10"
+              onClick={() => navigate("/about")}
+            >
+              About
+            </Button>
+            <Button 
+              variant="ghost" 
+              className="text-white hover:text-accent hover:bg-white/10"
+              onClick={() => navigate("/contact")}
+            >
+              Contact
+            </Button>
+          </nav>
+        )}
         
         <div className="flex items-center space-x-3">
           {user ? (
