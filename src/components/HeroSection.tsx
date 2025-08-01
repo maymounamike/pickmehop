@@ -14,16 +14,16 @@ const HeroSection = () => {
   }, []);
 
   // Calculate transform based on scroll position within hero bounds
-  const heroHeight = window.innerHeight * 1.6; // 160vh
+  const heroHeight = window.innerHeight * 1.4; // 140vh
   const maxScroll = heroHeight - window.innerHeight;
   const scrollProgress = Math.min(scrollY / maxScroll, 1);
-  // Enhanced mobile scrolling - move further down on mobile devices
-  const maxTranslateY = isMobile ? 400 : 200; // More movement on mobile
-  const translateY = scrollProgress * maxTranslateY;
+  // Limit translateY to prevent form from being cut off
+  const maxTranslateY = isMobile ? 100 : 80; // Reduced movement
+  const translateY = Math.min(scrollProgress * maxTranslateY, 100);
 
   return (
     <section 
-      className="relative min-h-screen lg:min-h-[140vh] flex items-start justify-center overflow-hidden pt-16 sm:pt-24 pb-16 sm:pb-20 bg-gradient-hero"
+      className="relative min-h-screen lg:min-h-[140vh] flex items-start justify-center overflow-hidden pt-16 sm:pt-24 pb-32 sm:pb-40 bg-gradient-hero"
       aria-label="Book a ride service"
     >
       {/* Background Pattern */}
@@ -36,7 +36,7 @@ const HeroSection = () => {
       
       {/* Content */}
       <div 
-        className="relative z-10 container mx-auto px-4 py-4 sm:py-6 lg:py-8 flex flex-col items-center justify-center gap-8 max-h-screen lg:flex-row lg:items-start lg:justify-between lg:pt-20 transition-transform duration-75 ease-out"
+        className="relative z-10 container mx-auto px-4 py-4 sm:py-6 lg:py-8 flex flex-col items-center justify-center gap-8 lg:flex-row lg:items-start lg:justify-between lg:pt-20 transition-transform duration-75 ease-out"
         style={{ 
           transform: `translateY(${translateY}px)` 
         }}
