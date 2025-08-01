@@ -21,41 +21,52 @@ const ReviewsSection = () => {
   ];
 
   return (
-    <section className="py-16 bg-background">
+    <section className="py-20 bg-gradient-to-br from-secondary/20 via-background to-secondary/20">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-foreground mb-2">
+        <div className="text-center mb-16">
+          <h2 className="font-display text-4xl lg:text-5xl font-bold text-foreground mb-6">
             Travelers love Pick Me Hop
           </h2>
-          <div className="flex items-center justify-center space-x-2">
+          <div className="flex items-center justify-center space-x-3 mb-4">
             <div className="flex">
               {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                <Star key={i} className="w-6 h-6 fill-yellow-400 text-yellow-400" />
               ))}
             </div>
-            <span className="text-lg font-semibold text-muted-foreground">846 reviews</span>
+            <span className="text-xl font-semibold text-primary">4.9</span>
           </div>
+          <p className="text-muted-foreground text-lg">
+            Over <span className="font-semibold text-accent">846 five-star reviews</span> from happy travelers
+          </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {reviews.map((review, index) => (
-            <Card key={index} className="border shadow-sm">
-              <CardContent className="p-6">
-                <div className="flex mb-4">
+            <Card key={index} className="border-0 shadow-card hover:shadow-elegant transition-all duration-300 group bg-gradient-to-br from-card to-background animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
+              <CardContent className="p-8">
+                <div className="flex mb-6">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                    <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                   ))}
                 </div>
-                <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                <p className="text-base text-foreground mb-6 leading-relaxed italic">
                   "{review.text}"
                 </p>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-medium text-foreground">{review.author}</span>
-                  <span className="text-muted-foreground">{review.date}</span>
+                <div className="flex items-center justify-between pt-4 border-t border-border">
+                  <span className="font-semibold text-foreground font-display">{review.author}</span>
+                  <span className="text-muted-foreground text-sm">{review.date}</span>
                 </div>
               </CardContent>
             </Card>
           ))}
+        </div>
+        
+        {/* Call to action */}
+        <div className="text-center mt-16">
+          <p className="text-muted-foreground text-lg">
+            Join hundreds of satisfied travelers. 
+            <span className="text-primary font-semibold"> Book your ride today!</span>
+          </p>
         </div>
       </div>
     </section>

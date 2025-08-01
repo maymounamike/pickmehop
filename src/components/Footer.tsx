@@ -5,88 +5,92 @@ const Footer = () => {
   const navigate = useNavigate();
 
   return (
-    <footer className="bg-slate-800 text-white py-12">
+    <footer className="bg-gradient-to-br from-foreground via-foreground to-primary text-white py-16">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {/* Company Logo and Help */}
           <div className="space-y-6">
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3">
               <img 
                 src="/lovable-uploads/fd647c9d-74ed-4206-99d0-9b04a8f86b41.png" 
                 alt="Pick Me Hop Logo" 
-                className="w-8 h-8 rounded-full object-cover"
+                className="w-12 h-12 rounded-full object-cover shadow-card"
               />
-              <span className="font-semibold text-lg">Pick Me Hop</span>
+              <span className="font-display font-bold text-2xl">Pick Me Hop</span>
             </div>
+            <p className="text-white/80 leading-relaxed">
+              Your trusted partner for comfortable and reliable airport transfers in Paris.
+            </p>
             
-            <div className="flex items-center space-x-2 text-gray-300 hover:text-white cursor-pointer transition-colors">
+            <div className="flex items-center space-x-2 text-white/80 hover:text-accent cursor-pointer transition-all duration-300 hover:scale-105">
               <HelpCircle className="w-5 h-5" />
-              <span>Help</span>
+              <span className="font-medium">Need Help?</span>
             </div>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h3 className="font-semibold text-lg mb-4">QUICK LINKS</h3>
-            <ul className="space-y-3 text-gray-300">
-              <li><button onClick={() => navigate("/services")} className="hover:text-white transition-colors text-left">Services</button></li>
-              <li><button onClick={() => navigate("/about")} className="hover:text-white transition-colors text-left">About Us</button></li>
-              <li><button onClick={() => navigate("/contact")} className="hover:text-white transition-colors text-left">Contact</button></li>
+            <h3 className="font-display font-bold text-xl mb-6 text-accent">Quick Links</h3>
+            <ul className="space-y-4">
+              <li><button onClick={() => navigate("/services")} className="text-white/80 hover:text-white hover:translate-x-2 transition-all duration-300 text-left font-medium">Services</button></li>
+              <li><button onClick={() => navigate("/about")} className="text-white/80 hover:text-white hover:translate-x-2 transition-all duration-300 text-left font-medium">About Us</button></li>
+              <li><button onClick={() => navigate("/contact")} className="text-white/80 hover:text-white hover:translate-x-2 transition-all duration-300 text-left font-medium">Contact</button></li>
             </ul>
           </div>
 
           {/* Payment Methods */}
           <div>
-            <h3 className="font-semibold text-lg mb-4">PAYMENT METHODS</h3>
-            <div className="space-y-3 text-gray-300">
-              <p>All Credit Cards Accepted</p>
-              <p>PayPal</p>
-              <div className="flex items-center space-x-2 mt-4">
-                <span className="text-sm">Secure payments by</span>
-                <span className="font-medium">Stripe</span>
+            <h3 className="font-display font-bold text-xl mb-6 text-accent">Secure Payments</h3>
+            <div className="space-y-4">
+              <p className="text-white/80 font-medium">✓ All Major Credit Cards</p>
+              <p className="text-white/80 font-medium">✓ PayPal</p>
+              <p className="text-white/80 font-medium">✓ Cash Payments</p>
+              <div className="flex items-center space-x-2 mt-6 p-3 bg-white/10 rounded-lg backdrop-blur-sm">
+                <span className="text-sm text-white/80">Powered by</span>
+                <span className="font-bold text-white">Stripe</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Social Media and Copyright */}
-        <div className="border-t border-gray-600 mt-8 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+        <div className="border-t border-white/20 mt-12 pt-8">
+          <div className="flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0">
             {/* Social Media Icons */}
             <div className="flex space-x-4">
               <a 
                 href="https://www.facebook.com/share/16fdFjqCsh/?mibextid=wwXIfr" 
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-gray-600 transition-colors"
+                className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center hover:bg-accent hover:scale-110 transition-all duration-300 backdrop-blur-sm"
                 aria-label="Facebook"
               >
-                <Facebook className="w-5 h-5" />
+                <Facebook className="w-6 h-6" />
               </a>
               <a 
                 href="https://www.instagram.com/pickmehop?igsh=M3NyN2xvamc5cml6&utm_source=qr"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-gray-600 transition-colors"
+                className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center hover:bg-accent hover:scale-110 transition-all duration-300 backdrop-blur-sm"
                 aria-label="Instagram"
               >
-                <Instagram className="w-5 h-5" />
+                <Instagram className="w-6 h-6" />
               </a>
             </div>
 
             {/* Copyright and Legal Links */}
-            <div className="text-gray-400 text-sm flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-4">
-              <span>© 2024 - 2025 All rights reserved.</span>
-              <div className="flex space-x-4">
+            <div className="text-white/60 text-sm flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-6">
+              <span className="font-medium">© 2024 - 2025 Pick Me Hop. All rights reserved.</span>
+              <div className="flex space-x-6">
                 <button 
                   onClick={() => navigate("/terms")} 
-                  className="hover:text-white transition-colors"
+                  className="hover:text-white hover:scale-105 transition-all duration-300 font-medium"
                 >
                   Terms & Conditions
                 </button>
                 <button 
                   onClick={() => navigate("/privacy")} 
-                  className="hover:text-white transition-colors"
+                  className="hover:text-white hover:scale-105 transition-all duration-300 font-medium"
                 >
                   Privacy Policy
                 </button>

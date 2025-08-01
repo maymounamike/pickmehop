@@ -31,42 +31,49 @@ const DriversQualitySection = () => {
   ];
 
   return (
-    <section className="py-16 bg-gradient-to-br from-background to-secondary/20">
+    <section className="py-20 bg-gradient-to-br from-background via-secondary/30 to-background">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold text-foreground mb-2">
+        <div className="text-center mb-16 animate-fade-in">
+          <h2 className="font-display text-4xl lg:text-5xl font-bold text-foreground mb-4">
             The best drivers in each destination
           </h2>
-          <div className="w-16 h-1 bg-accent mx-auto"></div>
+          <div className="w-24 h-1 bg-gradient-primary mx-auto rounded-full"></div>
         </div>
 
         {/* Vetting Process */}
-        <div className="max-w-6xl mx-auto">
-          <Card className="border-0 shadow-lg bg-gradient-to-r from-green-50 to-emerald-50">
-            <CardContent className="p-8 lg:p-12">
-              <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+        <div className="max-w-6xl mx-auto animate-scale-in">
+          <Card className="border-0 shadow-elegant bg-gradient-to-r from-card via-accent/5 to-card backdrop-blur-sm">
+            <CardContent className="p-8 lg:p-16">
+              <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
                 <div className="text-center lg:text-left">
-                  <h3 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-6">
-                    Each driver is carefully handpicked and vetted by our team
+                  <h3 className="font-display text-3xl lg:text-4xl font-bold text-foreground mb-8 leading-tight">
+                    Each driver is carefully 
+                    <span className="bg-gradient-primary bg-clip-text text-transparent"> handpicked and vetted</span> by our team
                   </h3>
+                  <p className="text-muted-foreground text-lg leading-relaxed">
+                    We believe in quality over quantity. Every driver goes through our comprehensive vetting process.
+                  </p>
                 </div>
                 
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
                   {vettingProcess.map((step, index) => (
-                    <div key={index} className="text-center relative">
-                      {/* Connection Arrow */}
+                    <div key={index} className="text-center relative group">
+                      {/* Connection Line */}
                       {index < vettingProcess.length - 1 && (
-                        <div className="hidden lg:block absolute top-8 -right-2 w-4 h-px bg-accent"></div>
+                        <div className="hidden lg:block absolute top-10 -right-4 w-8 h-px bg-gradient-to-r from-primary to-accent opacity-30"></div>
                       )}
                       
-                      <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm">
-                        <step.icon className="w-6 h-6 text-accent" />
+                      <div className="w-16 h-16 bg-gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-card group-hover:scale-110 transition-transform duration-300">
+                        <step.icon className="w-8 h-8 text-white" />
                       </div>
-                      <h4 className="text-sm font-semibold text-gray-800 leading-tight">
+                      <h4 className="text-sm font-semibold text-foreground leading-tight font-display">
                         {step.title}
                       </h4>
-                      <p className="text-sm font-semibold text-gray-800 leading-tight mb-2">
+                      <p className="text-sm font-semibold text-primary leading-tight mb-2">
                         {step.subtitle}
+                      </p>
+                      <p className="text-xs text-muted-foreground leading-relaxed hidden lg:block">
+                        {step.description}
                       </p>
                     </div>
                   ))}
