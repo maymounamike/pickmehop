@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -77,6 +77,15 @@ const bookingSchema = z.object({
 });
 
 type BookingFormData = z.infer<typeof bookingSchema>;
+
+// Debounce utility function
+const debounce = <T extends (...args: any[]) => any>(func: T, wait: number): T => {
+  let timeout: NodeJS.Timeout;
+  return ((...args: any[]) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  }) as T;
+};
 
 const BookingForm = () => {
   const navigate = useNavigate();
@@ -381,19 +390,17 @@ const BookingForm = () => {
     return { price: null, isDisneyland: false, needsQuote: true, isBeauvaisParisRoute: false };
   };
 
-  // Watch form values to calculate price
+  // Watch form values to calculate price with debouncing
   const watchedValues = form.watch(['fromLocation', 'toLocation', 'passengers', 'luggage']);
   
-  // Update price when form values change
-  useEffect(() => {
-    const updatePrice = async () => {
+  // Debounced price calculation to prevent excessive calls
+  const debouncedUpdatePrice = useCallback(
+    debounce(async (from: string, to: string, passengers: number, luggage: number) => {
       // Reset states
       setNeedsCustomQuote(false);
       setIsDisneylandOrigin(false);
       setIsBeauvaisParisRoute(false);
-      setEstimatedPrice(null); // Clear price while calculating
-      
-      const [from, to, passengers, luggage] = watchedValues;
+      setEstimatedPrice(null);
       
       // Only calculate if we have valid inputs
       if (!from || !to || from.length < 3 || to.length < 3) {
@@ -402,9 +409,7 @@ const BookingForm = () => {
       }
       
       try {
-        console.log('Calculating price for:', { from, to, passengers, luggage });
         const result = await calculatePrice(from, to, passengers, luggage);
-        console.log('Calculated result:', result);
         
         if (result) {
           setEstimatedPrice(result.price);
@@ -421,13 +426,19 @@ const BookingForm = () => {
         setNeedsCustomQuote(false);
         setIsBeauvaisParisRoute(false);
       }
-    };
-    
-    updatePrice();
-  }, [watchedValues]);
+    }, 300), // 300ms debounce
+    []
+  );
+  
+  // Update price when form values change
+  useEffect(() => {
+    const [from, to, passengers, luggage] = watchedValues;
+    debouncedUpdatePrice(from, to, passengers, luggage);
+  }, [watchedValues, debouncedUpdatePrice]);
 
   // Validate step 1 fields
-  const getAirportPresets = (query: string): string[] => {
+  // Memoized airport presets to prevent repeated calculations
+  const getAirportPresets = useCallback((query: string): string[] => {
     const queryLower = query.toLowerCase();
     const presets: string[] = [];
 
@@ -449,11 +460,11 @@ const BookingForm = () => {
       presets.push('Beauvais-Tillé Airport, Tillé 60000');
     }
 
-    return presets;
-  };
+    return presets.slice(0, 5); // Limit to 5 suggestions
+  }, []);
 
-  // Train station suggestions for Paris stations
-  const getTrainStationSuggestions = (query: string): string[] => {
+  // Memoized train station suggestions for Paris stations
+  const getTrainStationSuggestions = useCallback((query: string): string[] => {
     const queryLower = query.toLowerCase();
     const stations: string[] = [];
 
@@ -483,8 +494,8 @@ const BookingForm = () => {
       }
     }
 
-    return stations;
-  };
+    return stations.slice(0, 5); // Limit to 5 suggestions
+  }, []);
 
   // Hotel suggestion function for Paris hotels
   const fetchHotelSuggestions = async (query: string) => {
