@@ -1,4 +1,30 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
 @tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Enhanced Mobile Scrolling for Vetting Process */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Smooth scroll behavior for mobile */
+@media (max-width: 1024px) {
+  .overflow-x-auto {
+    scroll-behavior: smooth;
+    scroll-snap-type: x mandatory;
+  }
+  
+  .overflow-x-auto > * {
+    scroll-snap-align: start;
+  }
+}
 @tailwind components;
 @tailwind utilities;
 
