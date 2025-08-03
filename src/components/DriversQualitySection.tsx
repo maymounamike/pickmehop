@@ -1,6 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, Search, Shield, Users, Car, Globe, ArrowRight, Star } from "lucide-react";
-import driverProfileImage from "@/assets/driver-michael.jpg";
 
 const DriversQualitySection = () => {
   const vettingProcess = [
@@ -51,7 +50,7 @@ const DriversQualitySection = () => {
                     <div className="relative inline-block mb-6">
                       <div className="w-48 h-48 rounded-full overflow-hidden border-4 border-[#FFB400] shadow-xl">
                         <img 
-                          src={driverProfileImage} 
+                          src="/lovable-uploads/f96ccf5b-59cc-4691-b437-013293cc74b5.png" 
                           alt="Professional driver Michael"
                           className="w-full h-full object-cover"
                         />
