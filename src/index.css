@@ -83,6 +83,23 @@
   -webkit-backdrop-filter: blur(8px) !important;
 }
 
+/* Enhanced address input validation styling */
+.address-valid {
+  border-color: hsl(var(--success)) !important;
+  box-shadow: 0 0 0 1px hsl(var(--success)) !important;
+}
+
+.address-invalid {
+  border-color: hsl(var(--destructive)) !important;
+  box-shadow: 0 0 0 1px hsl(var(--destructive)) !important;
+}
+
+/* Ensure dropdown appears above other elements */
+.location-dropdown {
+  z-index: 999999 !important;
+  position: absolute !important;
+}
+
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
 */

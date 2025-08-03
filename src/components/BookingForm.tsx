@@ -425,24 +425,42 @@ const BookingForm = () => {
     const values = form.getValues();
     const errors = [];
     
-    // Check if valid addresses are selected
-    if (!validFromSelected && values.fromLocation) {
+    // Check basic field requirements
+    if (!values.fromLocation || values.fromLocation.length < 3) {
       form.setError('fromLocation', { 
-        message: 'Please select a valid address from the suggestions' 
+        message: 'Please enter a pickup location (minimum 3 characters)' 
       });
       errors.push('fromLocation');
     }
 
-    if (!validToSelected && values.toLocation) {
+    if (!values.toLocation || values.toLocation.length < 3) {
       form.setError('toLocation', { 
-        message: 'Please select a valid address from the suggestions' 
+        message: 'Please enter a destination location (minimum 3 characters)' 
       });
       errors.push('toLocation');
     }
     
-    if (!values.fromLocation || values.fromLocation.length < 3) errors.push('fromLocation');
-    if (!values.toLocation || values.toLocation.length < 3) errors.push('toLocation');
-    if (!values.time) errors.push('time');
+    // Check if valid addresses are selected - only if fields have content
+    if (values.fromLocation && values.fromLocation.length >= 3 && !validFromSelected) {
+      form.setError('fromLocation', { 
+        message: 'Please enter a complete address or select from suggestions' 
+      });
+      errors.push('fromLocation');
+    }
+
+    if (values.toLocation && values.toLocation.length >= 3 && !validToSelected) {
+      form.setError('toLocation', { 
+        message: 'Please enter a complete address or select from suggestions' 
+      });
+      errors.push('toLocation');
+    }
+    
+    if (!values.time) {
+      form.setError('time', { 
+        message: 'Please select a pickup time' 
+      });
+      errors.push('time');
+    }
     
     // Check if flight number is required for airport pickup
     const isFromAirport = values.fromLocation && (
@@ -453,6 +471,9 @@ const BookingForm = () => {
     );
     
     if (isFromAirport && (!values.flightNumber || values.flightNumber.trim().length === 0)) {
+      form.setError('flightNumber', {
+        message: 'Flight number is required when pickup location is an airport'
+      });
       errors.push('flightNumber');
     }
     

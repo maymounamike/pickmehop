@@ -289,13 +289,18 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
     const newValue = e.target.value;
     onChange(newValue);
     
-    // Validate the input as user types
-    const isValid = newValue.length >= 5 && (
+    // More lenient validation - consider valid if it's a reasonable address
+    const isValid = newValue.length >= 3 && (
       // Check if it's a complete address-like format
       newValue.includes(',') || 
-      !!newValue.match(/\d+/) || // Has numbers (address/postal code)
+      !!newValue.match(/\d/) || // Has any number
+      newValue.length >= 10 || // Long enough to be a full address
       airportPresets.some(preset => preset.address.toLowerCase().includes(newValue.toLowerCase())) ||
-      trainStations.some(station => station.address.toLowerCase().includes(newValue.toLowerCase()))
+      trainStations.some(station => station.address.toLowerCase().includes(newValue.toLowerCase())) ||
+      newValue.toLowerCase().includes('paris') ||
+      newValue.toLowerCase().includes('airport') ||
+      newValue.toLowerCase().includes('gare') ||
+      newValue.toLowerCase().includes('hotel')
     );
     
     setIsValidSelection(isValid);
@@ -414,10 +419,17 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
         <div
           ref={listRef}
           className={cn(
-            "absolute top-full left-0 right-0 z-[9999] mt-1 max-h-[300px] overflow-y-auto overscroll-contain rounded-lg border autocomplete-dropdown",
-            "animate-in fade-in-0 zoom-in-95 slide-in-from-top-2",
-            "will-change-transform pointer-events-auto"
+            "absolute top-full left-0 right-0 z-[99999] mt-1 max-h-[300px] overflow-y-auto rounded-lg border shadow-xl",
+            "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700",
+            "animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 duration-200",
+            "will-change-transform"
           )}
+          style={{ 
+            position: 'absolute',
+            zIndex: 99999,
+            backgroundColor: 'var(--popover)',
+            borderColor: 'var(--border)'
+          }}
         >
           <div className="p-1">
             {suggestions.map((suggestion, index) => (
@@ -429,6 +441,7 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
                   index === selectedIndex && "bg-accent text-accent-foreground"
                 )}
                 onClick={() => handleSelectSuggestion(suggestion)}
+                onMouseDown={(e) => e.preventDefault()} // Prevent blur
                 role="option"
                 aria-selected={index === selectedIndex}
               >
