@@ -186,13 +186,23 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
 
   // Fetch Google Maps suggestions
   const fetchGoogleSuggestions = useCallback(async (query: string): Promise<LocationSuggestion[]> => {
-    if (query.length < 2) return [];
+    console.log('🗺️ fetchGoogleSuggestions called with:', query);
+    
+    if (query.length < 2) {
+      console.log('❌ Google query too short:', query.length);
+      return [];
+    }
     
     try {
+      console.log('🔑 Getting Google Maps API key...');
       const { data: keyData, error: keyError } = await supabase.functions.invoke('get-google-maps-key');
       
-      if (keyError || !keyData?.apiKey) return [];
+      if (keyError || !keyData?.apiKey) {
+        console.error('❌ Failed to get Google Maps API key:', keyError);
+        return [];
+      }
 
+      console.log('✅ Got API key, loading Google Maps...');
       const loader = new Loader({
         apiKey: keyData.apiKey,
         version: "weekly",
@@ -200,9 +210,11 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
       });
 
       const google = await loader.load();
+      console.log('✅ Google Maps loaded, creating autocomplete service...');
       const service = new google.maps.places.AutocompleteService();
       
       return new Promise((resolve) => {
+        console.log('🔍 Requesting predictions for:', query);
         service.getPlacePredictions(
           {
             input: query,
@@ -210,30 +222,40 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
             types: ['address', 'establishment']
           },
           (predictions, status) => {
+            console.log('📍 Google API response:', { status, predictionsCount: predictions?.length || 0 });
+            
             if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
-              const suggestions = predictions.slice(0, 5).map((prediction, index) => ({
-                id: `google-${index}`,
-                address: prediction.description,
-                type: 'address' as const,
-                description: 'Address',
-                icon: <MapPin className="h-4 w-4 text-gray-600" />
-              }));
+              const suggestions = predictions.slice(0, 5).map((prediction, index) => {
+                console.log(`📍 Prediction ${index}:`, prediction.description);
+                return {
+                  id: `google-${index}`,
+                  address: prediction.description,
+                  type: 'address' as const,
+                  description: 'Address',
+                  icon: <MapPin className="h-4 w-4 text-gray-600" />
+                };
+              });
+              console.log('✅ Returning Google suggestions:', suggestions.length);
               resolve(suggestions);
             } else {
+              console.log('❌ Google API failed or no predictions:', status);
               resolve([]);
             }
           }
         );
       });
     } catch (error) {
-      console.error('Error fetching Google suggestions:', error);
+      console.error('❌ Error fetching Google suggestions:', error);
       return [];
     }
   }, []);
 
   // Main suggestion fetching function with caching
   const fetchSuggestions = useCallback(async (query: string) => {
+    console.log('🔍 fetchSuggestions called with query:', query);
+    
     if (!query || query.length < 1) {
+      console.log('❌ Query too short, clearing suggestions');
       setSuggestions([]);
       return;
     }
@@ -241,21 +263,27 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
     // Check cache first
     const cached = suggestionCache.get(query);
     if (cached) {
+      console.log('✅ Found cached suggestions:', cached.length);
       setSuggestions(cached);
       return;
     }
 
+    console.log('⏳ Fetching new suggestions...');
     setIsLoading(true);
     
     try {
       // Get local suggestions immediately
       const localSuggestions = getLocalSuggestions(query);
+      console.log('📍 Local suggestions:', localSuggestions.length);
       
       // Get hotel and Google suggestions in parallel
       const [hotelSuggestions, googleSuggestions] = await Promise.all([
         fetchHotelSuggestions(query),
         fetchGoogleSuggestions(query)
       ]);
+
+      console.log('🏨 Hotel suggestions:', hotelSuggestions.length);
+      console.log('🗺️ Google suggestions:', googleSuggestions.length);
 
       // Combine and deduplicate
       const allSuggestions = [
@@ -264,12 +292,17 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
         ...googleSuggestions
       ].slice(0, 8); // Limit to 8 suggestions for performance
 
+      console.log('📋 Total suggestions:', allSuggestions.length);
+      console.log('📋 All suggestions:', allSuggestions);
+
       // Cache the results
       suggestionCache.set(query, allSuggestions);
       setSuggestions(allSuggestions);
     } catch (error) {
-      console.error('Error fetching suggestions:', error);
-      setSuggestions(getLocalSuggestions(query));
+      console.error('❌ Error fetching suggestions:', error);
+      const fallbackSuggestions = getLocalSuggestions(query);
+      console.log('🔄 Using fallback suggestions:', fallbackSuggestions.length);
+      setSuggestions(fallbackSuggestions);
     } finally {
       setIsLoading(false);
     }
@@ -415,7 +448,14 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
       </div>
 
       {/* Suggestions dropdown */}
-      {isOpen && suggestions.length > 0 && (
+      {(() => {
+        console.log('🎨 Dropdown render check:', {
+          isOpen,
+          suggestionsLength: suggestions.length,
+          shouldRender: isOpen && suggestions.length > 0
+        });
+        return isOpen && suggestions.length > 0;
+      })() && (
         <div
           ref={listRef}
           className={cn(
