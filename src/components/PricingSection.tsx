@@ -4,111 +4,111 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 import MickeyMouseIcon from "./MickeyMouseIcon";
 
 const PricingSection = () => {
-  const destinations = [
+  // Flatten all destination-vehicle combinations into individual service options
+  const serviceOptions = [
     {
-      name: "Paris Orly Airport (ORY) - To/From Paris",
-      code: "ORY",
-      icon: Plane,
-      options: [
-        {
-          passengers: "1-4",
-          luggage: "up to 4",
-          price: 65,
-          vehicle: "Sedan",
-          vehicleIcon: Car
-        },
-        {
-          passengers: "5-8",
-          luggage: "up to 8",
-          price: 90,
-          vehicle: "Minivan",
-          vehicleIcon: Users
-        }
-      ]
+      id: "orly-sedan",
+      destination: "Paris Orly Airport (ORY)",
+      destinationCode: "ORY",
+      vehicle: "Sedan",
+      vehicleIcon: Car,
+      destinationIcon: Plane,
+      passengers: "1-4",
+      luggage: "up to 4",
+      price: 65
     },
     {
-      name: "Charles de Gaulle Airport (CDG) - To/From Paris",
-      code: "CDG",
-      icon: Plane,
-      options: [
-        {
-          passengers: "1-4",
-          luggage: "up to 4",
-          price: 75,
-          vehicle: "Sedan",
-          vehicleIcon: Car
-        },
-        {
-          passengers: "5-8",
-          luggage: "up to 8",
-          price: 135,
-          vehicle: "Minivan",
-          vehicleIcon: Users
-        }
-      ]
+      id: "orly-minivan",
+      destination: "Paris Orly Airport (ORY)",
+      destinationCode: "ORY", 
+      vehicle: "Minivan",
+      vehicleIcon: Users,
+      destinationIcon: Plane,
+      passengers: "5-8",
+      luggage: "up to 8",
+      price: 90
     },
     {
-      name: "Beauvais (BVA) - To/From Paris",
-      code: "BVA",
-      icon: Plane,
-      options: [
-        {
-          passengers: "1-4",
-          luggage: "up to 4",
-          price: 150,
-          vehicle: "Sedan",
-          vehicleIcon: Car
-        },
-        {
-          passengers: "5-8",
-          luggage: "up to 8",
-          price: 220,
-          vehicle: "Minivan",
-          vehicleIcon: Users
-        }
-      ]
+      id: "cdg-sedan",
+      destination: "Charles de Gaulle Airport (CDG)",
+      destinationCode: "CDG",
+      vehicle: "Sedan",
+      vehicleIcon: Car,
+      destinationIcon: Plane,
+      passengers: "1-4",
+      luggage: "up to 4",
+      price: 75
     },
     {
-      name: "Disneyland Paris (Disney) - To/From Paris",
-      code: "DLP",
-      icon: MickeyMouseIcon,
-      options: [
-        {
-          passengers: "1-4",
-          luggage: "up to 4",
-          price: 80,
-          vehicle: "Sedan",
-          vehicleIcon: Car
-        },
-        {
-          passengers: "5-8",
-          luggage: "up to 8",
-          price: 110,
-          vehicle: "Minivan",
-          vehicleIcon: Users
-        }
-      ]
+      id: "cdg-minivan",
+      destination: "Charles de Gaulle Airport (CDG)",
+      destinationCode: "CDG",
+      vehicle: "Minivan", 
+      vehicleIcon: Users,
+      destinationIcon: Plane,
+      passengers: "5-8",
+      luggage: "up to 8",
+      price: 135
+    },
+    {
+      id: "beauvais-sedan",
+      destination: "Beauvais (BVA) - To/From Paris",
+      destinationCode: "BVA",
+      vehicle: "Sedan",
+      vehicleIcon: Car,
+      destinationIcon: Plane,
+      passengers: "1-4",
+      luggage: "up to 4",
+      price: 150
+    },
+    {
+      id: "beauvais-minivan",
+      destination: "Beauvais (BVA) - To/From Paris",
+      destinationCode: "BVA",
+      vehicle: "Minivan",
+      vehicleIcon: Users,
+      destinationIcon: Plane,
+      passengers: "5-8",
+      luggage: "up to 8",
+      price: 220
+    },
+    {
+      id: "disney-sedan",
+      destination: "Disneyland Paris (Disney) - To/From Paris",
+      destinationCode: "DLP",
+      vehicle: "Sedan",
+      vehicleIcon: Car,
+      destinationIcon: MickeyMouseIcon,
+      passengers: "1-4",
+      luggage: "up to 4",
+      price: 80
+    },
+    {
+      id: "disney-minivan",
+      destination: "Disneyland Paris (Disney) - To/From Paris",
+      destinationCode: "DLP",
+      vehicle: "Minivan",
+      vehicleIcon: Users,
+      destinationIcon: MickeyMouseIcon,
+      passengers: "5-8",
+      luggage: "up to 8",
+      price: 110
     }
   ];
 
-  // State for vehicle selection for each destination
-  const [selectedVehicles, setSelectedVehicles] = useState<Record<number, number>>(
-    destinations.reduce((acc, _, index) => ({ ...acc, [index]: 0 }), {})
-  );
+  const [selectedService, setSelectedService] = useState<string>(serviceOptions[0].id);
 
-  const handleVehicleChange = (destinationIndex: number, optionIndex: number) => {
-    setSelectedVehicles(prev => ({
-      ...prev,
-      [destinationIndex]: optionIndex
-    }));
+  const getSelectedServiceDetails = () => {
+    return serviceOptions.find(service => service.id === selectedService);
   };
 
-  const handleBookNow = (destinationIndex: number) => {
-    const selectedOption = destinations[destinationIndex].options[selectedVehicles[destinationIndex]];
-    console.log(`Booking for ${destinations[destinationIndex].name} - ${selectedOption.vehicle} - €${selectedOption.price}`);
+  const handleBookNow = () => {
+    const selectedOption = getSelectedServiceDetails();
+    console.log(`Booking for ${selectedOption?.destination} - ${selectedOption?.vehicle} - €${selectedOption?.price}`);
     // Scroll to booking form at the top of the page
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -136,79 +136,108 @@ const PricingSection = () => {
           </p>
         </div>
 
-        {/* Pricing Cards Grid - Compact Design (20% smaller) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mb-10">
-          {destinations.map((destination, index) => (
-            <Card key={index} className="relative overflow-hidden group hover:shadow-lg transition-all duration-300 border-0 shadow-md">
-              <CardHeader className="text-center pb-3 px-4 pt-4">
-                <div className="w-10 h-10 mx-auto mb-2 bg-primary/10 rounded-full flex items-center justify-center">
-                  <destination.icon className="w-5 h-5 text-primary" />
-                </div>
-                <CardTitle className="text-base font-semibold text-foreground leading-tight">
-                  {destination.name}
-                </CardTitle>
-                <p className="text-xs text-muted-foreground font-medium">
-                  {destination.code}
-                </p>
-              </CardHeader>
-              
-              <CardContent className="space-y-4 px-4 pb-4">
-                {/* Vehicle Selection */}
-                <RadioGroup
-                  value={selectedVehicles[index].toString()}
-                  onValueChange={(value) => handleVehicleChange(index, parseInt(value))}
-                  className="space-y-3"
+        {/* Individual Service Option Boxes */}
+        <div className="mb-10">
+          <RadioGroup 
+            value={selectedService} 
+            onValueChange={setSelectedService}
+            className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4"
+          >
+            {serviceOptions.map((service) => (
+              <div key={service.id} className="relative">
+                <RadioGroupItem 
+                  value={service.id} 
+                  id={service.id}
+                  className="peer sr-only"
+                />
+                <Label 
+                  htmlFor={service.id}
+                  className="flex cursor-pointer"
                 >
-                  {destination.options.map((option, optionIndex) => (
-                    <div key={optionIndex} className="flex items-center space-x-3">
-                      <RadioGroupItem 
-                        value={optionIndex.toString()} 
-                        id={`${index}-${optionIndex}`}
-                        className="mt-0.5"
-                      />
-                      <Label 
-                        htmlFor={`${index}-${optionIndex}`} 
-                        className="flex-1 cursor-pointer"
-                      >
-                        <div className="border rounded-lg p-3 hover:border-primary/50 transition-colors">
-                          <div className="flex items-center justify-between mb-1.5">
-                            <div className="flex items-center gap-1.5">
-                              <option.vehicleIcon className="w-3.5 h-3.5 text-primary" />
-                              <span className="text-xs font-medium text-muted-foreground">
-                                {option.vehicle}
-                              </span>
-                            </div>
-                            <div className="text-xl font-bold text-green-600">
-                              €{option.price}
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              <Users className="w-2.5 h-2.5" />
-                              <span>{option.passengers} passengers</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Luggage className="w-2.5 h-2.5" />
-                              <span>{option.luggage} pieces</span>
-                            </div>
-                          </div>
+                  <Card className={cn(
+                    "w-full transition-all duration-300 hover:shadow-lg border-2",
+                    "peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:shadow-lg",
+                    "peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2"
+                  )}>
+                    <CardHeader className="text-center pb-3 px-4 pt-4">
+                      {/* Destination Icon and Info */}
+                      <div className="w-8 h-8 mx-auto mb-2 bg-primary/10 rounded-full flex items-center justify-center">
+                        <service.destinationIcon className="w-4 h-4 text-primary" />
+                      </div>
+                      <CardTitle className="text-sm font-semibold text-foreground leading-tight">
+                        {service.destination}
+                      </CardTitle>
+                      <p className="text-xs text-muted-foreground font-medium">
+                        {service.destinationCode}
+                      </p>
+                    </CardHeader>
+                    
+                    <CardContent className="px-4 pb-4">
+                      {/* Vehicle Type */}
+                      <div className="flex items-center justify-center gap-2 mb-3 p-2 bg-muted/50 rounded-lg">
+                        <service.vehicleIcon className="w-4 h-4 text-primary" />
+                        <span className="text-sm font-medium text-foreground">
+                          {service.vehicle}
+                        </span>
+                      </div>
+
+                      {/* Price Display */}
+                      <div className="text-center mb-3">
+                        <div className="text-2xl font-bold text-green-600">
+                          €{service.price}
                         </div>
-                      </Label>
-                    </div>
-                  ))}
-                </RadioGroup>
-                
-                <Button 
-                  onClick={() => handleBookNow(index)}
-                  className="w-full mt-3 bg-primary hover:bg-primary/90 text-primary-foreground"
-                  size="default"
-                >
-                  Book Now - €{destination.options[selectedVehicles[index]].price}
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+                      </div>
+
+                      {/* Capacity Information */}
+                      <div className="space-y-2 text-xs text-muted-foreground">
+                        <div className="flex items-center justify-center gap-2">
+                          <Users className="w-3 h-3" />
+                          <span>{service.passengers} passengers</span>
+                        </div>
+                        <div className="flex items-center justify-center gap-2">
+                          <Luggage className="w-3 h-3" />
+                          <span>{service.luggage} pieces</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Label>
+              </div>
+            ))}
+          </RadioGroup>
+        </div>
+
+        {/* Selected Service Summary and Book Now Button */}
+        <div className="bg-card rounded-lg p-6 mb-8 shadow-sm border-2 border-primary/20">
+          <div className="text-center">
+            <h3 className="text-lg font-semibold text-foreground mb-2">
+              Selected Service
+            </h3>
+            {(() => {
+              const selected = getSelectedServiceDetails();
+              return selected ? (
+                <div className="mb-4">
+                  <p className="text-base text-muted-foreground">
+                    {selected.destination} - {selected.vehicle}
+                  </p>
+                  <p className="text-2xl font-bold text-green-600 mt-1">
+                    €{selected.price}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {selected.passengers} passengers • {selected.luggage} luggage pieces
+                  </p>
+                </div>
+              ) : null;
+            })()}
+            
+            <Button 
+              onClick={handleBookNow}
+              className="w-full max-w-md bg-primary hover:bg-primary/90 text-primary-foreground h-12 text-base font-semibold"
+              size="lg"
+            >
+              Book Now - €{getSelectedServiceDetails()?.price}
+            </Button>
+          </div>
         </div>
 
         {/* Amenities */}
