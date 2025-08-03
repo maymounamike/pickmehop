@@ -21,10 +21,10 @@ const ReviewsSection = () => {
   ];
 
   return (
-    <section className="py-20 bg-gradient-to-br from-secondary/20 via-background to-secondary/20">
+    <section className="py-20 bg-background">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="font-display text-4xl lg:text-5xl font-bold text-foreground mb-6">
+          <h2 className="font-display text-3xl lg:text-4xl font-bold text-foreground mb-6">
             Travelers love Pick Me Hop
           </h2>
           <div className="flex items-center justify-center space-x-3 mb-4">
@@ -36,25 +36,25 @@ const ReviewsSection = () => {
             <span className="text-xl font-semibold text-primary">4.9</span>
           </div>
           <p className="text-muted-foreground text-lg">
-            Over <span className="font-semibold text-accent">846 five-star reviews</span> from happy travelers
+            Over <span className="font-semibold text-primary">846 five-star reviews</span> from happy travelers
           </p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {reviews.map((review, index) => (
-            <Card key={index} className="border-0 shadow-card hover:shadow-elegant transition-all duration-300 group bg-gradient-to-br from-card to-background animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
-              <CardContent className="p-8">
-                <div className="flex mb-6">
+            <Card key={index} className="border border-border shadow-card hover:shadow-elegant transition-all duration-300 group bg-card animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
+              <CardContent className="p-6">
+                <div className="flex mb-4">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                    <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                   ))}
                 </div>
-                <p className="text-base text-foreground mb-6 leading-relaxed italic">
+                <p className="text-sm text-foreground mb-6 leading-relaxed">
                   "{review.text}"
                 </p>
                 <div className="flex items-center justify-between pt-4 border-t border-border">
-                  <span className="font-semibold text-foreground font-display">{review.author}</span>
-                  <span className="text-muted-foreground text-sm">{review.date}</span>
+                  <span className="font-semibold text-foreground text-sm">{review.author}</span>
+                  <span className="text-muted-foreground text-xs">{review.date}</span>
                 </div>
               </CardContent>
             </Card>

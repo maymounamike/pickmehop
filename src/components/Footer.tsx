@@ -5,7 +5,7 @@ const Footer = () => {
   const navigate = useNavigate();
 
   return (
-    <footer className="bg-gradient-to-br from-foreground via-foreground to-primary text-white py-16">
+    <footer className="bg-foreground text-white py-16">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {/* Company Logo and Help */}
@@ -14,17 +14,17 @@ const Footer = () => {
               <img 
                 src="/lovable-uploads/fd647c9d-74ed-4206-99d0-9b04a8f86b41.png" 
                 alt="Pick Me Hop Logo" 
-                className="w-12 h-12 rounded-full object-cover shadow-card"
+                className="w-12 h-12 rounded-full object-cover"
               />
-              <span className="font-display font-bold text-2xl">Pick Me Hop</span>
+              <span className="font-display font-semibold text-xl">Pick Me Hop</span>
             </div>
-            <p className="text-white/80 leading-relaxed">
+            <p className="text-white/80 leading-relaxed text-sm">
               Your trusted partner for comfortable and reliable airport transfers in Paris.
             </p>
             
-            <div className="flex items-center space-x-2 text-white/80 hover:text-accent cursor-pointer transition-all duration-300 hover:scale-105">
+            <div className="flex items-center space-x-2 text-white/80 hover:text-accent cursor-pointer transition-colors duration-300">
               <HelpCircle className="w-5 h-5" />
-              <span className="font-medium">Need Help?</span>
+              <span className="font-medium text-sm">Need Help?</span>
             </div>
           </div>
 

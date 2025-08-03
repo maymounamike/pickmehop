@@ -42,36 +42,36 @@ const HowItWorksSection = () => {
   ];
 
   return (
-    <section className="py-20 bg-gradient-to-b from-background to-secondary/20">
+    <section className="py-20 bg-secondary/30">
       <div className="container mx-auto px-4">
         {/* How it works */}
         <div className="text-center mb-20">
-          <h2 className="font-display text-4xl lg:text-5xl font-bold text-foreground mb-4">
+          <h2 className="font-display text-3xl lg:text-4xl font-bold text-foreground mb-4">
             How it works
           </h2>
           <p className="text-muted-foreground text-lg mb-16 max-w-2xl mx-auto">
             Simple, secure, and stress-free. Get your ride in just three easy steps.
           </p>
           
-          <div className="grid md:grid-cols-3 gap-12 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-12 max-w-5xl mx-auto">
             {steps.map((step, index) => (
               <div key={index} className="text-center group animate-fade-in" style={{ animationDelay: `${index * 200}ms` }}>
                 <div className="relative mb-8">
-                  <div className="w-24 h-24 bg-gradient-primary rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-card group-hover:scale-110 transition-all duration-300">
-                    <step.icon className="w-10 h-10 text-white" />
+                  <div className="w-20 h-20 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-card group-hover:scale-105 transition-all duration-300">
+                    <step.icon className="w-8 h-8 text-white" />
                   </div>
-                  <div className="absolute -top-2 -right-2 w-10 h-10 bg-accent text-white rounded-full flex items-center justify-center text-lg font-bold shadow-lg">
+                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-accent text-white rounded-full flex items-center justify-center text-sm font-bold shadow-lg">
                     {step.number}
                   </div>
                   {/* Connection line */}
                   {index < steps.length - 1 && (
-                    <div className="hidden md:block absolute top-12 left-full w-12 h-px bg-gradient-to-r from-primary to-accent opacity-30 transform translate-x-6"></div>
+                    <div className="hidden md:block absolute top-10 left-full w-12 h-px bg-border transform translate-x-6"></div>
                   )}
                 </div>
-                <h3 className="font-display text-2xl font-semibold text-foreground mb-4">
+                <h3 className="font-display text-xl font-semibold text-foreground mb-4">
                   {step.title}
                 </h3>
-                <p className="text-muted-foreground leading-relaxed text-base">
+                <p className="text-muted-foreground leading-relaxed text-sm">
                   {step.description}
                 </p>
               </div>
@@ -81,21 +81,21 @@ const HowItWorksSection = () => {
 
         {/* Reliable and safe */}
         <div className="text-center">
-          <h2 className="font-display text-4xl lg:text-5xl font-bold text-foreground mb-4">
+          <h2 className="font-display text-3xl lg:text-4xl font-bold text-foreground mb-4">
             Reliable and safe
           </h2>
           <p className="text-muted-foreground text-lg mb-16 max-w-2xl mx-auto">
             Your peace of mind is our priority. Here's what makes us different.
           </p>
           
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {features.map((feature, index) => (
-              <Card key={index} className="border-0 shadow-card hover:shadow-elegant transition-all duration-300 group bg-gradient-to-br from-card to-secondary/30">
-                <CardContent className="p-8 text-center">
-                  <div className="w-20 h-20 bg-gradient-secondary rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                    <feature.icon className="w-10 h-10 text-white" />
+              <Card key={index} className="border border-border shadow-card hover:shadow-elegant transition-all duration-300 group bg-card">
+                <CardContent className="p-6 text-center">
+                  <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-105 transition-transform duration-300">
+                    <feature.icon className="w-8 h-8 text-white" />
                   </div>
-                  <h3 className="font-display text-xl font-semibold text-foreground leading-tight">
+                  <h3 className="font-display text-lg font-semibold text-foreground leading-tight">
                     {feature.title}
                   </h3>
                 </CardContent>

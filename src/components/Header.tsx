@@ -98,21 +98,21 @@ const Header = () => {
   };
 
   return (
-    <header className={`absolute top-0 left-0 right-0 z-50 transition-all duration-500 ${
+    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
       isScrolled 
-        ? 'bg-white/95 backdrop-blur-lg border-b border-border shadow-elegant' 
+        ? 'bg-white/95 backdrop-blur-lg border-b border-border shadow-lg' 
         : 'bg-white/10 backdrop-blur-sm'
     }`}>
-      <div className="container mx-auto px-4 py-4 sm:py-5 flex items-center justify-between">
+      <div className="container mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <img 
             src="/lovable-uploads/fd647c9d-74ed-4206-99d0-9b04a8f86b41.png" 
             alt="Pick Me Hop Logo" 
-            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover cursor-pointer hover:scale-110 transition-transform duration-300"
+            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover cursor-pointer hover:scale-105 transition-transform duration-200"
             onClick={() => navigate("/")}
           />
           <span 
-            className={`font-display font-bold text-xl sm:text-2xl cursor-pointer transition-colors duration-300 ${
+            className={`font-display font-semibold text-lg sm:text-xl cursor-pointer transition-colors duration-300 ${
               isScrolled ? 'text-foreground' : 'text-white'
             }`}
             onClick={() => navigate("/")}
