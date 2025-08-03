@@ -11,6 +11,7 @@ interface SimpleCalendarProps {
 }
 
 export function SimpleCalendar({ selected, onSelect, disabled, className }: SimpleCalendarProps) {
+  console.log('🔥 SimpleCalendar is rendering!', { selected });
   const [currentDate, setCurrentDate] = React.useState(new Date());
   
   const year = currentDate.getFullYear();
