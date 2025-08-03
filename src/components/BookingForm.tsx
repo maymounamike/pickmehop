@@ -947,7 +947,7 @@ const BookingForm = () => {
         )}
 
         
-        {currentStep === 1 && estimatedPrice && typeof estimatedPrice === 'number' && !isDisneylandOrigin && (
+        {currentStep === 1 && estimatedPrice && typeof estimatedPrice === 'number' && (
           <div 
             className="flex items-center gap-3 bg-gradient-to-r from-primary/10 to-accent/10 p-4 rounded-lg border border-primary/20 text-center justify-center mt-4 animate-fade-in" 
             role="status" 
