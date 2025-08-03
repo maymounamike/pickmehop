@@ -91,6 +91,8 @@ const BookingForm = () => {
   const [formKey, setFormKey] = useState(0); // Key to force form remount
   const [user, setUser] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [isDisneylandOrigin, setIsDisneylandOrigin] = useState(false);
+  const [needsCustomQuote, setNeedsCustomQuote] = useState(false);
   const rateLimit = new ClientRateLimit();
 
   // Country codes with USA and France first
@@ -192,8 +194,70 @@ const BookingForm = () => {
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
   });
 
-  // Calculate estimated price with special airport rules
-  const calculatePrice = (from: string, to: string, passengers: number, luggage: number = 1) => {
+  // Disneyland Paris coordinates and radius (5km)
+  const DISNEYLAND_PARIS_LAT = 48.8674;
+  const DISNEYLAND_PARIS_LNG = 2.7840;
+  const DISNEYLAND_RADIUS_KM = 5;
+
+  // Function to calculate distance between two coordinates using Haversine formula
+  const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
+    const R = 6371; // Earth's radius in kilometers
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
+  // Function to check if location is within Disneyland Paris geofence
+  const isWithinDisneylandGeofence = async (address: string): Promise<boolean> => {
+    try {
+      // Get Google Maps API key
+      const { data: keyData, error: keyError } = await supabase.functions.invoke('get-google-maps-key');
+      if (!keyData?.apiKey || keyError) return false;
+
+      // Load Google Maps API
+      const loader = new Loader({
+        apiKey: keyData.apiKey,
+        version: "weekly",
+        libraries: ["places"]
+      });
+
+      const google = await loader.load();
+      const geocoder = new google.maps.Geocoder();
+
+      // Geocode the address to get coordinates
+      const result = await new Promise<google.maps.GeocoderResult[]>((resolve, reject) => {
+        geocoder.geocode({ address }, (results, status) => {
+          if (status === 'OK' && results) {
+            resolve(results);
+          } else {
+            reject(new Error(`Geocoding failed: ${status}`));
+          }
+        });
+      });
+
+      if (result.length > 0) {
+        const location = result[0].geometry.location;
+        const distance = calculateDistance(
+          DISNEYLAND_PARIS_LAT,
+          DISNEYLAND_PARIS_LNG,
+          location.lat(),
+          location.lng()
+        );
+        return distance <= DISNEYLAND_RADIUS_KM;
+      }
+    } catch (error) {
+      console.error('Error checking Disneyland geofence:', error);
+    }
+    
+    return false;
+  };
+
+  // Calculate estimated price with special airport rules and Disneyland geofencing
+  const calculatePrice = async (from: string, to: string, passengers: number, luggage: number = 1) => {
     if (!from || !to) return null;
     
     // Cannot accept rides with more than 8 passengers or more than 10 pieces of luggage
@@ -201,6 +265,27 @@ const BookingForm = () => {
     
     const fromLower = from.toLowerCase();
     const toLower = to.toLowerCase();
+    
+    // Check if origin is within Disneyland Paris geofence
+    const isDisneyOriginByName = fromLower.includes('disneyland') || fromLower.includes('disney');
+    const isDisneyOriginByLocation = await isWithinDisneylandGeofence(from);
+    const isOriginWithinDisneyGeofence = isDisneyOriginByName || isDisneyOriginByLocation;
+    
+    // Update state for UI
+    setIsDisneylandOrigin(isOriginWithinDisneyGeofence);
+    
+    // Disneyland Paris pricing rules
+    if (isOriginWithinDisneyGeofence) {
+      if (passengers >= 5 && passengers <= 8 && luggage <= 8) {
+        return 110; // Minivan from Disneyland
+      } else if (passengers <= 4 && luggage <= 4) {
+        return 80; // Sedan from Disneyland
+      } else {
+        // Outside capacity limits - needs custom quote
+        setNeedsCustomQuote(true);
+        return null;
+      }
+    }
     
     // Check if route involves airports
     const isBeauvaisRoute = (fromLower.includes('beauvais') || fromLower.includes('bva') || fromLower.includes('tillé')) ||
@@ -243,22 +328,9 @@ const BookingForm = () => {
       }
     }
     
-    // Standard price calculation for other routes or when fixed pricing doesn't apply
-    const basePrice = 25;
-    const perKmRate = 2.5;
-    const passengerSurcharge = passengers > 4 ? (passengers - 4) * 15 : 0;
-    const luggageSurcharge = luggage > 4 ? (luggage - 4) * 8 : 0;
-    
-    // Estimate distance based on route type
-    let estimatedKm = 20; // Default city distance
-    if (fromLower.includes('airport') || toLower.includes('airport') || 
-        fromLower.includes('cdg') || toLower.includes('cdg') ||
-        fromLower.includes('orly') || toLower.includes('orly') ||
-        fromLower.includes('beauvais') || toLower.includes('beauvais')) {
-      estimatedKm = 35; // Airport distance
-    }
-    
-    return Math.round(basePrice + (estimatedKm * perKmRate) + passengerSurcharge + luggageSurcharge);
+    // If no special pricing applies, suggest custom quote
+    setNeedsCustomQuote(true);
+    return null;
   };
 
   // Watch form values to calculate price
@@ -266,9 +338,17 @@ const BookingForm = () => {
   
   // Update price when form values change
   useEffect(() => {
-    const [from, to, passengers, luggage] = watchedValues;
-    const price = calculatePrice(from, to, passengers, luggage);
-    setEstimatedPrice(price);
+    const updatePrice = async () => {
+      // Reset states
+      setNeedsCustomQuote(false);
+      setIsDisneylandOrigin(false);
+      
+      const [from, to, passengers, luggage] = watchedValues;
+      const price = await calculatePrice(from, to, passengers, luggage);
+      setEstimatedPrice(price);
+    };
+    
+    updatePrice();
   }, [watchedValues]);
 
   // Validate step 1 fields
@@ -658,7 +738,72 @@ const BookingForm = () => {
         <CardTitle id="booking-form-title" className="text-lg font-semibold text-foreground text-center">
           {currentStep === 1 ? "Allez Hop ! Let's Book a Ride" : currentStep === 2 ? "Your details" : "Payment Method"}
         </CardTitle>
-        {currentStep === 1 && estimatedPrice && (
+        {currentStep === 1 && isDisneylandOrigin && !needsCustomQuote && (
+          <div className="mt-4 space-y-3">
+            <div className="text-center">
+              <p className="text-sm font-medium text-muted-foreground mb-3">
+                🏰 Rides from Disneyland Paris Area
+              </p>
+            </div>
+            
+            {/* Disneyland Pricing Options */}
+            <div className="grid grid-cols-2 gap-3">
+              {/* Sedan Option */}
+              <div className="bg-gradient-to-r from-primary/10 to-accent/10 p-4 rounded-lg border border-primary/20">
+                <div className="text-center">
+                  <Car className="h-5 w-5 text-primary mx-auto mb-2" />
+                  <div className="font-semibold text-sm text-foreground">Sedan</div>
+                  <div className="text-xl font-bold text-primary">€80</div>
+                  <div className="text-xs text-muted-foreground">
+                    <div className="flex items-center justify-center gap-1">
+                      <Users className="h-3 w-3" />
+                      <span>1-4 passengers</span>
+                    </div>
+                    <div className="flex items-center justify-center gap-1">
+                      <Luggage className="h-3 w-3" />
+                      <span>up to 4 pieces</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Minivan Option */}
+              <div className="bg-gradient-to-r from-primary/10 to-accent/10 p-4 rounded-lg border border-primary/20">
+                <div className="text-center">
+                  <Users className="h-5 w-5 text-primary mx-auto mb-2" />
+                  <div className="font-semibold text-sm text-foreground">Minivan</div>
+                  <div className="text-xl font-bold text-primary">€110</div>
+                  <div className="text-xs text-muted-foreground">
+                    <div className="flex items-center justify-center gap-1">
+                      <Users className="h-3 w-3" />
+                      <span>5-8 passengers</span>
+                    </div>
+                    <div className="flex items-center justify-center gap-1">
+                      <Luggage className="h-3 w-3" />
+                      <span>up to 8 pieces</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Show selected price */}
+            {estimatedPrice && (
+              <div 
+                className="flex items-center gap-3 bg-green-50 p-3 rounded-lg border border-green-200 text-center justify-center animate-fade-in" 
+                role="status" 
+                aria-live="polite"
+              >
+                <Euro className="h-4 w-4 text-green-600" aria-hidden="true" />
+                <span className="text-lg font-bold text-green-600">
+                  Selected: €{estimatedPrice}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+        
+        {currentStep === 1 && estimatedPrice && !isDisneylandOrigin && (
           <div 
             className="flex items-center gap-3 bg-gradient-to-r from-primary/10 to-accent/10 p-4 rounded-lg border border-primary/20 text-center justify-center mt-4 animate-fade-in" 
             role="status" 
@@ -666,8 +811,30 @@ const BookingForm = () => {
           >
             <Euro className="h-5 w-5 text-primary animate-pulse" aria-hidden="true" />
             <span className="text-2xl font-bold text-primary animate-scale-in">
-              {estimatedPrice}
+              €{estimatedPrice}
             </span>
+          </div>
+        )}
+        
+        {currentStep === 1 && needsCustomQuote && (
+          <div className="mt-4 p-4 bg-orange-50 border border-orange-200 rounded-lg text-center">
+            <div className="text-orange-800 font-medium mb-2">
+              🎯 Custom Quote Required
+            </div>
+            <p className="text-sm text-orange-700 mb-3">
+              This route requires a custom quote. Please contact us for pricing.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              className="border-orange-300 text-orange-700 hover:bg-orange-100"
+              onClick={() => {
+                // You can add navigation to contact page or open contact form
+                window.open('mailto:contact@pickmehop.com?subject=Custom Quote Request', '_blank');
+              }}
+            >
+              Get Custom Quote
+            </Button>
           </div>
         )}
       </CardHeader>
