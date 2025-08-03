@@ -79,18 +79,8 @@ const DriversQualitySection = () => {
 
           {/* Mobile Layout - Enhanced Cards */}
           <div className="lg:hidden">
-            {/* Scroll Indicator */}
-            <div className="flex items-center justify-center mb-6">
-              <div className="flex gap-2">
-                <div className="w-3 h-3 bg-primary/30 rounded-full"></div>
-                <div className="w-8 h-3 bg-primary rounded-full"></div>
-                <div className="w-3 h-3 bg-primary/30 rounded-full"></div>
-              </div>
-              <span className="text-sm text-muted-foreground ml-4">Swipe to explore</span>
-            </div>
-
             {/* Horizontal Scrolling Container */}
-            <div className="overflow-x-auto scrollbar-hide pb-6">
+            <div className="overflow-x-auto scrollbar-hide pb-6 pt-4">
               <div className="flex gap-6 px-4 w-max animate-scale-in">
                 {vettingProcess.map((step, index) => (
                   <div key={index} className="relative flex-none">
@@ -121,7 +111,7 @@ const DriversQualitySection = () => {
                     )}
 
                     {/* Enhanced Step Number Badge */}
-                    <div className="absolute -top-3 -left-3 w-8 h-8 bg-gradient-to-br from-primary to-primary/80 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-lg border-2 border-white">
+                    <div className="absolute top-1 left-1 w-8 h-8 bg-gradient-to-br from-primary to-primary/80 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-lg border-2 border-white">
                       {index + 1}
                     </div>
                   </div>
