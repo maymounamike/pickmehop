@@ -327,41 +327,35 @@ const BookingForm = () => {
     const fromLower = from.toLowerCase();
     const toLower = to.toLowerCase();
     
-    // Check if origin is within Disneyland Paris geofence
+    // Check if either origin OR destination is within Disneyland Paris geofence
     const isDisneyOriginByName = fromLower.includes('disneyland') || fromLower.includes('disney');
+    const isDisneyDestinationByName = toLower.includes('disneyland') || toLower.includes('disney');
     let isDisneyOriginByLocation = false;
+    let isDisneyDestinationByLocation = false;
     
     try {
       isDisneyOriginByLocation = await isWithinDisneylandGeofence(from);
+      isDisneyDestinationByLocation = await isWithinDisneylandGeofence(to);
     } catch (error) {
       console.error('Error checking Disneyland geofence:', error);
       isDisneyOriginByLocation = false;
+      isDisneyDestinationByLocation = false;
     }
     
     const isOriginWithinDisneyGeofence = isDisneyOriginByName || isDisneyOriginByLocation;
+    const isDestinationWithinDisneyGeofence = isDisneyDestinationByName || isDisneyDestinationByLocation;
+    const isDisneylandRoute = isOriginWithinDisneyGeofence || isDestinationWithinDisneyGeofence;
     
     // Check for Beauvais Airport routes
     const isBeauvaisFrom = fromLower.includes('beauvais') || fromLower.includes('bva') || fromLower.includes('tillé');
     const isBeauvaisTo = toLower.includes('beauvais') || toLower.includes('bva') || toLower.includes('tillé');
     
-    // Special pricing for Disneyland Paris to Beauvais Airport routes (higher priority)
-    if (isOriginWithinDisneyGeofence && isBeauvaisTo) {
+    // Special pricing for Disneyland ↔ Beauvais Airport routes (highest priority)
+    if (isDisneylandRoute && (isBeauvaisFrom || isBeauvaisTo)) {
       if (passengers >= 5 && passengers <= 8 && luggage <= 8) {
-        return { price: 275, isDisneyland: true, needsQuote: false, isBeauvaisParisRoute: false }; // Minivan from Disneyland to Beauvais
+        return { price: 275, isDisneyland: true, needsQuote: false, isBeauvaisParisRoute: false }; // Minivan Disneyland ↔ Beauvais
       } else if (passengers <= 4 && luggage <= 4) {
-        return { price: 200, isDisneyland: true, needsQuote: false, isBeauvaisParisRoute: false }; // Sedan from Disneyland to Beauvais
-      } else {
-        // Outside capacity limits - needs custom quote
-        return { price: null, isDisneyland: true, needsQuote: true, isBeauvaisParisRoute: false };
-      }
-    }
-    
-    // Standard Disneyland Paris pricing rules (only for origins from Disneyland to other destinations)
-    if (isOriginWithinDisneyGeofence) {
-      if (passengers >= 5 && passengers <= 8 && luggage <= 8) {
-        return { price: 110, isDisneyland: true, needsQuote: false, isBeauvaisParisRoute: false }; // Minivan from Disneyland
-      } else if (passengers <= 4 && luggage <= 4) {
-        return { price: 80, isDisneyland: true, needsQuote: false, isBeauvaisParisRoute: false }; // Sedan from Disneyland
+        return { price: 200, isDisneyland: true, needsQuote: false, isBeauvaisParisRoute: false }; // Sedan Disneyland ↔ Beauvais
       } else {
         // Outside capacity limits - needs custom quote
         return { price: null, isDisneyland: true, needsQuote: true, isBeauvaisParisRoute: false };
@@ -381,6 +375,18 @@ const BookingForm = () => {
     
     const isFromParisArea = isParisLocation(from);
     const isToParisArea = isParisLocation(to);
+    
+    // Standard Disneyland ↔ Paris/CDG/Orly pricing rules
+    if (isDisneylandRoute && (isFromParisArea || isToParisArea)) {
+      if (passengers >= 5 && passengers <= 8 && luggage <= 8) {
+        return { price: 110, isDisneyland: true, needsQuote: false, isBeauvaisParisRoute: false }; // Minivan Disneyland ↔ Paris/CDG/Orly
+      } else if (passengers <= 4 && luggage <= 4) {
+        return { price: 80, isDisneyland: true, needsQuote: false, isBeauvaisParisRoute: false }; // Sedan Disneyland ↔ Paris/CDG/Orly
+      } else {
+        // Outside capacity limits - needs custom quote
+        return { price: null, isDisneyland: true, needsQuote: true, isBeauvaisParisRoute: false };
+      }
+    }
     
     // Special pricing for Beauvais ↔ Paris/CDG/Orly routes
     const isBeauvaisParisRoute = (isBeauvaisFrom && isToParisArea) || (isFromParisArea && isBeauvaisTo);
