@@ -113,10 +113,11 @@ export function SimpleCalendar({ selected, onSelect, disabled, className }: Simp
               }}
               disabled={disabled || !isCurrentMonth}
               style={{
-                backgroundColor: selected ? '#EA580C' : (date.toDateString() === new Date().toDateString() && !selected) ? '#F3F4F6' : 'transparent',
+                backgroundColor: selected ? '#FF0000' : (date.toDateString() === new Date().toDateString() && !selected) ? '#F3F4F6' : 'transparent',
                 color: selected ? 'white' : isCurrentMonth ? '#111827' : '#9CA3AF',
-                border: 'none',
-                borderRadius: '6px'
+                border: selected ? '3px solid #FF0000' : 'none',
+                borderRadius: '6px',
+                fontWeight: selected ? 'bold' : 'normal'
               }}
               className={cn(
                 "h-9 w-9 p-0 font-normal text-sm transition-colors",
