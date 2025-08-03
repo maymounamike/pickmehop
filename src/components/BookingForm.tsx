@@ -697,17 +697,17 @@ const BookingForm = () => {
       errors.push('toLocation');
     }
     
-    // Check if valid addresses are selected - only if fields have content
+    // STRICT VALIDATION: Must select from dropdown suggestions
     if (values.fromLocation && values.fromLocation.length >= 3 && !validFromSelected) {
       form.setError('fromLocation', { 
-        message: 'Please enter a complete address or select from suggestions' 
+        message: 'Please select a valid address from the dropdown suggestions' 
       });
       errors.push('fromLocation');
     }
 
     if (values.toLocation && values.toLocation.length >= 3 && !validToSelected) {
       form.setError('toLocation', { 
-        message: 'Please enter a complete address or select from suggestions' 
+        message: 'Please select a valid address from the dropdown suggestions' 
       });
       errors.push('toLocation');
     }
@@ -1027,6 +1027,11 @@ const BookingForm = () => {
               // Step 1: Route, Date, Time, Passengers, Luggage
               <>
                 {/* Location Fields */}
+                <div className="mb-3 text-center">
+                  <p className="text-xs text-muted-foreground">
+                    ℹ️ Please select addresses from the dropdown suggestions
+                  </p>
+                </div>
                 <div className="space-y-1">
                   <FormField
                     control={form.control}
@@ -1044,8 +1049,11 @@ const BookingForm = () => {
                               }
                             }}
                             placeholder="From (airport, port, address)"
-                            className="dropdown-optimize"
-                            error={!!form.formState.errors.fromLocation}
+                            className={cn(
+                              "dropdown-optimize",
+                              field.value && field.value.length >= 3 && !validFromSelected && "border-red-500"
+                            )}
+                            error={!!form.formState.errors.fromLocation || (field.value && field.value.length >= 3 && !validFromSelected)}
                           />
                         </FormControl>
                         <FormMessage />
@@ -1069,8 +1077,11 @@ const BookingForm = () => {
                               }
                             }}
                             placeholder="To (airport, port, address)"
-                            className="dropdown-optimize"
-                            error={!!form.formState.errors.toLocation}
+                            className={cn(
+                              "dropdown-optimize",
+                              field.value && field.value.length >= 3 && !validToSelected && "border-red-500"
+                            )}
+                            error={!!form.formState.errors.toLocation || (field.value && field.value.length >= 3 && !validToSelected)}
                           />
                         </FormControl>
                         <FormMessage />

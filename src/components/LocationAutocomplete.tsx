@@ -79,6 +79,7 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [isValidSelection, setIsValidSelection] = useState(false);
+  const [lastValidSelections, setLastValidSelections] = useState<string[]>([]); // Track valid selections
   
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -378,22 +379,12 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
     const newValue = e.target.value;
     onChange(newValue);
     
-    // More lenient validation - consider valid if it's a reasonable address
-    const isValid = newValue.length >= 3 && (
-      // Check if it's a complete address-like format
-      newValue.includes(',') || 
-      !!newValue.match(/\d/) || // Has any number
-      newValue.length >= 10 || // Long enough to be a full address
-      airportPresets.some(preset => preset.address.toLowerCase().includes(newValue.toLowerCase())) ||
-      trainStations.some(station => station.address.toLowerCase().includes(newValue.toLowerCase())) ||
-      newValue.toLowerCase().includes('paris') ||
-      newValue.toLowerCase().includes('airport') ||
-      newValue.toLowerCase().includes('gare') ||
-      newValue.toLowerCase().includes('hotel')
-    );
+    // STRICT VALIDATION: Only accept if selected from dropdown or is empty
+    // Check if the current value was previously selected from dropdown
+    const wasSelectedFromDropdown = lastValidSelections.includes(newValue);
     
-    setIsValidSelection(isValid);
-    onValidSelection?.(isValid);
+    setIsValidSelection(wasSelectedFromDropdown);
+    onValidSelection?.(wasSelectedFromDropdown);
     
     if (newValue.length > 0) {
       setIsOpen(true);
@@ -412,6 +403,13 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
     onValidSelection?.(true);
     setIsOpen(false);
     setSelectedIndex(-1);
+    
+    // Track this as a valid selection
+    setLastValidSelections(prev => {
+      const updated = [...prev, suggestion.address];
+      // Keep only the last 10 valid selections to prevent memory issues
+      return updated.slice(-10);
+    });
   };
 
   // Handle keyboard navigation
