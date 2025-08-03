@@ -1027,11 +1027,6 @@ const BookingForm = () => {
               // Step 1: Route, Date, Time, Passengers, Luggage
               <>
                 {/* Location Fields */}
-                <div className="mb-3 text-center">
-                  <p className="text-xs text-muted-foreground">
-                    ℹ️ Please select addresses from the dropdown suggestions
-                  </p>
-                </div>
                 <div className="space-y-1">
                   <FormField
                     control={form.control}
