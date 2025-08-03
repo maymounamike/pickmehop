@@ -52,11 +52,14 @@ const HeroSection = () => {
             <span className="bg-gradient-to-r from-secondary to-highlight bg-clip-text text-transparent">Before We Go Go</span>
           </h1>
           <p className="text-lg sm:text-xl lg:text-2xl text-white/90 mb-8 leading-relaxed font-normal">
-            Friendly, experienced, reliable English-speaking drivers just waiting for you to Hop On In
+            Friendly, experienced, reliable English-speaking drivers just waiting for you to <span className="bg-gradient-to-r from-secondary to-highlight bg-clip-text text-transparent">Hop On In</span>
           </p>
-          
-          {/* Trust Indicators */}
-          <div className="flex flex-wrap items-center justify-center lg:justify-start gap-8 text-white/90 text-sm font-medium">
+        </div>
+        
+        {/* Booking Form Section */}
+        <div className="w-full max-w-md lg:max-w-lg lg:flex-shrink-0 animate-scale-in delay-300">
+          {/* Trust Indicators - Now above the form */}
+          <div className="flex flex-wrap items-center justify-center gap-6 text-white/90 text-sm font-medium mb-6">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
               <span>Fixed Prices</span>
@@ -70,10 +73,7 @@ const HeroSection = () => {
               <span>Flight Tracking</span>
             </div>
           </div>
-        </div>
-        
-        {/* Booking Form */}
-        <div className="w-full max-w-md lg:max-w-lg lg:flex-shrink-0 animate-scale-in delay-300">
+          
           <BookingForm />
         </div>
       </div>
