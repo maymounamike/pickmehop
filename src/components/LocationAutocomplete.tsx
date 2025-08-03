@@ -219,7 +219,7 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
           {
             input: query,
             componentRestrictions: { country: 'FR' },
-            types: ['address', 'establishment']
+            types: ['geocode'] // Use geocode instead of mixing address and establishment
           },
           (predictions, status) => {
             console.log('📍 Google API response:', { status, predictionsCount: predictions?.length || 0 });
@@ -411,9 +411,12 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
               setIsOpen(true);
             }
           }}
-          onBlur={() => {
-            // Delay closing to allow for clicks on suggestions
-            setTimeout(() => setIsOpen(false), 150);
+          onBlur={(e) => {
+            // Only close if we're not clicking on the dropdown
+            const relatedTarget = e.relatedTarget as HTMLElement;
+            if (!listRef.current?.contains(relatedTarget)) {
+              setTimeout(() => setIsOpen(false), 200);
+            }
           }}
           placeholder={placeholder}
           disabled={disabled}
@@ -459,16 +462,19 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
         <div
           ref={listRef}
           className={cn(
-            "absolute top-full left-0 right-0 z-[99999] mt-1 max-h-[300px] overflow-y-auto rounded-lg border shadow-xl",
+            "fixed left-0 right-0 mt-1 max-h-[300px] overflow-y-auto rounded-lg border shadow-2xl",
             "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700",
-            "animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 duration-200",
-            "will-change-transform"
+            "animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 duration-200"
           )}
           style={{ 
-            position: 'absolute',
-            zIndex: 99999,
-            backgroundColor: 'var(--popover)',
-            borderColor: 'var(--border)'
+            position: 'fixed',
+            top: inputRef.current ? inputRef.current.getBoundingClientRect().bottom + window.scrollY + 4 : 0,
+            left: inputRef.current ? inputRef.current.getBoundingClientRect().left + window.scrollX : 0,
+            width: inputRef.current ? inputRef.current.getBoundingClientRect().width : 'auto',
+            zIndex: 999999,
+            backgroundColor: 'hsl(var(--popover))',
+            borderColor: 'hsl(var(--border))',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
           }}
         >
           <div className="p-1">
