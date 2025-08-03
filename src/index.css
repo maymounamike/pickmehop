@@ -501,6 +501,47 @@ html body * [aria-selected="true"],
   background: hsl(17, 93%, 54%) !important;
   color: white !important;
 }
+
+/* ABSOLUTE FINAL OVERRIDE - Target exact blue values and force orange */
+* {
+  --rdp-accent-color: hsl(17, 93%, 54%) !important;
+  --rdp-background-color: hsl(17, 93%, 54%) !important;
+}
+
+/* Force override any blue background colors to orange */
+button[style*="background-color: rgb(59, 130, 246)"] {
+  background-color: hsl(17, 93%, 54%) !important;
+}
+
+button[style*="background-color: #3b82f6"] {
+  background-color: hsl(17, 93%, 54%) !important;
+}
+
+button[style*="background: rgb(59, 130, 246)"] {
+  background-color: hsl(17, 93%, 54%) !important;
+}
+
+/* Target any aria-selected button regardless of other attributes */
+button[aria-selected="true"] {
+  background-color: hsl(17, 93%, 54%) !important;
+  background: hsl(17, 93%, 54%) !important;
+  color: white !important;
+}
+
+/* Use JavaScript-style override for calendar buttons */
+.rdp button[aria-selected="true"], 
+.rdp-day_selected {
+  background-color: hsl(17, 93%, 54%) !important;
+  background: hsl(17, 93%, 54%) !important;
+  color: white !important;
+}
+
+/* Target the specific calendar container */
+[data-radix-popper-content-wrapper] button[aria-selected="true"] {
+  background-color: hsl(17, 93%, 54%) !important;
+  background: hsl(17, 93%, 54%) !important;
+  color: white !important;
+}
     to { 
       opacity: 1; 
       transform: translateY(0) scale(1); 

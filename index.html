@@ -22,6 +22,33 @@
 
   <body>
     <div id="root"></div>
+    <script>
+      // Force calendar orange styling
+      function forceOrangeCalendar() {
+        const selectors = [
+          'button[aria-selected="true"]',
+          '.rdp-day_selected',
+          '.rdp-day[aria-selected="true"]',
+          '[role="gridcell"][aria-selected="true"]'
+        ];
+        
+        selectors.forEach(selector => {
+          const elements = document.querySelectorAll(selector);
+          elements.forEach(element => {
+            if (element) {
+              element.style.setProperty('background-color', 'hsl(17, 93%, 54%)', 'important');
+              element.style.setProperty('background', 'hsl(17, 93%, 54%)', 'important');
+              element.style.setProperty('color', 'white', 'important');
+            }
+          });
+        });
+      }
+      
+      // Run continuously to override any changes
+      setInterval(forceOrangeCalendar, 100);
+      
+      document.addEventListener('DOMContentLoaded', forceOrangeCalendar);
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
