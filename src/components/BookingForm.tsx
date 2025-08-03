@@ -935,7 +935,7 @@ const BookingForm = () => {
                 <Button 
                   type="button"
                   onClick={handleContinueToStep2}
-                  className="w-full bg-accent hover:bg-accent/90 text-accent-foreground h-12 text-sm font-medium touch-manipulation mt-3"
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-12 text-sm font-medium touch-manipulation mt-3"
                 >
                   Continue booking
                 </Button>
