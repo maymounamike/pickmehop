@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { CustomCalendar } from "@/components/ui/custom-calendar";
+import { SimpleCalendar } from "@/components/ui/simple-calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { EnhancedSelect, EnhancedSelectContent, EnhancedSelectItem, EnhancedSelectTrigger, EnhancedSelectValue } from "@/components/ui/enhanced-select";
 import { SearchableSelect } from "@/components/ui/searchable-select";
@@ -1161,12 +1162,10 @@ const BookingForm = () => {
                             </FormControl>
                           </PopoverTrigger>
                           <PopoverContent className="w-auto p-0" align="start">
-                            <CustomCalendar
-                              mode="single"
+                            <SimpleCalendar
                               selected={field.value}
                               onSelect={field.onChange}
                               disabled={(date) => date < new Date()}
-                              initialFocus
                               className="pointer-events-auto"
                             />
                           </PopoverContent>
