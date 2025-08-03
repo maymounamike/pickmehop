@@ -23,31 +23,53 @@
   <body>
     <div id="root"></div>
     <script>
-      // Force calendar orange styling
-      function forceOrangeCalendar() {
+      // NUCLEAR OPTION: Force orange on ALL possible calendar elements
+      function forceOrangeEverything() {
+        // Get ALL elements on the page
+        const allElements = document.querySelectorAll('*');
+        
+        allElements.forEach(element => {
+          const style = window.getComputedStyle(element);
+          const bgColor = style.backgroundColor;
+          
+          // If it's blue (any shade), make it orange
+          if (bgColor.includes('59, 130, 246') || 
+              bgColor.includes('rgb(59, 130, 246)') ||
+              bgColor.includes('#3b82f6') ||
+              element.getAttribute('aria-selected') === 'true') {
+            element.style.setProperty('background-color', 'hsl(17, 93%, 54%)', 'important');
+            element.style.setProperty('background', 'hsl(17, 93%, 54%)', 'important');
+            element.style.setProperty('color', 'white', 'important');
+            console.log('Found blue element, forcing orange:', element);
+          }
+        });
+        
+        // Also target by class and attributes more aggressively
         const selectors = [
-          'button[aria-selected="true"]',
+          '[aria-selected="true"]',
           '.rdp-day_selected',
           '.rdp-day[aria-selected="true"]',
-          '[role="gridcell"][aria-selected="true"]'
+          '[role="gridcell"][aria-selected="true"]',
+          'button[aria-selected="true"]'
         ];
         
         selectors.forEach(selector => {
           const elements = document.querySelectorAll(selector);
           elements.forEach(element => {
-            if (element) {
-              element.style.setProperty('background-color', 'hsl(17, 93%, 54%)', 'important');
-              element.style.setProperty('background', 'hsl(17, 93%, 54%)', 'important');
-              element.style.setProperty('color', 'white', 'important');
-            }
+            element.style.setProperty('background-color', 'hsl(17, 93%, 54%)', 'important');
+            element.style.setProperty('background', 'hsl(17, 93%, 54%)', 'important');
+            element.style.setProperty('color', 'white', 'important');
+            element.style.setProperty('border-color', 'hsl(17, 93%, 54%)', 'important');
+            console.log('Forcing orange on:', element);
           });
         });
       }
       
-      // Run continuously to override any changes
-      setInterval(forceOrangeCalendar, 100);
-      
-      document.addEventListener('DOMContentLoaded', forceOrangeCalendar);
+      // Run VERY frequently
+      setInterval(forceOrangeEverything, 50);
+      document.addEventListener('DOMContentLoaded', forceOrangeEverything);
+      document.addEventListener('click', forceOrangeEverything);
+      document.addEventListener('change', forceOrangeEverything);
     </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
