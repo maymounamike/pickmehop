@@ -207,38 +207,6 @@ const PricingSection = () => {
           </RadioGroup>
         </div>
 
-        {/* Selected Service Summary and Book Now Button */}
-        <div className="bg-card rounded-lg p-6 mb-8 shadow-sm border-2 border-primary/20">
-          <div className="text-center">
-            <h3 className="text-lg font-semibold text-foreground mb-2">
-              Selected Service
-            </h3>
-            {(() => {
-              const selected = getSelectedServiceDetails();
-              return selected ? (
-                <div className="mb-4">
-                  <p className="text-base text-muted-foreground">
-                    {selected.destination} - {selected.vehicle}
-                  </p>
-                  <p className="text-2xl font-bold text-green-600 mt-1">
-                    €{selected.price}
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {selected.passengers} passengers • {selected.luggage} luggage pieces
-                  </p>
-                </div>
-              ) : null;
-            })()}
-            
-            <Button 
-              onClick={handleBookNow}
-              className="w-full max-w-md bg-primary hover:bg-primary/90 text-primary-foreground h-12 text-base font-semibold"
-              size="lg"
-            >
-              Book Now - €{getSelectedServiceDetails()?.price}
-            </Button>
-          </div>
-        </div>
 
 
         {/* Secondary CTA */}
