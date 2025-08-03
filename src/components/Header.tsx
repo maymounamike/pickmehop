@@ -30,9 +30,14 @@ const Header = () => {
           .from('user_roles')
           .select('role')
           .eq('user_id', session.user.id)
-          .maybeSingle();
+          .order('role', { ascending: true });
         
-        setUserRole(roleData?.role || 'user');
+        // If user has multiple roles, prioritize admin > driver > partner > user
+        const roles = roleData?.map(r => r.role) || [];
+        const priorityRole = roles.includes('admin') ? 'admin' : 
+                            roles.includes('driver') ? 'driver' :
+                            roles.includes('partner') ? 'partner' : 'user';
+        setUserRole(priorityRole);
       } catch (error) {
         console.error('Session check error:', error);
         setUser(null);
@@ -57,9 +62,14 @@ const Header = () => {
           .from('user_roles')
           .select('role')
           .eq('user_id', session.user.id)
-          .maybeSingle();
+          .order('role', { ascending: true });
         
-        setUserRole(roleData?.role || 'user');
+        // If user has multiple roles, prioritize admin > driver > partner > user
+        const roles = roleData?.map(r => r.role) || [];
+        const priorityRole = roles.includes('admin') ? 'admin' : 
+                            roles.includes('driver') ? 'driver' :
+                            roles.includes('partner') ? 'partner' : 'user';
+        setUserRole(priorityRole);
       } catch (error) {
         console.error('Role fetch error:', error);
         setUserRole('user');
@@ -230,7 +240,7 @@ const Header = () => {
                   onClick={() => navigate("/dashboard")}
                 >
                   <User className="mr-2 h-4 w-4" />
-                  My Bookings
+                  Dashboard
                 </Button>
               )}
               <Button 

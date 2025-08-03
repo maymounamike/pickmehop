@@ -16,7 +16,7 @@ import DriverProfile from "./pages/DriverProfile";
 import DriverScheduled from "./pages/DriverScheduled";
 import DriversManagement from "./pages/DriversManagement";
 import DriverOngoing from "./pages/DriverOngoing";
-import AdminDashboard from "./pages/AdminDashboard";
+import AdminDashboard from "./pages/NewAdminDashboard";
 import BookingConfirmation from "./pages/BookingConfirmation";
 import DriverAuth from "./pages/DriverAuth";
 import PartnerAuth from "./pages/PartnerAuth";

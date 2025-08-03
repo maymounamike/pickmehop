@@ -19,11 +19,12 @@ const Auth = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if user is already logged in
+    // Check if user is already logged in and redirect to dashboard
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
-        navigate("/");
+        // Redirect to dashboard router which will handle role-based routing
+        navigate("/dashboard");
       }
     };
     checkUser();
@@ -131,11 +132,39 @@ const Auth = () => {
         }
       } else {
         console.log('Sign in successful:', data);
+        
+        // Get user role and redirect appropriately
+        const { data: roleData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', data.user.id)
+          .order('role', { ascending: true });
+
+        let redirectPath = '/customer'; // Default for regular users
+        
+        if (roleData && roleData.length > 0) {
+          const roles = roleData.map(r => r.role);
+          // Prioritize admin > driver > partner > user
+          if (roles.includes('admin')) {
+            redirectPath = '/admin';
+          } else if (roles.includes('driver')) {
+            redirectPath = '/driver';
+          } else if (roles.includes('partner')) {
+            redirectPath = '/partner';
+          } else {
+            redirectPath = '/customer';
+          }
+        }
+
         toast({
-          title: "Success",
-          description: "Welcome back!",
+          title: "Welcome!",
+          description: "Redirecting to your dashboard...",
         });
-        navigate("/");
+        
+        // Small delay to show the toast before redirecting
+        setTimeout(() => {
+          navigate(redirectPath);
+        }, 1000);
       }
     } catch (error) {
       console.error('Unexpected error during sign in:', error);
@@ -163,13 +192,13 @@ const Auth = () => {
       
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Pick Me Hop Driver Portal</CardTitle>
-          <CardDescription>Driver access and applications</CardDescription>
+          <CardTitle className="text-2xl font-bold">PickMeHop Login</CardTitle>
+          <CardDescription>Access your account or apply to drive</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Driver Login</TabsTrigger>
+              <TabsTrigger value="signin">Sign In</TabsTrigger>
               <TabsTrigger value="driver">Become a Driver</TabsTrigger>
             </TabsList>
             

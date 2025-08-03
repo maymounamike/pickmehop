@@ -20,18 +20,23 @@ export const DashboardRouter = () => {
 
         setUser(session.user);
 
-        // Get user role from user_roles table
+        // Get user role from user_roles table - prioritize admin role
         const { data: roleData, error } = await supabase
           .from('user_roles')
           .select('role')
           .eq('user_id', session.user.id)
-          .single();
+          .order('role', { ascending: true }); // This will put 'admin' first
 
         if (error) {
           console.error('Error fetching user role:', error);
           setUserRole('user'); // Default to user if no role found
         } else {
-          setUserRole(roleData.role);
+          // If user has multiple roles, prioritize admin > driver > partner > user
+          const roles = roleData?.map(r => r.role) || [];
+          const priorityRole = roles.includes('admin') ? 'admin' : 
+                              roles.includes('driver') ? 'driver' :
+                              roles.includes('partner') ? 'partner' : 'user';
+          setUserRole(priorityRole);
         }
       } catch (error) {
         console.error('Error in role check:', error);
