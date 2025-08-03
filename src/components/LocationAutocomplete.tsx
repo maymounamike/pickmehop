@@ -9,7 +9,7 @@ import { Loader } from "@googlemaps/js-api-loader";
 export interface LocationSuggestion {
   id: string;
   address: string;
-  type: 'airport' | 'train' | 'hotel' | 'address';
+  type: 'airport' | 'train' | 'hotel' | 'address' | 'establishment';
   description?: string;
   icon?: React.ReactNode;
 }
@@ -226,13 +226,35 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
             
             if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
               const suggestions = predictions.slice(0, 5).map((prediction, index) => {
-                console.log(`📍 Prediction ${index}:`, prediction.description);
+                console.log(`📍 Prediction ${index}:`, prediction);
+                
+                // Use structured_formatting for better address display
+                const mainText = prediction.structured_formatting?.main_text || '';
+                const secondaryText = prediction.structured_formatting?.secondary_text || '';
+                const fullDescription = prediction.description;
+                
+                // Create a more complete address display
+                let displayAddress = fullDescription;
+                if (mainText && secondaryText) {
+                  displayAddress = `${mainText}, ${secondaryText}`;
+                }
+                
+                console.log(`📍 Display address: ${displayAddress}`);
+                
+                // Determine if this is an establishment based on types
+                const isEstablishment = prediction.types?.includes('establishment') || 
+                                       prediction.types?.includes('lodging') ||
+                                       prediction.types?.includes('restaurant') ||
+                                       prediction.types?.includes('store');
+                
                 return {
                   id: `google-${index}`,
-                  address: prediction.description,
-                  type: 'address' as const,
-                  description: 'Address',
-                  icon: <MapPin className="h-4 w-4 text-gray-600" />
+                  address: displayAddress,
+                  type: (isEstablishment ? 'establishment' : 'address') as 'establishment' | 'address',
+                  description: isEstablishment ? 'Establishment' : 'Address',
+                  icon: isEstablishment 
+                    ? <Building className="h-4 w-4 text-blue-600" />
+                    : <MapPin className="h-4 w-4 text-gray-600" />
                 };
               });
               console.log('✅ Returning Google suggestions:', suggestions.length);
