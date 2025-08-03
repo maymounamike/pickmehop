@@ -103,6 +103,7 @@ const BookingForm = () => {
   const [isDisneylandOrigin, setIsDisneylandOrigin] = useState(false);
   const [needsCustomQuote, setNeedsCustomQuote] = useState(false);
   const [isBeauvaisParisRoute, setIsBeauvaisParisRoute] = useState(false);
+  const [googleMapsApiKey, setGoogleMapsApiKey] = useState<string | null>(null);
   const rateLimit = new ClientRateLimit();
 
   // Country codes with USA and France first
@@ -224,13 +225,18 @@ const BookingForm = () => {
   // Function to check if location is within Disneyland Paris geofence
   const isWithinDisneylandGeofence = async (address: string): Promise<boolean> => {
     try {
-      // Get Google Maps API key
-      const { data: keyData, error: keyError } = await supabase.functions.invoke('get-google-maps-key');
-      if (!keyData?.apiKey || keyError) return false;
+      // Get Google Maps API key from cache or fetch it
+      let apiKey = googleMapsApiKey;
+      if (!apiKey) {
+        const { data: keyData, error: keyError } = await supabase.functions.invoke('get-google-maps-key');
+        if (!keyData?.apiKey || keyError) return false;
+        apiKey = keyData.apiKey;
+        setGoogleMapsApiKey(apiKey); // Cache the key
+      }
 
       // Load Google Maps API
       const loader = new Loader({
-        apiKey: keyData.apiKey,
+        apiKey: apiKey,
         version: "weekly",
         libraries: ["places"]
       });
@@ -904,7 +910,15 @@ const BookingForm = () => {
                 <div className="text-center">
                   <Car className="h-5 w-5 text-primary mx-auto mb-2" />
                   <div className="font-semibold text-sm text-foreground">Sedan</div>
-                  <div className="text-xl font-bold text-primary">€80</div>
+                  <div className="text-xl font-bold text-primary">
+                    €{(() => {
+                      const toLocation = form.watch('toLocation') || '';
+                      const isToBeauvais = toLocation.toLowerCase().includes('beauvais') || 
+                                          toLocation.toLowerCase().includes('bva') || 
+                                          toLocation.toLowerCase().includes('tillé');
+                      return isToBeauvais ? '200' : '80';
+                    })()}
+                  </div>
                   <div className="text-xs text-muted-foreground">
                     <div className="flex items-center justify-center gap-1">
                       <Users className="h-3 w-3" />
@@ -923,7 +937,15 @@ const BookingForm = () => {
                 <div className="text-center">
                   <Users className="h-5 w-5 text-primary mx-auto mb-2" />
                   <div className="font-semibold text-sm text-foreground">Minivan</div>
-                  <div className="text-xl font-bold text-primary">€110</div>
+                  <div className="text-xl font-bold text-primary">
+                    €{(() => {
+                      const toLocation = form.watch('toLocation') || '';
+                      const isToBeauvais = toLocation.toLowerCase().includes('beauvais') || 
+                                          toLocation.toLowerCase().includes('bva') || 
+                                          toLocation.toLowerCase().includes('tillé');
+                      return isToBeauvais ? '275' : '110';
+                    })()}
+                  </div>
                   <div className="text-xs text-muted-foreground">
                     <div className="flex items-center justify-center gap-1">
                       <Users className="h-3 w-3" />
