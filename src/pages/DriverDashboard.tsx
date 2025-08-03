@@ -504,17 +504,20 @@ const DriverDashboard = () => {
         />
 
         <div className="flex-1 flex flex-col">
-          <header className="bg-slate-900 text-white p-4 shadow-lg">
+          <header className="bg-gradient-to-r from-orange-600 to-orange-700 text-white p-4 shadow-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <SidebarTrigger className="text-white hover:bg-white/10" />
-                <div className="flex items-center space-x-2">
-                  <img 
-                    src="/lovable-uploads/fd647c9d-74ed-4206-99d0-9b04a8f86b41.png" 
-                    alt="Pick Me Hop Logo" 
-                    className="w-8 h-8 rounded-full object-cover"
-                  />
-                  <span className="text-white font-semibold text-lg">DRIVER</span>
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
+                    <span className="text-white font-bold text-lg">D</span>
+                  </div>
+                  <div>
+                    <span className="text-white font-semibold text-lg">Driver Hub - PickMeHop</span>
+                    <Badge variant="secondary" className="bg-orange-100 text-orange-800 border-orange-200 ml-3">
+                      Driver
+                    </Badge>
+                  </div>
                 </div>
               </div>
               

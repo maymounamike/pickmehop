@@ -183,19 +183,29 @@ const PartnerDashboard = () => {
       <div className="min-h-screen flex w-full bg-gradient-to-br from-background to-background/50">
         <main className="flex-1">
           {/* Header */}
-          <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="flex h-16 items-center justify-between px-6">
-              <div className="flex items-center gap-2">
-                <Building2 className="h-6 w-6 text-primary" />
-                <span className="text-xl font-bold text-primary">PickMeHop</span>
-                <span className="text-sm text-muted-foreground">Partner Portal</span>
+          <header className="bg-gradient-to-r from-green-600 to-green-700 text-white p-4 shadow-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">P</span>
+                </div>
+                <div>
+                  <span className="text-white font-semibold text-lg">Partner Dashboard - PickMeHop</span>
+                  <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200 ml-3">
+                    Partner
+                  </Badge>
+                </div>
               </div>
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-muted-foreground">
+              <div className="flex items-center space-x-6">
+                <span className="text-sm">
                   Welcome, {getDisplayName()}
                 </span>
-                <Button variant="outline" size="sm" onClick={handleSignOut}>
-                  <LogOut className="h-4 w-4 mr-2" />
+                <Button 
+                  variant="ghost" 
+                  className="text-white hover:text-green-400 hover:bg-green-50/10"
+                  onClick={handleSignOut}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
                   Sign Out
                 </Button>
               </div>

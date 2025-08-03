@@ -102,6 +102,18 @@ const AdminDashboard = () => {
         return;
       }
 
+      // Verify user has admin role
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', session.user.id)
+        .single();
+
+      if (!roleData || roleData.role !== 'admin') {
+        navigate('/auth');
+        return;
+      }
+
       setUser(session.user);
 
       const { data: profileData } = await supabase
@@ -111,22 +123,6 @@ const AdminDashboard = () => {
         .single();
 
       setProfile(profileData);
-
-      const { data: roleData } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', session.user.id)
-        .single();
-
-      if (!roleData || roleData.role !== 'admin') {
-        toast({
-          title: "Access Denied",
-          description: "You don't have admin access.",
-          variant: "destructive",
-        });
-        navigate('/');
-        return;
-      }
 
       const { data: bookingsData } = await supabase
         .from('bookings')
@@ -626,17 +622,20 @@ const AdminDashboard = () => {
         />
 
         <div className="flex-1 flex flex-col">
-          <header className="bg-slate-900 text-white p-4 shadow-lg">
+          <header className="bg-gradient-to-r from-red-600 to-red-700 text-white p-4 shadow-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <SidebarTrigger className="text-white hover:bg-white/10" />
-                <div className="flex items-center space-x-2">
-                  <img 
-                    src="/lovable-uploads/fd647c9d-74ed-4206-99d0-9b04a8f86b41.png" 
-                    alt="Pick Me Hop Logo" 
-                    className="w-8 h-8 rounded-full object-cover"
-                  />
-                  <span className="text-white font-semibold text-lg">ADMIN</span>
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center">
+                    <span className="text-white font-bold text-lg">A</span>
+                  </div>
+                  <div>
+                    <span className="text-white font-semibold text-lg">Admin Panel - PickMeHop</span>
+                    <Badge variant="secondary" className="bg-red-100 text-red-800 border-red-200 ml-3">
+                      Administrator
+                    </Badge>
+                  </div>
                 </div>
               </div>
               

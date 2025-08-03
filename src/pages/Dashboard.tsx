@@ -38,6 +38,25 @@ const Dashboard = () => {
         navigate("/auth");
         return;
       }
+
+      // Verify user has customer role or no role (default to customer)
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', session.user.id)
+        .single();
+
+      if (roleData && roleData.role !== 'user') {
+        // Redirect to appropriate dashboard based on role
+        const roleRedirects = {
+          admin: '/admin',
+          driver: '/driver',
+          partner: '/partner'
+        };
+        navigate(roleRedirects[roleData.role as keyof typeof roleRedirects] || '/auth');
+        return;
+      }
+
       setUser(session.user);
       fetchBookings();
     };
@@ -46,8 +65,7 @@ const Dashboard = () => {
       if (!session?.user) {
         navigate("/auth");
       } else {
-        setUser(session.user);
-        fetchBookings();
+        checkUser();
       }
     });
 
@@ -153,10 +171,13 @@ const Dashboard = () => {
           {/* Header */}
           <header className="h-16 bg-slate-900 text-white flex items-center justify-between px-6 border-b">
             <div className="flex items-center gap-4">
-              <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-sm">P</span>
+              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                <span className="text-white font-bold text-sm">C</span>
               </div>
-              <span className="font-semibold text-lg">PickMeHop</span>
+              <span className="font-semibold text-lg">Customer Portal - PickMeHop</span>
+              <Badge variant="secondary" className="bg-blue-100 text-blue-800 border-blue-200">
+                Customer
+              </Badge>
             </div>
             
             <div className="flex items-center gap-4">

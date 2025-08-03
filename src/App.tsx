@@ -26,6 +26,8 @@ import Services from "./pages/Services";
 import Contact from "./pages/Contact";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
+import { RoleBasedRoute } from "./components/RoleBasedRoute";
+import { DashboardRouter } from "./components/DashboardRouter";
 
 const queryClient = new QueryClient();
 
@@ -43,13 +45,53 @@ const App = () => (
             <Route path="/driver-signup" element={<DriverAuth />} />
             <Route path="/partner-signup" element={<PartnerAuth />} />
             <Route path="/drivers" element={<DriversManagement />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/driver" element={<DriverDashboard />} />
-            <Route path="/driver/profile" element={<DriverProfile />} />
-            <Route path="/driver/scheduled" element={<DriverScheduled />} />
-            <Route path="/driver/ongoing" element={<DriverOngoing />} />
-            <Route path="/partner" element={<PartnerDashboard />} />
-            <Route path="/admin" element={<AdminDashboard />} />
+            
+            {/* Role-based routing */}
+            <Route path="/dashboard" element={<DashboardRouter />} />
+            
+            {/* Customer routes */}
+            <Route path="/customer" element={
+              <RoleBasedRoute allowedRoles={['user']}>
+                <Dashboard />
+              </RoleBasedRoute>
+            } />
+            
+            {/* Driver routes */}
+            <Route path="/driver" element={
+              <RoleBasedRoute allowedRoles={['driver']}>
+                <DriverDashboard />
+              </RoleBasedRoute>
+            } />
+            <Route path="/driver/profile" element={
+              <RoleBasedRoute allowedRoles={['driver']}>
+                <DriverProfile />
+              </RoleBasedRoute>
+            } />
+            <Route path="/driver/scheduled" element={
+              <RoleBasedRoute allowedRoles={['driver']}>
+                <DriverScheduled />
+              </RoleBasedRoute>
+            } />
+            <Route path="/driver/ongoing" element={
+              <RoleBasedRoute allowedRoles={['driver']}>
+                <DriverOngoing />
+              </RoleBasedRoute>
+            } />
+            
+            {/* Admin routes */}
+            <Route path="/admin" element={
+              <RoleBasedRoute allowedRoles={['admin']}>
+                <AdminDashboard />
+              </RoleBasedRoute>
+            } />
+            
+            {/* Partner routes */}
+            <Route path="/partner" element={
+              <RoleBasedRoute allowedRoles={['partner']}>
+                <PartnerDashboard />
+              </RoleBasedRoute>
+            } />
+            
             <Route path="/booking-confirmation" element={<BookingConfirmation />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/payment-canceled" element={<PaymentCanceled />} />
