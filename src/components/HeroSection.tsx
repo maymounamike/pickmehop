@@ -26,9 +26,9 @@ const HeroSection = () => {
       className="relative min-h-screen lg:min-h-[140vh] flex items-center justify-center overflow-hidden pt-16 sm:pt-20 pb-20 sm:pb-32 bg-gradient-hero"
       aria-label="Book a ride service"
     >
-      {/* Background Image */}
+      {/* Background Image - Hidden on mobile and tablet, visible on desktop */}
       <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat hidden lg:block"
         style={{
           backgroundImage: `url(${heroBackground})`,
           filter: 'brightness(0.7)'

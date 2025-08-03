@@ -1,6 +1,7 @@
-import { Car, Users, Luggage, Plane, MapPin, Clock, Shield, Star } from "lucide-react";
+import { Car, Users, Luggage, Plane, MapPin, Clock, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import MickeyMouseIcon from "./MickeyMouseIcon";
 
 const PricingSection = () => {
   const destinations = [
@@ -70,7 +71,7 @@ const PricingSection = () => {
     {
       name: "Disneyland Paris",
       code: "DLP",
-      icon: Star,
+      icon: MickeyMouseIcon,
       options: [
         {
           passengers: "1-4",
