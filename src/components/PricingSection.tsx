@@ -7,97 +7,67 @@ import { useState } from "react";
 import MickeyMouseIcon from "./MickeyMouseIcon";
 
 const PricingSection = () => {
-  // Flatten all destination-vehicle combinations into individual service options
-  const serviceOptions = [
+  // Group services by destination for simplified display
+  const destinations = [
     {
-      id: "orly-sedan",
+      id: "beauvais",
+      destination: "Beauvais (BVA) - To/From Paris",
+      destinationCode: "BVA",
+      destinationIcon: Plane,
+      sedan: { id: "beauvais-sedan", price: 150, passengers: "1-4", luggage: "up to 4" },
+      minivan: { id: "beauvais-minivan", price: 220, passengers: "5-8", luggage: "up to 8" },
+      priceDifference: 70
+    },
+    {
+      id: "orly",
       destination: "Paris Orly Airport (ORY)",
       destinationCode: "ORY",
-      vehicle: "Sedan",
-      vehicleIcon: Car,
       destinationIcon: Plane,
-      passengers: "1-4",
-      luggage: "up to 4",
-      price: 65
+      sedan: { id: "orly-sedan", price: 65, passengers: "1-4", luggage: "up to 4" },
+      minivan: { id: "orly-minivan", price: 90, passengers: "5-8", luggage: "up to 8" },
+      priceDifference: 25
     },
     {
-      id: "orly-minivan",
-      destination: "Paris Orly Airport (ORY)",
-      destinationCode: "ORY", 
-      vehicle: "Minivan",
-      vehicleIcon: Users,
-      destinationIcon: Plane,
-      passengers: "5-8",
-      luggage: "up to 8",
-      price: 90
-    },
-    {
-      id: "cdg-sedan",
+      id: "cdg",
       destination: "Charles de Gaulle Airport (CDG)",
       destinationCode: "CDG",
-      vehicle: "Sedan",
-      vehicleIcon: Car,
       destinationIcon: Plane,
-      passengers: "1-4",
-      luggage: "up to 4",
-      price: 75
+      sedan: { id: "cdg-sedan", price: 75, passengers: "1-4", luggage: "up to 4" },
+      minivan: { id: "cdg-minivan", price: 135, passengers: "5-8", luggage: "up to 8" },
+      priceDifference: 60
     },
     {
-      id: "cdg-minivan",
-      destination: "Charles de Gaulle Airport (CDG)",
-      destinationCode: "CDG",
-      vehicle: "Minivan", 
-      vehicleIcon: Users,
-      destinationIcon: Plane,
-      passengers: "5-8",
-      luggage: "up to 8",
-      price: 135
-    },
-    {
-      id: "beauvais-sedan",
-      destination: "Beauvais (BVA) - To/From Paris",
-      destinationCode: "BVA",
-      vehicle: "Sedan",
-      vehicleIcon: Car,
-      destinationIcon: Plane,
-      passengers: "1-4",
-      luggage: "up to 4",
-      price: 150
-    },
-    {
-      id: "beauvais-minivan",
-      destination: "Beauvais (BVA) - To/From Paris",
-      destinationCode: "BVA",
-      vehicle: "Minivan",
-      vehicleIcon: Users,
-      destinationIcon: Plane,
-      passengers: "5-8",
-      luggage: "up to 8",
-      price: 220
-    },
-    {
-      id: "disney-sedan",
+      id: "disney",
       destination: "Disneyland Paris (Disney) - To/From Paris",
       destinationCode: "DLP",
-      vehicle: "Sedan",
-      vehicleIcon: Car,
       destinationIcon: MickeyMouseIcon,
-      passengers: "1-4",
-      luggage: "up to 4",
-      price: 80
-    },
-    {
-      id: "disney-minivan",
-      destination: "Disneyland Paris (Disney) - To/From Paris",
-      destinationCode: "DLP",
-      vehicle: "Minivan",
-      vehicleIcon: Users,
-      destinationIcon: MickeyMouseIcon,
-      passengers: "5-8",
-      luggage: "up to 8",
-      price: 110
+      sedan: { id: "disney-sedan", price: 80, passengers: "1-4", luggage: "up to 4" },
+      minivan: { id: "disney-minivan", price: 110, passengers: "5-8", luggage: "up to 8" },
+      priceDifference: 30
     }
   ];
+
+  // Flatten for radio group options
+  const serviceOptions = destinations.flatMap(dest => [
+    {
+      id: dest.sedan.id,
+      destination: dest.destination,
+      destinationCode: dest.destinationCode,
+      vehicle: "Sedan",
+      price: dest.sedan.price,
+      passengers: dest.sedan.passengers,
+      luggage: dest.sedan.luggage
+    },
+    {
+      id: dest.minivan.id,
+      destination: dest.destination,
+      destinationCode: dest.destinationCode,
+      vehicle: "Minivan",
+      price: dest.minivan.price,
+      passengers: dest.minivan.passengers,
+      luggage: dest.minivan.luggage
+    }
+  ]);
 
   const [selectedService, setSelectedService] = useState<string>(serviceOptions[0].id);
 
@@ -135,73 +105,115 @@ const PricingSection = () => {
           </p>
         </div>
 
-        {/* Individual Service Option Boxes */}
+        {/* Destination Service Boxes */}
         <div className="mb-10">
           <RadioGroup 
             value={selectedService} 
             onValueChange={setSelectedService}
-            className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4"
+            className="grid grid-cols-1 md:grid-cols-2 gap-6"
           >
-            {serviceOptions.map((service) => (
-              <div key={service.id} className="relative">
-                <RadioGroupItem 
-                  value={service.id} 
-                  id={service.id}
-                  className="peer sr-only"
-                />
-                <Label 
-                  htmlFor={service.id}
-                  className="flex cursor-pointer"
-                >
-                  <Card className={[
-                    "w-full transition-all duration-300 hover:shadow-lg border-2",
-                    "peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:shadow-lg",
-                    "peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2"
-                  ].join(" ")}>
-                    <CardHeader className="text-center pb-3 px-4 pt-4">
-                      {/* Destination Icon and Info */}
-                      <div className="w-8 h-8 mx-auto mb-2 bg-primary/10 rounded-full flex items-center justify-center">
-                        <service.destinationIcon className="w-4 h-4 text-primary" />
+            {destinations.map((destination) => (
+              <Card key={destination.id} className="overflow-hidden">
+                <CardHeader className="text-center pb-4 bg-muted/30">
+                  {/* Destination Icon and Info */}
+                  <div className="w-10 h-10 mx-auto mb-3 bg-primary/10 rounded-full flex items-center justify-center">
+                    <destination.destinationIcon className="w-5 h-5 text-primary" />
+                  </div>
+                  <CardTitle className="text-lg font-semibold text-foreground">
+                    {destination.destination}
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground font-medium">
+                    {destination.destinationCode}
+                  </p>
+                </CardHeader>
+                
+                <CardContent className="p-6 space-y-4">
+                  {/* Sedan Option */}
+                  <div className="relative">
+                    <RadioGroupItem 
+                      value={destination.sedan.id} 
+                      id={destination.sedan.id}
+                      className="peer sr-only"
+                    />
+                    <Label 
+                      htmlFor={destination.sedan.id}
+                      className="flex cursor-pointer"
+                    >
+                      <div className={[
+                        "w-full p-4 rounded-lg border-2 transition-all duration-300",
+                        "peer-checked:border-primary peer-checked:bg-primary/5",
+                        "hover:bg-muted/50"
+                      ].join(" ")}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <Car className="w-4 h-4 text-primary" />
+                            <span className="font-semibold text-foreground">Sedan</span>
+                          </div>
+                          <div className="text-xl font-bold text-green-600">
+                            €{destination.sedan.price}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <Users className="w-3 h-3" />
+                            <span>{destination.sedan.passengers} passengers</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Luggage className="w-3 h-3" />
+                            <span>{destination.sedan.luggage} pieces</span>
+                          </div>
+                        </div>
                       </div>
-                      <CardTitle className="text-sm font-semibold text-foreground leading-tight">
-                        {service.destination}
-                      </CardTitle>
-                      <p className="text-xs text-muted-foreground font-medium">
-                        {service.destinationCode}
-                      </p>
-                    </CardHeader>
-                    
-                    <CardContent className="px-4 pb-4">
-                      {/* Vehicle Type */}
-                      <div className="flex items-center justify-center gap-2 mb-3 p-2 bg-muted/50 rounded-lg">
-                        <service.vehicleIcon className="w-4 h-4 text-primary" />
-                        <span className="text-sm font-medium text-foreground">
-                          {service.vehicle}
-                        </span>
-                      </div>
+                    </Label>
+                  </div>
 
-                      {/* Price Display */}
-                      <div className="text-center mb-3">
-                        <div className="text-2xl font-bold text-green-600">
-                          €{service.price}
+                  {/* Minivan Option */}
+                  <div className="relative">
+                    <RadioGroupItem 
+                      value={destination.minivan.id} 
+                      id={destination.minivan.id}
+                      className="peer sr-only"
+                    />
+                    <Label 
+                      htmlFor={destination.minivan.id}
+                      className="flex cursor-pointer"
+                    >
+                      <div className={[
+                        "w-full p-4 rounded-lg border-2 transition-all duration-300",
+                        "peer-checked:border-primary peer-checked:bg-primary/5",
+                        "hover:bg-muted/50"
+                      ].join(" ")}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <Users className="w-4 h-4 text-primary" />
+                            <span className="font-semibold text-foreground">Minivan</span>
+                          </div>
+                          <div className="text-xl font-bold text-green-600">
+                            €{destination.minivan.price}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <Users className="w-3 h-3" />
+                            <span>{destination.minivan.passengers} passengers</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Luggage className="w-3 h-3" />
+                            <span>{destination.minivan.luggage} pieces</span>
+                          </div>
                         </div>
                       </div>
+                    </Label>
+                  </div>
 
-                      {/* Capacity Information */}
-                      <div className="space-y-2 text-xs text-muted-foreground">
-                        <div className="flex items-center justify-center gap-2">
-                          <Users className="w-3 h-3" />
-                          <span>{service.passengers} passengers</span>
-                        </div>
-                        <div className="flex items-center justify-center gap-2">
-                          <Luggage className="w-3 h-3" />
-                          <span>{service.luggage} pieces</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Label>
-              </div>
+                  {/* Price Difference */}
+                  <div className="text-center pt-2 border-t border-muted">
+                    <p className="text-sm text-muted-foreground">
+                      Price Difference: <span className="font-semibold text-foreground">€{destination.priceDifference}</span>
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
             ))}
           </RadioGroup>
         </div>
