@@ -31,112 +31,126 @@ const DriversQualitySection = () => {
   ];
 
   return (
-    <section className="py-20 bg-background">
+    <section className="vetting-section">
       <div className="container mx-auto px-4">
-        {/* Main Content */}
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16 animate-fade-in">
-            <h2 className="font-display text-3xl lg:text-4xl font-bold text-foreground mb-6 leading-tight">
-              Each driver is carefully <span className="text-primary">handpicked and vetted</span> by our team
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              We believe in quality over quantity. Every driver goes through our comprehensive vetting process.
-            </p>
+        {/* Enhanced Section Header */}
+        <div className="section-header">
+          <h2 className="font-display text-3xl lg:text-4xl font-bold leading-tight animate-fade-in">
+            Our Comprehensive <span className="highlight-text text-primary">Vetting Process</span>
+          </h2>
+          <p className="subtitle">
+            Every driver completes our rigorous 4-step quality process
+          </p>
+        </div>
+
+        {/* Vetting Container */}
+        <div className="vetting-container max-w-1200px mx-auto relative">
+          {/* Desktop Layout */}
+          <div className="hidden lg:flex items-center justify-center gap-8 animate-scale-in">
+            {vettingProcess.map((step, index) => (
+              <div key={index} className="flex items-center group">
+                <div className="vetting-card vetting-card-animated text-center">
+                  <div className="vetting-icon mx-auto">
+                    <step.icon className="w-8 h-8" />
+                  </div>
+                  <h3 className="text-lg font-bold text-foreground leading-tight font-display mb-2">
+                    {step.title}
+                  </h3>
+                  <h4 className="text-sm font-semibold text-primary leading-tight mb-3">
+                    {step.subtitle}
+                  </h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {step.description}
+                  </p>
+                </div>
+                
+                {/* Desktop Arrow */}
+                {index < vettingProcess.length - 1 && (
+                  <div className="flex items-center justify-center mx-6">
+                    <div className="w-12 h-px bg-gradient-to-r from-primary/60 to-primary/30"></div>
+                    <div className="absolute">
+                      <div className="w-0 h-0 border-l-4 border-r-0 border-t-2 border-b-2 border-transparent border-r-primary ml-1"></div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
 
-          {/* Vetting Process Flow - Enhanced Mobile Layout */}
-          <div className="relative">
-            {/* Desktop Layout */}
-            <div className="hidden lg:flex items-center justify-center gap-12 animate-scale-in">
-              {vettingProcess.map((step, index) => (
-                <div key={index} className="flex items-center group">
-                  <div className="text-center">
-                    <div className="w-20 h-20 bg-white rounded-2xl border-2 border-border flex items-center justify-center mx-auto mb-4 shadow-card group-hover:scale-105 transition-all duration-300 group-hover:border-primary/50 group-hover:shadow-elegant">
-                      <step.icon className="w-8 h-8 text-primary" />
-                    </div>
-                    <h4 className="text-sm font-semibold text-foreground leading-tight font-display mb-1">
-                      {step.title}
-                    </h4>
-                    <p className="text-sm font-semibold text-primary leading-tight">
-                      {step.subtitle}
-                    </p>
-                  </div>
-                  
-                  {/* Desktop Arrow */}
-                  {index < vettingProcess.length - 1 && (
-                    <div className="flex items-center justify-center mx-8">
-                      <div className="w-16 h-px bg-gradient-to-r from-border to-primary/30 opacity-60"></div>
-                      <div className="absolute">
-                        <div className="w-0 h-0 border-l-4 border-r-0 border-t-4 border-b-4 border-transparent border-r-primary"></div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
+          {/* Mobile Layout - Enhanced Cards */}
+          <div className="lg:hidden">
+            {/* Scroll Indicator */}
+            <div className="flex items-center justify-center mb-6">
+              <div className="flex gap-2">
+                <div className="w-3 h-3 bg-primary/30 rounded-full"></div>
+                <div className="w-8 h-3 bg-primary rounded-full"></div>
+                <div className="w-3 h-3 bg-primary/30 rounded-full"></div>
+              </div>
+              <span className="text-sm text-muted-foreground ml-4">Swipe to explore</span>
             </div>
 
-            {/* Mobile Layout - Horizontal Scrolling Cards */}
-            <div className="lg:hidden">
-              {/* Scroll Indicator */}
-              <div className="flex items-center justify-center mb-4">
-                <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-primary/30 rounded-full"></div>
-                  <div className="w-6 h-2 bg-primary rounded-full"></div>
-                  <div className="w-2 h-2 bg-primary/30 rounded-full"></div>
-                </div>
-                <span className="text-xs text-muted-foreground ml-3">Swipe to explore</span>
-              </div>
-
-              {/* Horizontal Scrolling Container */}
-              <div className="overflow-x-auto scrollbar-hide pb-4">
-                <div className="flex gap-4 px-4 w-max animate-scale-in">
-                  {vettingProcess.map((step, index) => (
-                    <div key={index} className="relative flex-none">
-                      {/* Mobile Card */}
-                      <div className="bg-white rounded-2xl border-2 border-border shadow-card p-6 w-44 text-center group hover:scale-105 transition-all duration-300 hover:border-primary/50 hover:shadow-elegant">
-                        <div className="w-16 h-16 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl border border-primary/20 flex items-center justify-center mx-auto mb-4">
-                          <step.icon className="w-7 h-7 text-primary" />
-                        </div>
-                        <h4 className="text-sm font-bold text-foreground leading-tight font-display mb-1">
-                          {step.title}
-                        </h4>
-                        <p className="text-sm font-semibold text-primary leading-tight mb-3">
-                          {step.subtitle}
-                        </p>
-                        <p className="text-xs text-muted-foreground leading-relaxed">
-                          {step.description}
-                        </p>
+            {/* Horizontal Scrolling Container */}
+            <div className="overflow-x-auto scrollbar-hide pb-6">
+              <div className="flex gap-6 px-4 w-max animate-scale-in">
+                {vettingProcess.map((step, index) => (
+                  <div key={index} className="relative flex-none">
+                    {/* Enhanced Mobile Card */}
+                    <div className="vetting-card vetting-card-animated w-52 text-center">
+                      <div className="vetting-icon mx-auto">
+                        <step.icon className="w-7 h-7" />
                       </div>
-
-                      {/* Mobile Process Connector */}
-                      {index < vettingProcess.length - 1 && (
-                        <div className="absolute top-8 -right-2 z-10">
-                          <div className="w-4 h-px bg-gradient-to-r from-primary to-primary/30"></div>
-                          <div className="absolute -right-1 -top-1">
-                            <div className="w-0 h-0 border-l-2 border-r-0 border-t-1 border-b-1 border-transparent border-r-primary"></div>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Step Number Badge */}
-                      <div className="absolute -top-2 -left-2 w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center text-xs font-bold">
-                        {index + 1}
-                      </div>
+                      <h3 className="text-lg font-bold text-foreground leading-tight font-display mb-2">
+                        {step.title}
+                      </h3>
+                      <h4 className="text-sm font-semibold text-primary leading-tight mb-4">
+                        {step.subtitle}
+                      </h4>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {step.description}
+                      </p>
                     </div>
-                  ))}
-                </div>
-              </div>
 
-              {/* Mobile Process Summary */}
-              <div className="mt-8 bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl p-4 border border-primary/20">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <CheckCircle className="w-5 h-5 text-primary" />
-                  <h5 className="font-semibold text-foreground">4-Step Quality Process</h5>
-                </div>
-                <p className="text-sm text-muted-foreground text-center">
-                  Every driver completes our comprehensive vetting process before their first ride
-                </p>
+                    {/* Mobile Process Connector */}
+                    {index < vettingProcess.length - 1 && (
+                      <div className="absolute top-12 -right-3 z-10">
+                        <div className="w-6 h-px bg-gradient-to-r from-primary to-primary/30"></div>
+                        <div className="absolute -right-1 -top-1">
+                          <div className="w-0 h-0 border-l-2 border-r-0 border-t-1 border-b-1 border-transparent border-r-primary"></div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Enhanced Step Number Badge */}
+                    <div className="absolute -top-3 -left-3 w-8 h-8 bg-gradient-to-br from-primary to-primary/80 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-lg border-2 border-white">
+                      {index + 1}
+                    </div>
+                  </div>
+                ))}
               </div>
+            </div>
+
+            {/* Enhanced Process Indicator */}
+            <div className="process-indicator">
+              <div className="process-line"></div>
+              <div className="process-dots">
+                <span className="dot active"></span>
+                <span className="dot"></span>
+                <span className="dot"></span>
+                <span className="dot"></span>
+              </div>
+            </div>
+
+            {/* Enhanced Mobile Process Summary */}
+            <div className="mt-8 bg-gradient-to-r from-primary/5 to-primary/10 rounded-2xl p-6 border border-primary/20">
+              <div className="flex items-center justify-center gap-3 mb-3">
+                <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                  <CheckCircle className="w-5 h-5 text-white" />
+                </div>
+                <h5 className="text-lg font-bold text-foreground">4-Step Quality Process</h5>
+              </div>
+              <p className="text-center text-muted-foreground leading-relaxed">
+                Every driver completes our comprehensive vetting process before their first ride, ensuring the highest standards of safety and professionalism.
+              </p>
             </div>
           </div>
         </div>
