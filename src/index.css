@@ -599,27 +599,30 @@ button[aria-selected="true"] {
     margin-top: 0.5rem;
   }
 
-/* Custom Orange Calendar Styling */
-.orange-calendar .rdp-day_selected,
-.orange-calendar .rdp-day[aria-selected="true"],
-.orange-calendar button[aria-selected="true"],
-.orange-calendar .orange-selected {
-  background-color: hsl(17, 93%, 54%) !important;
-  color: white !important;
-  border-color: hsl(17, 93%, 54%) !important;
+/* HIGHEST PRIORITY: Override any blue calendar colors */
+* {
+  --rdp-accent-color: hsl(17, 93%, 54%) !important;
+  --rdp-background-color: hsl(17, 93%, 54%) !important;
 }
 
-.orange-calendar .rdp-day_selected:hover,
-.orange-calendar .rdp-day[aria-selected="true"]:hover,
-.orange-calendar button[aria-selected="true"]:hover {
+/* Target specific blue values and force orange */
+button[style*="background-color: rgb(59, 130, 246)"],
+button[style*="background: rgb(59, 130, 246)"],
+button[style*="background-color: #3b82f6"],
+button[style*="background: #3b82f6"],
+*[style*="background-color: rgb(59, 130, 246)"],
+*[style*="background: rgb(59, 130, 246)"],
+*[style*="background-color: #3b82f6"],
+*[style*="background: #3b82f6"] {
   background-color: hsl(17, 93%, 54%) !important;
+  background: hsl(17, 93%, 54%) !important;
   color: white !important;
 }
 
-.orange-calendar .rdp-day_selected:focus,
-.orange-calendar .rdp-day[aria-selected="true"]:focus,
-.orange-calendar button[aria-selected="true"]:focus {
+/* Force ALL aria-selected elements to be orange */
+*[aria-selected="true"] {
   background-color: hsl(17, 93%, 54%) !important;
+  background: hsl(17, 93%, 54%) !important;
   color: white !important;
 }
 }
