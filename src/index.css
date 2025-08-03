@@ -469,7 +469,40 @@ All colors MUST be HSL.
     from { 
       opacity: 0; 
       transform: translateY(30px) scale(0.95); 
-    }
+}
+
+/* CRITICAL: Force orange color on React Day Picker - FINAL OVERRIDE */
+body *[aria-selected="true"],
+body button[aria-selected="true"],
+body .rdp-day_selected,
+body .rdp *[aria-selected="true"],
+html *[aria-selected="true"],
+html button[aria-selected="true"],
+html .rdp-day_selected,
+html .rdp *[aria-selected="true"] {
+  background-color: hsl(17 93% 54%) !important;
+  color: white !important;
+  border-color: hsl(17 93% 54%) !important;
+}
+
+/* Target specific DayPicker elements with maximum specificity */
+.rdp .rdp-day.rdp-day_selected,
+.rdp .rdp-day[aria-selected="true"],
+.rdp .rdp-button[aria-selected="true"],
+[data-radix-popper-content-wrapper] .rdp-day_selected,
+[data-radix-popper-content-wrapper] .rdp-day[aria-selected="true"],
+[data-radix-popper-content-wrapper] button[aria-selected="true"] {
+  background-color: hsl(17 93% 54%) !important;
+  color: white !important;
+  border-color: hsl(17 93% 54%) !important;
+}
+
+/* Override any inline styles with maximum specificity */
+[style*="background"] .rdp-day_selected,
+[style*="background"] .rdp-day[aria-selected="true"] {
+  background-color: hsl(17 93% 54%) !important;
+  color: white !important;
+}
     to { 
       opacity: 1; 
       transform: translateY(0) scale(1); 
