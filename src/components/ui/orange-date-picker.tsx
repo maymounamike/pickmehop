@@ -139,12 +139,13 @@ export function OrangeDatePicker({ selected, onSelect, disabled, className, plac
                     }
                   }}
                   disabled={disabled || !isCurrentMonth}
-                  className="h-9 w-9 p-0 font-normal text-sm rounded-md transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="h-9 w-9 p-0 font-normal text-sm rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{
-                    backgroundColor: selected ? '#EA580C' : isToday && !selected ? '#F3F4F6' : 'transparent',
-                    color: selected ? 'white' : isCurrentMonth ? '#111827' : '#9CA3AF',
-                    border: selected ? '2px solid #EA580C' : 'none',
-                    fontWeight: selected ? 'bold' : 'normal'
+                    backgroundColor: selected ? '#EA580C !important' : isToday && !selected ? '#F3F4F6' : 'transparent',
+                    color: selected ? 'white !important' : isCurrentMonth ? '#111827' : '#9CA3AF',
+                    border: selected ? '2px solid #EA580C !important' : 'none',
+                    fontWeight: selected ? 'bold' : 'normal',
+                    boxShadow: selected ? '0 0 0 2px #EA580C !important' : 'none'
                   }}
                 >
                   {date.getDate()}
