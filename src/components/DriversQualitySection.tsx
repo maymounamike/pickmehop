@@ -31,47 +31,47 @@ const DriversQualitySection = () => {
   ];
 
   return (
-    <section className="py-20 bg-gradient-to-br from-emerald-50 via-emerald-100 to-cyan-50">
-      <div className="container mx-auto px-4">
-        {/* Main Content */}
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16 animate-fade-in">
-            <h2 className="font-display text-3xl lg:text-4xl font-bold text-slate-800 mb-8 leading-tight">
-              Each driver is carefully <span className="text-cyan-600">handpicked and vetted</span> by our team
-            </h2>
-            <p className="text-slate-600 text-lg mb-16 max-w-2xl mx-auto">
-              We believe in quality over quantity. Every driver goes through our comprehensive vetting process.
-            </p>
-          </div>
+    <section className="py-20 bg-gradient-to-br from-slate-50 via-purple-50 to-pink-50 relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(168,85,247,0.1),transparent_70%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(236,72,153,0.1),transparent_70%)]" />
+      
+      <div className="container mx-auto px-4 relative">
+        {/* Header */}
+        <div className="text-center mb-16 animate-bounce-in">
+          <h2 className="font-display text-3xl lg:text-4xl font-bold text-slate-800 mb-6 leading-tight">
+            Each driver is carefully <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">handpicked and vetted</span> by our team
+          </h2>
+          <p className="text-slate-600 text-lg mb-8 max-w-2xl mx-auto font-medium">
+            We believe in quality over quantity. Every driver goes through our comprehensive vetting process.
+          </p>
+        </div>
 
-          {/* Vetting Process Flow */}
-          <div className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12 animate-scale-in">
-            {vettingProcess.map((step, index) => (
-              <div key={index} className="flex flex-col lg:flex-row items-center group">
-                <div className="text-center">
-                  <div className="w-20 h-20 bg-white rounded-2xl border-2 border-emerald-200 flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-all duration-300 group-hover:border-emerald-300">
-                    <step.icon className="w-8 h-8 text-emerald-600" />
-                  </div>
-                  <h4 className="text-sm font-semibold text-slate-800 leading-tight font-display mb-1">
-                    {step.title}
-                  </h4>
-                  <p className="text-sm font-semibold text-emerald-600 leading-tight">
-                    {step.subtitle}
-                  </p>
+        {/* Process Steps */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 animate-slide-up">
+          {vettingProcess.map((step, index) => (
+            <div key={index} className="text-center group">
+              <div className="relative">
+                <div className="w-28 h-28 bg-gradient-to-br from-white to-slate-50 rounded-3xl border-2 border-slate-200 flex items-center justify-center mx-auto mb-6 shadow-glow group-hover:scale-110 group-hover:border-primary group-hover:shadow-elegant group-hover:bg-gradient-to-br group-hover:from-primary/5 group-hover:to-accent/5 transition-all duration-500 animate-glow-pulse">
+                  <step.icon className="w-12 h-12 text-primary group-hover:text-accent transition-colors duration-300" />
                 </div>
-                
-                {/* Dashed Arrow */}
                 {index < vettingProcess.length - 1 && (
-                  <div className="flex items-center justify-center mt-6 lg:mt-0 lg:mx-8">
-                    <div className="w-px h-12 lg:w-16 lg:h-px bg-gradient-to-b lg:bg-gradient-to-r from-emerald-300 to-cyan-300 opacity-60"></div>
-                    <div className="absolute">
-                      <div className="w-0 h-0 border-l-4 border-r-4 border-b-4 lg:border-t-4 lg:border-b-0 lg:border-l-4 lg:border-r-0 border-transparent border-b-emerald-400 lg:border-t-transparent lg:border-r-emerald-400 rotate-90 lg:rotate-0"></div>
-                    </div>
-                  </div>
+                  <div className="hidden lg:block absolute top-14 left-full w-12 h-0.5 bg-gradient-to-r from-primary via-accent to-transparent -translate-x-6 animate-pulse"></div>
                 )}
               </div>
-            ))}
-          </div>
+              <div className="space-y-2">
+                <h4 className="text-lg font-bold text-slate-800 font-display group-hover:text-primary transition-colors duration-300">
+                  {step.title}
+                </h4>
+                <p className="text-base font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  {step.subtitle}
+                </p>
+                <p className="text-sm text-slate-600 leading-relaxed group-hover:text-slate-700 transition-colors duration-300">
+                  {step.description}
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>

@@ -1,4 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Star } from "lucide-react";
 
 const ReviewsSection = () => {
@@ -21,52 +22,59 @@ const ReviewsSection = () => {
   ];
 
   return (
-    <section className="py-20 bg-gradient-to-br from-secondary/20 via-background to-secondary/20">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="font-display text-4xl lg:text-5xl font-bold text-foreground mb-6">
-            Travelers love Pick Me Hop
-          </h2>
-          <div className="flex items-center justify-center space-x-3 mb-4">
-            <div className="flex">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-6 h-6 fill-yellow-400 text-yellow-400" />
-              ))}
-            </div>
-            <span className="text-xl font-semibold text-primary">4.9</span>
+    <section className="py-20 bg-gradient-to-br from-slate-50 via-purple-50 to-pink-50 relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(168,85,247,0.1),transparent_70%)]" />
+      
+      <div className="container mx-auto px-4 relative">
+        <div className="text-center mb-16 animate-bounce-in">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            {[...Array(5)].map((_, i) => (
+              <Star key={i} className="w-8 h-8 fill-yellow-400 text-yellow-400 animate-bounce-in" style={{ animationDelay: `${i * 0.1}s` }} />
+            ))}
           </div>
-          <p className="text-muted-foreground text-lg">
-            Over <span className="font-semibold text-accent">846 five-star reviews</span> from happy travelers
+          <h2 className="font-display text-3xl lg:text-4xl font-bold text-slate-800 mb-4 leading-tight">
+            What our <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">customers</span> say
+          </h2>
+          <p className="text-slate-600 text-lg mb-8 font-medium">
+            Join over 846 satisfied customers who trust us with their journeys
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16 animate-slide-up">
           {reviews.map((review, index) => (
-            <Card key={index} className="border-0 shadow-card hover:shadow-elegant transition-all duration-300 group bg-gradient-to-br from-card to-background animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
-              <CardContent className="p-8">
-                <div className="flex mb-6">
+            <Card key={index} className="p-6 hover:shadow-glow transition-all duration-500 border-2 hover:border-primary hover:bg-gradient-to-br hover:from-primary/5 hover:to-accent/5 rounded-2xl group animate-glow-pulse">
+              <CardContent className="p-0">
+                <div className="flex items-center gap-1 mb-4">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                    <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400 group-hover:scale-110 transition-transform duration-300" />
                   ))}
                 </div>
-                <p className="text-base text-foreground mb-6 leading-relaxed italic">
-                  "{review.text}"
-                </p>
-                <div className="flex items-center justify-between pt-4 border-t border-border">
-                  <span className="font-semibold text-foreground font-display">{review.author}</span>
-                  <span className="text-muted-foreground text-sm">{review.date}</span>
+                <p className="text-slate-700 mb-4 leading-relaxed group-hover:text-slate-800 transition-colors duration-300">"{review.text}"</p>
+                <div className="text-sm">
+                  <p className="font-semibold text-slate-800 group-hover:text-primary transition-colors duration-300">{review.author}</p>
+                  <p className="text-slate-500 group-hover:text-slate-600 transition-colors duration-300">{review.date}</p>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
         
-        {/* Call to action */}
-        <div className="text-center mt-16">
-          <p className="text-muted-foreground text-lg">
-            Join hundreds of satisfied travelers. 
-            <span className="text-primary font-semibold"> Book your ride today!</span>
+        {/* CTA */}
+        <div className="text-center animate-bounce-in">
+          <h3 className="font-display text-2xl lg:text-3xl font-bold text-slate-800 mb-4">
+            Ready to book your <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">ride?</span>
+          </h3>
+          <p className="text-slate-600 text-lg mb-8 font-medium">
+            Join our satisfied customers and experience the difference
           </p>
+          <Button 
+            size="lg" 
+            className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white px-8 py-3 rounded-2xl font-semibold text-lg shadow-glow hover:shadow-elegant hover:scale-105 transition-all duration-500 animate-glow-pulse"
+            onClick={() => document.getElementById('booking-form')?.scrollIntoView({ behavior: 'smooth' })}
+          >
+            Book Now
+          </Button>
         </div>
       </div>
     </section>

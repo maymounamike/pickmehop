@@ -98,11 +98,13 @@ const Header = () => {
   };
 
   return (
-    <header className={`absolute top-0 left-0 right-0 z-50 transition-all duration-500 ${
-      isScrolled 
-        ? 'bg-white/95 backdrop-blur-lg border-b border-border shadow-elegant' 
-        : 'bg-white/10 backdrop-blur-sm'
-    }`}>
+    <header 
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        isScrolled 
+          ? 'bg-white/95 backdrop-blur-xl shadow-glow border-b border-primary/20' 
+          : 'bg-transparent'
+      }`}
+    >
       <div className="container mx-auto px-4 py-4 sm:py-5 flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <img 
@@ -111,14 +113,11 @@ const Header = () => {
             className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover cursor-pointer hover:scale-110 transition-transform duration-300"
             onClick={() => navigate("/")}
           />
-          <span 
-            className={`font-display font-bold text-xl sm:text-2xl cursor-pointer transition-colors duration-300 ${
-              isScrolled ? 'text-foreground' : 'text-white'
-            }`}
-            onClick={() => navigate("/")}
-          >
-            Pick Me Hop
-          </span>
+          <h1 className={`text-xl font-bold font-display transition-all duration-300 ${
+              isScrolled ? 'bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent' : 'text-white drop-shadow-lg'
+            }`}>
+              Pick Me Hop
+            </h1>
         </div>
         
         {/* Navigation Menu - Only show on homepage when not logged in */}
