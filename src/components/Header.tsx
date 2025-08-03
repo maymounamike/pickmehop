@@ -100,8 +100,8 @@ const Header = () => {
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
       isScrolled 
-        ? 'bg-white/95 backdrop-blur-lg border-b border-border shadow-lg' 
-        : 'bg-white/10 backdrop-blur-sm'
+        ? 'bg-white/95 backdrop-blur-lg border-b border-border shadow-elegant' 
+        : 'bg-dark-base/95 backdrop-blur-sm'
     }`}>
       <div className="container mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
         <div className="flex items-center space-x-3">
@@ -129,7 +129,7 @@ const Header = () => {
               className={`font-medium transition-all duration-300 hover:scale-105 ${
                 isScrolled 
                   ? 'text-foreground hover:text-primary hover:bg-primary/10' 
-                  : 'text-white hover:text-accent hover:bg-white/20'
+                  : 'text-white hover:text-secondary hover:bg-white/20'
               }`}
               onClick={() => navigate("/services")}
             >
@@ -140,7 +140,7 @@ const Header = () => {
               className={`font-medium transition-all duration-300 hover:scale-105 ${
                 isScrolled 
                   ? 'text-foreground hover:text-primary hover:bg-primary/10' 
-                  : 'text-white hover:text-accent hover:bg-white/20'
+                  : 'text-white hover:text-secondary hover:bg-white/20'
               }`}
               onClick={() => navigate("/about")}
             >
@@ -151,7 +151,7 @@ const Header = () => {
               className={`font-medium transition-all duration-300 hover:scale-105 ${
                 isScrolled 
                   ? 'text-foreground hover:text-primary hover:bg-primary/10' 
-                  : 'text-white hover:text-accent hover:bg-white/20'
+                  : 'text-white hover:text-secondary hover:bg-white/20'
               }`}
               onClick={() => navigate("/contact")}
             >

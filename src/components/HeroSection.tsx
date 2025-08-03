@@ -49,7 +49,7 @@ const HeroSection = () => {
         <div className="text-center lg:text-left max-w-2xl lg:flex-1 lg:pr-12 animate-fade-in">
           <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-6 leading-tight">
             Arrive. Discover.<br />
-            <span className="text-accent">Experience.</span>
+            <span className="bg-gradient-to-r from-secondary to-highlight bg-clip-text text-transparent">Experience.</span>
           </h1>
           <p className="text-lg sm:text-xl lg:text-2xl text-white/90 mb-8 leading-relaxed font-normal">
             Personalised airport transfers designed for travel
@@ -58,15 +58,15 @@ const HeroSection = () => {
           {/* Trust Indicators */}
           <div className="flex flex-wrap items-center justify-center lg:justify-start gap-8 text-white/90 text-sm font-medium">
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-accent rounded-full" />
+              <div className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
               <span>846 travelers booked today</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-accent rounded-full" />
+              <div className="w-2 h-2 bg-highlight rounded-full animate-pulse delay-100" />
               <span>24/7 Support</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-accent rounded-full" />
+              <div className="w-2 h-2 bg-accent rounded-full animate-pulse delay-200" />
               <span>Flight Tracking</span>
             </div>
           </div>
