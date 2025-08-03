@@ -93,6 +93,7 @@ const BookingForm = () => {
   const [userProfile, setUserProfile] = useState<any>(null);
   const [isDisneylandOrigin, setIsDisneylandOrigin] = useState(false);
   const [needsCustomQuote, setNeedsCustomQuote] = useState(false);
+  const [isBeauvaisParisRoute, setIsBeauvaisParisRoute] = useState(false);
   const rateLimit = new ClientRateLimit();
 
   // Country codes with USA and France first
@@ -258,10 +259,10 @@ const BookingForm = () => {
 
   // Calculate estimated price with special airport rules and Disneyland geofencing
   const calculatePrice = async (from: string, to: string, passengers: number, luggage: number = 1) => {
-    if (!from || !to) return { price: null, isDisneyland: false, needsQuote: false };
+    if (!from || !to) return { price: null, isDisneyland: false, needsQuote: false, isBeauvaisParisRoute: false };
     
     // Cannot accept rides with more than 8 passengers or more than 10 pieces of luggage
-    if (passengers > 8 || luggage > 10) return { price: null, isDisneyland: false, needsQuote: true };
+    if (passengers > 8 || luggage > 10) return { price: null, isDisneyland: false, needsQuote: true, isBeauvaisParisRoute: false };
     
     const fromLower = from.toLowerCase();
     const toLower = to.toLowerCase();
@@ -279,61 +280,93 @@ const BookingForm = () => {
     
     const isOriginWithinDisneyGeofence = isDisneyOriginByName || isDisneyOriginByLocation;
     
-    // Disneyland Paris pricing rules
+    // Disneyland Paris pricing rules (only for origins from Disneyland)
     if (isOriginWithinDisneyGeofence) {
       if (passengers >= 5 && passengers <= 8 && luggage <= 8) {
-        return { price: 110, isDisneyland: true, needsQuote: false }; // Minivan from Disneyland
+        return { price: 110, isDisneyland: true, needsQuote: false, isBeauvaisParisRoute: false }; // Minivan from Disneyland
       } else if (passengers <= 4 && luggage <= 4) {
-        return { price: 80, isDisneyland: true, needsQuote: false }; // Sedan from Disneyland
+        return { price: 80, isDisneyland: true, needsQuote: false, isBeauvaisParisRoute: false }; // Sedan from Disneyland
       } else {
         // Outside capacity limits - needs custom quote
-        return { price: null, isDisneyland: true, needsQuote: true };
+        return { price: null, isDisneyland: true, needsQuote: true, isBeauvaisParisRoute: false };
       }
     }
     
-    // Check if route involves airports
-    const isBeauvaisRoute = (fromLower.includes('beauvais') || fromLower.includes('bva') || fromLower.includes('tillé')) ||
-                            (toLower.includes('beauvais') || toLower.includes('bva') || toLower.includes('tillé'));
+    // Check for Beauvais Airport routes
+    const isBeauvaisFrom = fromLower.includes('beauvais') || fromLower.includes('bva') || fromLower.includes('tillé');
+    const isBeauvaisTo = toLower.includes('beauvais') || toLower.includes('bva') || toLower.includes('tillé');
+    
+    // Check for Paris, CDG, or Orly locations
+    const isParisLocation = (location: string) => {
+      const locationLower = location.toLowerCase();
+      return locationLower.includes('paris') || 
+             locationLower.includes('75') ||
+             locationLower.includes('charles de gaulle') || 
+             locationLower.includes('cdg') ||
+             locationLower.includes('orly') || 
+             locationLower.includes('ory');
+    };
+    
+    const isFromParisArea = isParisLocation(from);
+    const isToParisArea = isParisLocation(to);
+    
+    // Special pricing for Beauvais ↔ Paris/CDG/Orly routes
+    const isBeauvaisParisRoute = (isBeauvaisFrom && isToParisArea) || (isFromParisArea && isBeauvaisTo);
+    
+    if (isBeauvaisParisRoute) {
+      if (passengers >= 5 && passengers <= 8 && luggage <= 8) {
+        return { price: 275, isDisneyland: false, needsQuote: false, isBeauvaisParisRoute: true }; // Minivan for Beauvais-Paris routes
+      } else if (passengers <= 4 && luggage <= 4) {
+        return { price: 200, isDisneyland: false, needsQuote: false, isBeauvaisParisRoute: true }; // Sedan for Beauvais-Paris routes
+      } else {
+        // Outside capacity limits - needs custom quote
+        return { price: null, isDisneyland: false, needsQuote: true, isBeauvaisParisRoute: true };
+      }
+    }
+    
+    // Check if route involves other airports (existing logic)
     const isCDGRoute = (fromLower.includes('charles de gaulle') || fromLower.includes('cdg')) ||
                        (toLower.includes('charles de gaulle') || toLower.includes('cdg'));
     const isOrlyRoute = (fromLower.includes('orly') || fromLower.includes('ory')) ||
                         (toLower.includes('orly') || toLower.includes('ory'));
+    const isBeauvaisRoute = (fromLower.includes('beauvais') || fromLower.includes('bva') || fromLower.includes('tillé')) ||
+                            (toLower.includes('beauvais') || toLower.includes('bva') || toLower.includes('tillé'));
     
-    // Van service pricing (5-8 passengers OR >4 luggage, luggage ≤8)
+    // Van service pricing (5-8 passengers OR >4 luggage, luggage ≤8) - existing airport routes
     if ((passengers >= 5 && passengers <= 8 && luggage <= 8) || (luggage > 4 && luggage <= 8)) {
-      if (isBeauvaisRoute) {
-        return { price: 220, isDisneyland: false, needsQuote: false }; // Van price for Beauvais
+      if (isBeauvaisRoute && !isBeauvaisParisRoute) {
+        return { price: 220, isDisneyland: false, needsQuote: false, isBeauvaisParisRoute: false }; // Van price for other Beauvais routes
       }
-      if (isCDGRoute) {
-        return { price: 135, isDisneyland: false, needsQuote: false }; // Van price for CDG
+      if (isCDGRoute && !isBeauvaisParisRoute) {
+        return { price: 135, isDisneyland: false, needsQuote: false, isBeauvaisParisRoute: false }; // Van price for CDG
       }
-      if (isOrlyRoute) {
-        return { price: 90, isDisneyland: false, needsQuote: false }; // Van price for Orly
+      if (isOrlyRoute && !isBeauvaisParisRoute) {
+        return { price: 90, isDisneyland: false, needsQuote: false, isBeauvaisParisRoute: false }; // Van price for Orly
       }
     }
     
-    // Comfort service pricing (≤4 passengers, ≤4 luggage)
+    // Comfort service pricing (≤4 passengers, ≤4 luggage) - existing airport routes
     const qualifiesForComfortPricing = passengers <= 4 && luggage <= 4;
     
     if (qualifiesForComfortPricing) {
-      if (isBeauvaisRoute) {
-        return { price: 150, isDisneyland: false, needsQuote: false }; // Comfort price for Beauvais
+      if (isBeauvaisRoute && !isBeauvaisParisRoute) {
+        return { price: 150, isDisneyland: false, needsQuote: false, isBeauvaisParisRoute: false }; // Comfort price for other Beauvais routes
       }
       
       const isParisAddress = from.includes('75') || to.includes('75') || 
                             fromLower.includes('paris') || toLower.includes('paris');
       
-      if (isCDGRoute && isParisAddress) {
-        return { price: 75, isDisneyland: false, needsQuote: false }; // Comfort price for CDG + Paris
+      if (isCDGRoute && isParisAddress && !isBeauvaisParisRoute) {
+        return { price: 75, isDisneyland: false, needsQuote: false, isBeauvaisParisRoute: false }; // Comfort price for CDG + Paris
       }
       
-      if (isOrlyRoute && isParisAddress) {
-        return { price: 65, isDisneyland: false, needsQuote: false }; // Comfort price for Orly + Paris
+      if (isOrlyRoute && isParisAddress && !isBeauvaisParisRoute) {
+        return { price: 65, isDisneyland: false, needsQuote: false, isBeauvaisParisRoute: false }; // Comfort price for Orly + Paris
       }
     }
     
     // If no special pricing applies, suggest custom quote
-    return { price: null, isDisneyland: false, needsQuote: true };
+    return { price: null, isDisneyland: false, needsQuote: true, isBeauvaisParisRoute: false };
   };
 
   // Watch form values to calculate price
@@ -345,6 +378,7 @@ const BookingForm = () => {
       // Reset states
       setNeedsCustomQuote(false);
       setIsDisneylandOrigin(false);
+      setIsBeauvaisParisRoute(false);
       setEstimatedPrice(null); // Clear price while calculating
       
       const [from, to, passengers, luggage] = watchedValues;
@@ -364,6 +398,7 @@ const BookingForm = () => {
           setEstimatedPrice(result.price);
           setIsDisneylandOrigin(result.isDisneyland);
           setNeedsCustomQuote(result.needsQuote);
+          setIsBeauvaisParisRoute(result.isBeauvaisParisRoute);
         } else {
           setEstimatedPrice(null);
         }
@@ -372,6 +407,7 @@ const BookingForm = () => {
         setEstimatedPrice(null);
         setIsDisneylandOrigin(false);
         setNeedsCustomQuote(false);
+        setIsBeauvaisParisRoute(false);
       }
     };
     
@@ -765,6 +801,71 @@ const BookingForm = () => {
         <CardTitle id="booking-form-title" className="text-lg font-semibold text-foreground text-center">
           {currentStep === 1 ? "Allez Hop ! Let's Book a Ride" : currentStep === 2 ? "Your details" : "Payment Method"}
         </CardTitle>
+        {currentStep === 1 && isBeauvaisParisRoute && !needsCustomQuote && (
+          <div className="mt-4 space-y-3">
+            <div className="text-center">
+              <p className="text-sm font-medium text-muted-foreground mb-3">
+                ✈️ Beauvais Airport ↔ Paris/CDG/Orly Routes
+              </p>
+            </div>
+            
+            {/* Beauvais-Paris Pricing Options */}
+            <div className="grid grid-cols-2 gap-3">
+              {/* Sedan Option */}
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg border border-blue-200">
+                <div className="text-center">
+                  <Car className="h-5 w-5 text-blue-600 mx-auto mb-2" />
+                  <div className="font-semibold text-sm text-foreground">Sedan</div>
+                  <div className="text-xl font-bold text-blue-600">€200</div>
+                  <div className="text-xs text-muted-foreground">
+                    <div className="flex items-center justify-center gap-1">
+                      <Users className="h-3 w-3" />
+                      <span>1-4 passengers</span>
+                    </div>
+                    <div className="flex items-center justify-center gap-1">
+                      <Luggage className="h-3 w-3" />
+                      <span>up to 4 pieces</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Minivan Option */}
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg border border-blue-200">
+                <div className="text-center">
+                  <Users className="h-5 w-5 text-blue-600 mx-auto mb-2" />
+                  <div className="font-semibold text-sm text-foreground">Minivan</div>
+                  <div className="text-xl font-bold text-blue-600">€275</div>
+                  <div className="text-xs text-muted-foreground">
+                    <div className="flex items-center justify-center gap-1">
+                      <Users className="h-3 w-3" />
+                      <span>5-8 passengers</span>
+                    </div>
+                    <div className="flex items-center justify-center gap-1">
+                      <Luggage className="h-3 w-3" />
+                      <span>up to 8 pieces</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Show selected price */}
+            {estimatedPrice && typeof estimatedPrice === 'number' && (
+              <div 
+                className="flex items-center gap-3 bg-blue-50 p-3 rounded-lg border border-blue-200 text-center justify-center animate-fade-in" 
+                role="status" 
+                aria-live="polite"
+              >
+                <Euro className="h-4 w-4 text-blue-600" aria-hidden="true" />
+                <span className="text-lg font-bold text-blue-600">
+                  Selected: €{estimatedPrice}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
         {currentStep === 1 && isDisneylandOrigin && !needsCustomQuote && (
           <div className="mt-4 space-y-3">
             <div className="text-center">
