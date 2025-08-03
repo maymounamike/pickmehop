@@ -112,22 +112,32 @@ export function SimpleCalendar({ selected, onSelect, disabled, className }: Simp
                 }
               }}
               disabled={disabled || !isCurrentMonth}
+              style={{
+                backgroundColor: selected ? '#EA580C' : (date.toDateString() === new Date().toDateString() && !selected) ? '#F3F4F6' : 'transparent',
+                color: selected ? 'white' : isCurrentMonth ? '#111827' : '#9CA3AF',
+                border: 'none',
+                borderRadius: '6px'
+              }}
               className={cn(
-                "h-9 w-9 p-0 font-normal text-sm rounded-md transition-colors",
-                "hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-500",
+                "h-9 w-9 p-0 font-normal text-sm transition-colors",
+                "hover:bg-gray-100 focus:outline-none focus:ring-2",
                 {
-                  // Selected state - ORANGE!
-                  "bg-orange-500 text-white hover:bg-orange-500 focus:bg-orange-500": selected,
-                  // Current month days
-                  "text-gray-900": isCurrentMonth && !selected,
-                  // Other month days
-                  "text-gray-400": !isCurrentMonth,
                   // Disabled days
                   "opacity-50 cursor-not-allowed": disabled,
-                  // Today
-                  "bg-gray-100 text-gray-900": !selected && isCurrentMonth && date.toDateString() === new Date().toDateString()
                 }
               )}
+              onMouseEnter={(e) => {
+                if (selected) {
+                  (e.target as HTMLButtonElement).style.backgroundColor = '#EA580C';
+                  (e.target as HTMLButtonElement).style.color = 'white';
+                }
+              }}
+              onFocus={(e) => {
+                if (selected) {
+                  (e.target as HTMLButtonElement).style.backgroundColor = '#EA580C';
+                  (e.target as HTMLButtonElement).style.color = 'white';
+                }
+              }}
             >
               {date.getDate()}
             </button>
