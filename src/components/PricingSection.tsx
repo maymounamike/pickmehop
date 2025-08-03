@@ -82,11 +82,6 @@ const PricingSection = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const amenities = [
-    { icon: Clock, text: "1 hour free waiting time at airports" },
-    { icon: Shield, text: "Meet & greet service" },
-    { icon: MapPin, text: "Flight tracking" }
-  ];
 
   return (
     <section className="py-16 bg-muted/30">
