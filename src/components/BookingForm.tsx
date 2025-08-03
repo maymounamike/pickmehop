@@ -1145,10 +1145,9 @@ const BookingForm = () => {
                           <PopoverTrigger asChild>
                             <FormControl>
                               <Button
-                                variant="outline"
                                 className={cn(
-                                  "w-full justify-start text-left font-normal h-10 text-sm",
-                                  !field.value && "text-muted-foreground"
+                                  "w-full justify-start text-left font-normal h-10 text-sm bg-primary hover:bg-primary/90 text-primary-foreground border-primary",
+                                  !field.value && "text-primary-foreground/70"
                                 )}
                                 aria-haspopup="dialog"
                                 aria-expanded="false"
