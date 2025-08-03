@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
-import { cn } from "@/lib/utils";
 import MickeyMouseIcon from "./MickeyMouseIcon";
 
 const PricingSection = () => {
@@ -154,11 +153,11 @@ const PricingSection = () => {
                   htmlFor={service.id}
                   className="flex cursor-pointer"
                 >
-                  <Card className={cn(
+                  <Card className={[
                     "w-full transition-all duration-300 hover:shadow-lg border-2",
                     "peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:shadow-lg",
                     "peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2"
-                  )}>
+                  ].join(" ")}>
                     <CardHeader className="text-center pb-3 px-4 pt-4">
                       {/* Destination Icon and Info */}
                       <div className="w-8 h-8 mx-auto mb-2 bg-primary/10 rounded-full flex items-center justify-center">
