@@ -245,20 +245,6 @@ const PricingSection = () => {
           </div>
         </div>
 
-        {/* Amenities */}
-        <div className="bg-card rounded-lg p-6 mb-8 shadow-sm">
-          <h3 className="text-lg font-semibold text-foreground mb-4 text-center">
-            Included with every journey
-          </h3>
-          <div className="flex flex-wrap justify-center gap-6">
-            {amenities.map((amenity, index) => (
-              <div key={index} className="flex items-center gap-2 text-muted-foreground">
-                <amenity.icon className="w-4 h-4 text-primary" />
-                <span className="text-sm">{amenity.text}</span>
-              </div>
-            ))}
-          </div>
-        </div>
 
         {/* Secondary CTA */}
         <div className="text-center">
