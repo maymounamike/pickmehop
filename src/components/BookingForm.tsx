@@ -7,7 +7,7 @@ import { Loader } from "@googlemaps/js-api-loader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { SimpleCalendar } from "@/components/ui/simple-calendar";
+import { OrangeDatePicker } from "@/components/ui/orange-date-picker";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { EnhancedSelect, EnhancedSelectContent, EnhancedSelectItem, EnhancedSelectTrigger, EnhancedSelectValue } from "@/components/ui/enhanced-select";
 import { SearchableSelect } from "@/components/ui/searchable-select";
@@ -1141,33 +1141,15 @@ const BookingForm = () => {
                     render={({ field }) => (
                       <FormItem className="flex flex-col">
                         <FormLabel className="text-xs font-medium mb-1">Pickup date</FormLabel>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <FormControl>
-                              <Button
-                                variant="outline"
-                                className={cn(
-                                  "w-full justify-start text-left font-normal h-10 text-sm bg-background",
-                                  !field.value && "text-muted-foreground"
-                                )}
-                                aria-haspopup="dialog"
-                                aria-expanded="false"
-                                aria-describedby={field.name + "-error"}
-                              >
-                                <CalendarIcon className="mr-2 h-4 w-4" aria-hidden="true" />
-                                {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                              </Button>
-                            </FormControl>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <SimpleCalendar
-                              selected={field.value}
-                              onSelect={field.onChange}
-                              disabled={(date) => date < new Date()}
-                              className="pointer-events-auto"
-                            />
-                          </PopoverContent>
-                        </Popover>
+                        <FormControl>
+                          <OrangeDatePicker
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            disabled={(date) => date < new Date()}
+                            placeholder="Pick a date"
+                            className="w-full"
+                          />
+                        </FormControl>
                         <FormMessage id={field.name + "-error"} />
                       </FormItem>
                     )}
