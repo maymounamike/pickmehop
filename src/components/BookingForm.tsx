@@ -104,6 +104,7 @@ const BookingForm = () => {
   const [needsCustomQuote, setNeedsCustomQuote] = useState(false);
   const [isBeauvaisParisRoute, setIsBeauvaisParisRoute] = useState(false);
   const [googleMapsApiKey, setGoogleMapsApiKey] = useState<string | null>(null);
+  const [toLocationValue, setToLocationValue] = useState('');
   const rateLimit = new ClientRateLimit();
 
   // Country codes with USA and France first
@@ -225,6 +226,12 @@ const BookingForm = () => {
   // Function to check if location is within Disneyland Paris geofence
   const isWithinDisneylandGeofence = async (address: string): Promise<boolean> => {
     try {
+      // Simple string check first for better performance
+      const addressLower = address.toLowerCase();
+      if (addressLower.includes('disneyland') || addressLower.includes('disney')) {
+        return true;
+      }
+      
       // Get Google Maps API key from cache or fetch it
       let apiKey = googleMapsApiKey;
       if (!apiKey) {
@@ -234,7 +241,7 @@ const BookingForm = () => {
         setGoogleMapsApiKey(apiKey); // Cache the key
       }
 
-      // Load Google Maps API
+      // Load Google Maps API with timeout
       const loader = new Loader({
         apiKey: apiKey,
         version: "weekly",
@@ -244,9 +251,14 @@ const BookingForm = () => {
       const google = await loader.load();
       const geocoder = new google.maps.Geocoder();
 
-      // Geocode the address to get coordinates
-      const result = await new Promise<google.maps.GeocoderResult[]>((resolve, reject) => {
+      // Add timeout to prevent hanging
+      const geocodePromise = new Promise<google.maps.GeocoderResult[]>((resolve, reject) => {
+        const timeoutId = setTimeout(() => {
+          reject(new Error('Geocoding timeout'));
+        }, 5000); // 5 second timeout
+
         geocoder.geocode({ address }, (results, status) => {
+          clearTimeout(timeoutId);
           if (status === 'OK' && results) {
             resolve(results);
           } else {
@@ -254,6 +266,8 @@ const BookingForm = () => {
           }
         });
       });
+
+      const result = await geocodePromise;
 
       if (result.length > 0) {
         const location = result[0].geometry.location;
@@ -267,6 +281,9 @@ const BookingForm = () => {
       }
     } catch (error) {
       console.error('Error checking Disneyland geofence:', error);
+      // Fallback to string matching if geocoding fails
+      const addressLower = address.toLowerCase();
+      return addressLower.includes('disneyland') || addressLower.includes('disney');
     }
     
     return false;
@@ -398,6 +415,12 @@ const BookingForm = () => {
 
   // Watch form values to calculate price with debouncing
   const watchedValues = form.watch(['fromLocation', 'toLocation', 'passengers', 'luggage']);
+  
+  // Watch toLocation for real-time pricing updates
+  useEffect(() => {
+    const toLocation = form.watch('toLocation');
+    setToLocationValue(toLocation || '');
+  }, [form.watch('toLocation')]);
   
   // Debounced price calculation to prevent excessive calls
   const debouncedUpdatePrice = useCallback(
@@ -912,10 +935,9 @@ const BookingForm = () => {
                   <div className="font-semibold text-sm text-foreground">Sedan</div>
                   <div className="text-xl font-bold text-primary">
                     €{(() => {
-                      const toLocation = form.watch('toLocation') || '';
-                      const isToBeauvais = toLocation.toLowerCase().includes('beauvais') || 
-                                          toLocation.toLowerCase().includes('bva') || 
-                                          toLocation.toLowerCase().includes('tillé');
+                      const isToBeauvais = toLocationValue.toLowerCase().includes('beauvais') || 
+                                          toLocationValue.toLowerCase().includes('bva') || 
+                                          toLocationValue.toLowerCase().includes('tillé');
                       return isToBeauvais ? '200' : '80';
                     })()}
                   </div>
@@ -939,10 +961,9 @@ const BookingForm = () => {
                   <div className="font-semibold text-sm text-foreground">Minivan</div>
                   <div className="text-xl font-bold text-primary">
                     €{(() => {
-                      const toLocation = form.watch('toLocation') || '';
-                      const isToBeauvais = toLocation.toLowerCase().includes('beauvais') || 
-                                          toLocation.toLowerCase().includes('bva') || 
-                                          toLocation.toLowerCase().includes('tillé');
+                      const isToBeauvais = toLocationValue.toLowerCase().includes('beauvais') || 
+                                          toLocationValue.toLowerCase().includes('bva') || 
+                                          toLocationValue.toLowerCase().includes('tillé');
                       return isToBeauvais ? '275' : '110';
                     })()}
                   </div>
