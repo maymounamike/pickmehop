@@ -9,7 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { EnhancedSelect, EnhancedSelectContent, EnhancedSelectItem, EnhancedSelectTrigger, EnhancedSelectValue } from "@/components/ui/enhanced-select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
+import LocationAutocomplete from "@/components/LocationAutocomplete";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
@@ -83,13 +85,8 @@ const BookingForm = () => {
   const [estimatedPrice, setEstimatedPrice] = useState<number | null>(null);
   const [formStartTime] = useState(Date.now());
   const [csrfToken] = useState(generateCSRFToken());
-  const [fromSuggestions, setFromSuggestions] = useState<string[]>([]);
-  const [toSuggestions, setToSuggestions] = useState<string[]>([]);
-  const [showFromSuggestions, setShowFromSuggestions] = useState(false);
-  const [showToSuggestions, setShowToSuggestions] = useState(false);
   const [validFromSelected, setValidFromSelected] = useState(false);
   const [validToSelected, setValidToSelected] = useState(false);
-  const [allSuggestions, setAllSuggestions] = useState<string[]>([]); // Track all generated suggestions
   const [selectedCountryCode, setSelectedCountryCode] = useState("+33"); // Default to France
   const [formKey, setFormKey] = useState(0); // Key to force form remount
   const [user, setUser] = useState<any>(null);
@@ -716,40 +713,24 @@ const BookingForm = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <div className="relative">
-                            <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground z-10 pointer-events-none" aria-hidden="true" />
-                            <Input
-                              placeholder="From (airport, port, address)"
-                              className="pl-10 h-10 text-sm"
-                              value={field.value || ""}
-                              onChange={(e) => handleFromLocationChange(e.target.value)}
-                              onBlur={() => setTimeout(() => setShowFromSuggestions(false), 200)}
-                              onFocus={() => {
-                                if (field.value && field.value.length >= 2) {
-                                  setShowFromSuggestions(true);
-                                }
-                              }}
-                              aria-describedby={field.name + "-error"}
-                              aria-invalid={!!form.formState.errors.fromLocation}
-                            />
-                            {showFromSuggestions && fromSuggestions.length > 0 && (
-                              <div className="absolute top-full left-0 right-0 z-[100] bg-white border border-gray-200 rounded-md shadow-xl max-h-48 overflow-y-auto mt-1">
-                                {fromSuggestions.map((suggestion, index) => (
-                                  <button
-                                    key={index}
-                                    type="button"
-                                    className="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 hover:text-blue-900 border-b border-gray-100 last:border-b-0 focus:bg-blue-50 focus:text-blue-900 focus:outline-none transition-colors"
-                                    onClick={() => selectFromSuggestion(suggestion)}
-                                    onMouseDown={(e) => e.preventDefault()} // Prevent input blur
-                                  >
-                                    {suggestion}
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                          </div>
+                          <LocationAutocomplete
+                            value={field.value || ""}
+                            onChange={(value) => {
+                              field.onChange(value);
+                              setValidFromSelected(false);
+                            }}
+                            onValidSelection={(isValid) => {
+                              setValidFromSelected(isValid);
+                              if (isValid) {
+                                form.clearErrors('fromLocation');
+                              }
+                            }}
+                            placeholder="From (airport, port, address)"
+                            className="dropdown-optimize"
+                            error={!!form.formState.errors.fromLocation}
+                          />
                         </FormControl>
-                        <FormMessage id={field.name + "-error"} />
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
@@ -760,40 +741,24 @@ const BookingForm = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <div className="relative">
-                            <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground z-10 pointer-events-none" aria-hidden="true" />
-                            <Input
-                              placeholder="To (airport, port, address)"
-                              className="pl-10 h-10 text-sm"
-                              value={field.value || ""}
-                              onChange={(e) => handleToLocationChange(e.target.value)}
-                              onBlur={() => setTimeout(() => setShowToSuggestions(false), 200)}
-                              onFocus={() => {
-                                if (field.value && field.value.length >= 2) {
-                                  setShowToSuggestions(true);
-                                }
-                              }}
-                              aria-describedby={field.name + "-error"}
-                              aria-invalid={!!form.formState.errors.toLocation}
-                            />
-                            {showToSuggestions && toSuggestions.length > 0 && (
-                              <div className="absolute top-full left-0 right-0 z-[100] bg-white border border-gray-200 rounded-md shadow-xl max-h-48 overflow-y-auto mt-1">
-                                {toSuggestions.map((suggestion, index) => (
-                                  <button
-                                    key={index}
-                                    type="button"
-                                    className="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 hover:text-blue-900 border-b border-gray-100 last:border-b-0 focus:bg-blue-50 focus:text-blue-900 focus:outline-none transition-colors"
-                                    onClick={() => selectToSuggestion(suggestion)}
-                                    onMouseDown={(e) => e.preventDefault()} // Prevent input blur
-                                  >
-                                    {suggestion}
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                          </div>
+                          <LocationAutocomplete
+                            value={field.value || ""}
+                            onChange={(value) => {
+                              field.onChange(value);
+                              setValidToSelected(false);
+                            }}
+                            onValidSelection={(isValid) => {
+                              setValidToSelected(isValid);
+                              if (isValid) {
+                                form.clearErrors('toLocation');
+                              }
+                            }}
+                            placeholder="To (airport, port, address)"
+                            className="dropdown-optimize"
+                            error={!!form.formState.errors.toLocation}
+                          />
                         </FormControl>
-                        <FormMessage id={field.name + "-error"} />
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
@@ -884,27 +849,27 @@ const BookingForm = () => {
                     render={({ field }) => (
                       <FormItem className="flex flex-col">
                         <FormLabel className="text-xs font-medium mb-1">Pickup time</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <EnhancedSelect onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
-                            <SelectTrigger 
+                            <EnhancedSelectTrigger 
                               className={cn(
-                                "w-full justify-start text-left font-normal bg-background h-10 text-sm",
+                                "w-full justify-start text-left font-normal bg-background h-11 text-sm dropdown-optimize",
                                 !field.value && "text-muted-foreground"
                               )}
                               aria-describedby={field.name + "-error"}
                               aria-invalid={!!form.formState.errors.time}
                             >
-                              <SelectValue placeholder="Select time" />
-                            </SelectTrigger>
+                              <EnhancedSelectValue placeholder="Select pickup time" />
+                            </EnhancedSelectTrigger>
                           </FormControl>
-                          <SelectContent className="bg-background border z-50 max-h-60 overflow-y-auto" aria-label="Available pickup times">
+                          <EnhancedSelectContent className="bg-background border dropdown-optimize" maxHeight={250} aria-label="Available pickup times">
                             {times.map((time) => (
-                              <SelectItem key={time} value={time} className="hover:bg-secondary">
+                              <EnhancedSelectItem key={time} value={time}>
                                 {time}
-                              </SelectItem>
+                              </EnhancedSelectItem>
                             ))}
-                          </SelectContent>
-                        </Select>
+                          </EnhancedSelectContent>
+                        </EnhancedSelect>
                         <FormMessage id={field.name + "-error"} />
                       </FormItem>
                     )}
@@ -1078,8 +1043,14 @@ const BookingForm = () => {
                         <FormControl>
                           <div className="flex gap-2">
                             {/* Country Code Dropdown */}
-                            <Select 
-                              value={selectedCountryCode} 
+                            <SearchableSelect
+                              options={countryCodes.map(country => ({
+                                value: country.code,
+                                label: country.code,
+                                description: country.country,
+                                icon: <span className="text-xs">{country.flag}</span>
+                              }))}
+                              value={selectedCountryCode}
                               onValueChange={(newCode) => {
                                 setSelectedCountryCode(newCode);
                                 // Update the phone field with new country code if there's an existing number
@@ -1089,21 +1060,11 @@ const BookingForm = () => {
                                   field.onChange(`${newCode} ${numberPart}`);
                                 }
                               }}
-                            >
-                              <SelectTrigger className="w-[110px] sm:w-[130px] h-10 text-xs sm:text-sm px-2">
-                                <SelectValue placeholder="Code" />
-                              </SelectTrigger>
-                              <SelectContent className="bg-background border border-border shadow-lg z-50">
-                                {countryCodes.map((country) => (
-                                  <SelectItem key={country.code} value={country.code}>
-                                    <span className="flex items-center gap-1 text-xs sm:text-sm">
-                                      <span className="text-xs">{country.flag}</span>
-                                      <span className="font-mono text-xs">{country.code}</span>
-                                    </span>
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                              placeholder="Code"
+                              searchPlaceholder="Search country..."
+                              className="w-[130px] sm:w-[150px] text-xs sm:text-sm dropdown-optimize"
+                              maxHeight={250}
+                            />
                             
                             {/* Phone Number Input */}
                             <div className="relative flex-1">

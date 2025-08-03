@@ -165,3 +165,33 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+/* Performance optimizations for dropdowns */
+@layer components {
+  .dropdown-optimize {
+    /* GPU acceleration for smooth animations */
+    will-change: transform, opacity;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    
+    /* Smooth scrolling */
+    scroll-behavior: smooth;
+    overscroll-behavior: contain;
+  }
+  
+  /* Optimized animations for mobile */
+  @media (max-width: 640px) {
+    .dropdown-optimize {
+      animation-duration: 200ms;
+    }
+  }
+  
+  /* Reduce motion for accessibility */
+  @media (prefers-reduced-motion: reduce) {
+    .dropdown-optimize {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
