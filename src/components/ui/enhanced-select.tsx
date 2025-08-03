@@ -128,8 +128,8 @@ const EnhancedSelectItem = React.forwardRef<
     ref={ref}
     className={cn(
       "relative flex w-full cursor-pointer select-none items-center rounded-md py-2.5 pl-8 pr-2 text-sm outline-none transition-colors duration-150 ease-in-out",
-      "focus:bg-accent focus:text-accent-foreground hover:bg-accent/50 data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      "active:bg-accent/70",
+      "focus:bg-primary focus:text-primary-foreground hover:bg-primary/10 data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "active:bg-primary/20 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground",
       className
     )}
     {...props}

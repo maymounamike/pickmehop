@@ -1184,8 +1184,8 @@ const BookingForm = () => {
                           <FormControl>
                             <EnhancedSelectTrigger 
                               className={cn(
-                                "w-full justify-start text-left font-normal bg-background h-11 text-sm dropdown-optimize",
-                                !field.value && "text-muted-foreground"
+                                "w-full justify-start text-left font-normal bg-primary hover:bg-primary/90 text-primary-foreground border-primary h-11 text-sm dropdown-optimize",
+                                !field.value && "text-primary-foreground/70"
                               )}
                               aria-describedby={field.name + "-error"}
                               aria-invalid={!!form.formState.errors.time}
@@ -1219,10 +1219,9 @@ const BookingForm = () => {
                           <div className="flex items-center justify-between border rounded-lg p-2 h-10" role="group" aria-label="Number of passengers">
                             <Button
                               type="button"
-                              variant="ghost"
                               size="sm"
                               onClick={() => field.onChange(Math.max(1, field.value - 1))}
-                              className="h-6 w-6 p-0 touch-manipulation"
+                              className="h-6 w-6 p-0 touch-manipulation bg-primary hover:bg-primary/90 text-primary-foreground"
                               aria-label="Decrease passenger count"
                               disabled={field.value <= 1}
                             >
@@ -1234,10 +1233,9 @@ const BookingForm = () => {
                             </div>
                             <Button
                               type="button"
-                              variant="ghost"
                               size="sm"
                               onClick={() => field.onChange(Math.min(8, field.value + 1))}
-                              className="h-6 w-6 p-0 touch-manipulation"
+                              className="h-6 w-6 p-0 touch-manipulation bg-primary hover:bg-primary/90 text-primary-foreground"
                               aria-label="Increase passenger count"
                               disabled={field.value >= 8}
                             >
@@ -1260,10 +1258,9 @@ const BookingForm = () => {
                           <div className="flex items-center justify-between border rounded-lg p-2 h-10" role="group" aria-label="Number of luggage pieces">
                             <Button
                               type="button"
-                              variant="ghost"
                               size="sm"
                               onClick={() => field.onChange(Math.max(0, field.value - 1))}
-                              className="h-6 w-6 p-0 touch-manipulation"
+                              className="h-6 w-6 p-0 touch-manipulation bg-primary hover:bg-primary/90 text-primary-foreground"
                               aria-label="Decrease luggage count"
                               disabled={field.value <= 0}
                             >
@@ -1275,10 +1272,9 @@ const BookingForm = () => {
                             </div>
                             <Button
                               type="button"
-                              variant="ghost"
                               size="sm"
                               onClick={() => field.onChange(Math.min(10, field.value + 1))}
-                              className="h-6 w-6 p-0 touch-manipulation"
+                              className="h-6 w-6 p-0 touch-manipulation bg-primary hover:bg-primary/90 text-primary-foreground"
                               aria-label="Increase luggage count"
                               disabled={field.value >= 10}
                             >
