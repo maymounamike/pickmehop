@@ -219,7 +219,7 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
           {
             input: query,
             componentRestrictions: { country: 'FR' },
-            types: ['geocode'] // Use geocode instead of mixing address and establishment
+            types: ['geocode', 'establishment'] // Include both geocode and establishment to recognize hotels
           },
           (predictions, status) => {
             console.log('📍 Google API response:', { status, predictionsCount: predictions?.length || 0 });
