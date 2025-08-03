@@ -26,7 +26,7 @@ const HelpDialog = ({ children }: HelpDialogProps) => {
         <DialogHeader>
           <DialogTitle>Need Help?</DialogTitle>
           <DialogDescription>
-            Contact our support team for assistance.
+            Get in touch with our support team for assistance.
           </DialogDescription>
         </DialogHeader>
         
