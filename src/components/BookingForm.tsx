@@ -223,20 +223,45 @@ const BookingForm = () => {
     return R * c;
   };
 
-  // Function to check if location is within Disneyland Paris geofence
-  const isWithinDisneylandGeofence = async (address: string): Promise<boolean> => {
+  // Cache for geocoding results to prevent repeated API calls
+  const geocodingCache = useMemo(() => new Map<string, boolean>(), []);
+
+  // Function to check if location is within Disneyland Paris geofence with caching
+  const isWithinDisneylandGeofence = useCallback(async (address: string): Promise<boolean> => {
+    // Check cache first
+    const cacheKey = address.toLowerCase().trim();
+    if (geocodingCache.has(cacheKey)) {
+      return geocodingCache.get(cacheKey)!;
+    }
+
     try {
       // Simple string check first for better performance
-      const addressLower = address.toLowerCase();
+      const addressLower = cacheKey;
       if (addressLower.includes('disneyland') || addressLower.includes('disney')) {
+        geocodingCache.set(cacheKey, true);
         return true;
+      }
+      
+      // Skip API call for obviously non-Disney addresses to prevent jittering
+      const isObviouslyNotDisney = addressLower.includes('airport') || 
+                                  addressLower.includes('gare') || 
+                                  addressLower.includes('station') ||
+                                  addressLower.includes('hotel') ||
+                                  addressLower.length < 5;
+      
+      if (isObviouslyNotDisney) {
+        geocodingCache.set(cacheKey, false);
+        return false;
       }
       
       // Get Google Maps API key from cache or fetch it
       let apiKey = googleMapsApiKey;
       if (!apiKey) {
         const { data: keyData, error: keyError } = await supabase.functions.invoke('get-google-maps-key');
-        if (!keyData?.apiKey || keyError) return false;
+        if (!keyData?.apiKey || keyError) {
+          geocodingCache.set(cacheKey, false);
+          return false;
+        }
         apiKey = keyData.apiKey;
         setGoogleMapsApiKey(apiKey); // Cache the key
       }
@@ -277,17 +302,20 @@ const BookingForm = () => {
           location.lat(),
           location.lng()
         );
-        return distance <= DISNEYLAND_RADIUS_KM;
+        const isWithinGeofence = distance <= DISNEYLAND_RADIUS_KM;
+        geocodingCache.set(cacheKey, isWithinGeofence);
+        return isWithinGeofence;
       }
     } catch (error) {
       console.error('Error checking Disneyland geofence:', error);
-      // Fallback to string matching if geocoding fails
-      const addressLower = address.toLowerCase();
-      return addressLower.includes('disneyland') || addressLower.includes('disney');
+      // Cache the negative result to prevent repeated failures
+      geocodingCache.set(cacheKey, false);
+      return false;
     }
     
+    geocodingCache.set(cacheKey, false);
     return false;
-  };
+  }, [geocodingCache, googleMapsApiKey]);
 
   // Calculate estimated price with special airport rules and Disneyland geofencing
   const calculatePrice = async (from: string, to: string, passengers: number, luggage: number = 1) => {
