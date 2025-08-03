@@ -1,0 +1,329 @@
+/* ========================================
+   GLOBAL DASHBOARD STANDARDIZATION CSS
+   Full-Width Layout for All User Roles
+   ======================================== */
+
+/* ========================================
+   1. GLOBAL DASHBOARD CONTAINER
+   ======================================== */
+.dashboard-container {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: 100vh;
+  width: 100%;
+  background: rgb(249 250 251); /* gray-50 */
+}
+
+/* Remove any sidebar-specific styles globally */
+.sidebar, 
+.left-nav, 
+.secondary-nav,
+.sidebar-provider,
+.sidebar-trigger {
+  display: none !important;
+}
+
+/* ========================================
+   2. STANDARDIZED HEADER LAYOUT
+   ======================================== */
+.dashboard-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: 4rem; /* 64px */
+  width: 100%;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
+
+/* Role-specific header gradients */
+.dashboard-header.admin {
+  background: linear-gradient(to right, #0D2C54, #1a4480);
+}
+
+.dashboard-header.driver {
+  background: linear-gradient(to right, #ea580c, #c2410c);
+}
+
+.dashboard-header.customer {
+  background: linear-gradient(to right, #2563eb, #1d4ed8);
+}
+
+.dashboard-header.partner {
+  background: linear-gradient(to right, #059669, #047857);
+}
+
+/* Header content layout */
+.dashboard-header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  max-width: 80rem; /* max-w-7xl */
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (min-width: 1024px) {
+  .dashboard-header-content {
+    padding: 0 1.5rem;
+  }
+}
+
+/* ========================================
+   3. MAIN CONTENT AREA
+   ======================================== */
+.dashboard-main {
+  flex: 1;
+  width: 100%;
+  max-width: 80rem; /* max-w-7xl */
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+@media (min-width: 1024px) {
+  .dashboard-main {
+    padding: 2rem 1.5rem;
+  }
+}
+
+/* ========================================
+   4. RESPONSIVE GRID SYSTEMS
+   ======================================== */
+
+/* Stats Grid - Mobile First */
+.dashboard-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+@media (min-width: 640px) { /* sm */
+  .dashboard-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) { /* lg */
+  .dashboard-stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Content Cards Grid */
+.dashboard-content-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+@media (min-width: 1024px) { /* lg */
+  .dashboard-content-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ========================================
+   5. CONSISTENT SPACING SYSTEM
+   ======================================== */
+.dashboard-section {
+  margin-bottom: 2rem;
+}
+
+.dashboard-card {
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+  border: 1px solid rgb(229 231 235);
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+.dashboard-card:hover {
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+.dashboard-card-header {
+  padding: 1.5rem 1.5rem 1rem 1.5rem;
+  border-bottom: 1px solid rgb(243 244 246);
+}
+
+.dashboard-card-content {
+  padding: 1.5rem;
+}
+
+/* ========================================
+   6. ROLE-SPECIFIC BRANDING
+   ======================================== */
+
+/* Admin Theme */
+.dashboard-admin {
+  --primary-color: #0D2C54;
+  --accent-color: #FFB400;
+  --primary-light: #1a4480;
+}
+
+.dashboard-admin .dashboard-title {
+  color: var(--primary-color);
+}
+
+.dashboard-admin .dashboard-accent {
+  color: var(--accent-color);
+}
+
+/* Driver Theme */
+.dashboard-driver {
+  --primary-color: #ea580c;
+  --accent-color: #f97316;
+  --primary-light: #fed7aa;
+}
+
+.dashboard-driver .dashboard-title {
+  color: var(--primary-color);
+}
+
+/* Customer Theme */
+.dashboard-customer {
+  --primary-color: #2563eb;
+  --accent-color: #3b82f6;
+  --primary-light: #dbeafe;
+}
+
+.dashboard-customer .dashboard-title {
+  color: var(--primary-color);
+}
+
+/* Partner Theme */
+.dashboard-partner {
+  --primary-color: #059669;
+  --accent-color: #10b981;
+  --primary-light: #d1fae5;
+}
+
+.dashboard-partner .dashboard-title {
+  color: var(--primary-color);
+}
+
+/* ========================================
+   7. MOBILE OPTIMIZATION
+   ======================================== */
+@media (max-width: 640px) {
+  .dashboard-main {
+    padding: 1rem 0.75rem;
+  }
+  
+  .dashboard-stats-grid {
+    gap: 1rem;
+  }
+  
+  .dashboard-content-grid {
+    gap: 1rem;
+  }
+  
+  .dashboard-header-content {
+    padding: 0 0.75rem;
+  }
+  
+  /* Hide secondary text on mobile */
+  .dashboard-mobile-hidden {
+    display: none;
+  }
+}
+
+/* ========================================
+   8. ACCESSIBILITY & FOCUS STATES
+   ======================================== */
+.dashboard-button {
+  transition: all 0.2s ease-in-out;
+  min-height: 44px; /* Touch target minimum */
+}
+
+.dashboard-button:focus {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.dashboard-button:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ========================================
+   9. PERFORMANCE OPTIMIZATIONS
+   ======================================== */
+.dashboard-container * {
+  box-sizing: border-box;
+}
+
+/* Use transform for animations to leverage GPU */
+.dashboard-card {
+  transform: translateZ(0); /* Force GPU acceleration */
+}
+
+.dashboard-stats-card {
+  will-change: transform;
+}
+
+/* ========================================
+   10. PRINT STYLES
+   ======================================== */
+@media print {
+  .dashboard-header,
+  .dashboard-button,
+  .dashboard-navigation {
+    display: none !important;
+  }
+  
+  .dashboard-main {
+    padding: 0;
+    max-width: none;
+  }
+  
+  .dashboard-card {
+    box-shadow: none;
+    border: 1px solid #ccc;
+  }
+}
+
+/* ========================================
+   11. HIGH CONTRAST MODE SUPPORT
+   ======================================== */
+@media (prefers-contrast: high) {
+  .dashboard-card {
+    border: 2px solid;
+  }
+  
+  .dashboard-button {
+    border: 2px solid;
+  }
+}
+
+/* ========================================
+   12. REDUCED MOTION SUPPORT
+   ======================================== */
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-card,
+  .dashboard-button,
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* ========================================
+   13. DARK MODE PREPARATION
+   ======================================== */
+@media (prefers-color-scheme: dark) {
+  .dashboard-container {
+    background: rgb(17 24 39); /* gray-900 */
+  }
+  
+  .dashboard-card {
+    background: rgb(31 41 55); /* gray-800 */
+    border-color: rgb(75 85 99); /* gray-600 */
+    color: rgb(243 244 246); /* gray-100 */
+  }
+}
+
+/* ========================================
+   END OF GLOBAL DASHBOARD STYLES
+   ======================================== */
