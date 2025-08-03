@@ -206,12 +206,6 @@ const PricingSection = () => {
                     </Label>
                   </div>
 
-                  {/* Price Difference */}
-                  <div className="text-center pt-2 border-t border-muted">
-                    <p className="text-sm text-muted-foreground">
-                      Price Difference: <span className="font-semibold text-foreground">€{destination.priceDifference}</span>
-                    </p>
-                  </div>
                 </CardContent>
               </Card>
             ))}
