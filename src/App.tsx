@@ -19,6 +19,8 @@ import DriverOngoing from "./pages/DriverOngoing";
 import AdminDashboard from "./pages/AdminDashboard";
 import BookingConfirmation from "./pages/BookingConfirmation";
 import DriverAuth from "./pages/DriverAuth";
+import PartnerAuth from "./pages/PartnerAuth";
+import PartnerDashboard from "./pages/PartnerDashboard";
 import About from "./pages/About";
 import Services from "./pages/Services";
 import Contact from "./pages/Contact";
@@ -39,12 +41,14 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/driver-signup" element={<DriverAuth />} />
+            <Route path="/partner-signup" element={<PartnerAuth />} />
             <Route path="/drivers" element={<DriversManagement />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/driver" element={<DriverDashboard />} />
             <Route path="/driver/profile" element={<DriverProfile />} />
             <Route path="/driver/scheduled" element={<DriverScheduled />} />
             <Route path="/driver/ongoing" element={<DriverOngoing />} />
+            <Route path="/partner" element={<PartnerDashboard />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/booking-confirmation" element={<BookingConfirmation />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
