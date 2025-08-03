@@ -101,47 +101,50 @@
 }
 
 /* Override React Day Picker default styles to use our primary orange color */
-.rdp-day_selected {
-  background-color: hsl(var(--primary)) !important;
-  color: hsl(var(--primary-foreground)) !important;
+/* Target the calendar popup and all its selected date elements */
+.rdp, .rdp * {
+  --rdp-cell-size: 36px;
+  --rdp-accent-color: hsl(var(--primary)) !important;
+  --rdp-background-color: hsl(var(--primary)) !important;
 }
 
-.rdp-day_selected:hover {
-  background-color: hsl(var(--primary)) !important;
-  color: hsl(var(--primary-foreground)) !important;
-}
-
-.rdp-day_selected:focus {
-  background-color: hsl(var(--primary)) !important;
-  color: hsl(var(--primary-foreground)) !important;
-}
-
-/* Additional overrides for different React Day Picker versions and class variations */
-.rdp-button[aria-selected="true"] {
-  background-color: hsl(var(--primary)) !important;
-  color: hsl(var(--primary-foreground)) !important;
-}
-
-button[aria-selected="true"] {
-  background-color: hsl(var(--primary)) !important;
-  color: hsl(var(--primary-foreground)) !important;
-}
-
-/* Target the specific day button when selected */
-.rdp-day.rdp-day_selected,
+/* Force orange color on selected dates - all possible selectors */
+.rdp-day_selected,
+.rdp-day_selected:hover,
+.rdp-day_selected:focus,
 .rdp-day[aria-selected="true"],
-button.rdp-day_selected,
-button[role="gridcell"][aria-selected="true"] {
+.rdp-day[aria-selected="true"]:hover,
+.rdp-day[aria-selected="true"]:focus,
+button[aria-selected="true"],
+button[aria-selected="true"]:hover,
+button[aria-selected="true"]:focus,
+button[role="gridcell"][aria-selected="true"],
+button[role="gridcell"][aria-selected="true"]:hover,
+button[role="gridcell"][aria-selected="true"]:focus,
+.rdp .rdp-day_selected,
+.rdp .rdp-day[aria-selected="true"],
+.rdp button[aria-selected="true"],
+.rdp button[role="gridcell"][aria-selected="true"] {
   background-color: hsl(var(--primary)) !important;
   color: hsl(var(--primary-foreground)) !important;
   border-color: hsl(var(--primary)) !important;
 }
 
-/* Override any focus states */
-.rdp-day.rdp-day_selected:focus,
-.rdp-day[aria-selected="true"]:focus,
-button.rdp-day_selected:focus,
-button[role="gridcell"][aria-selected="true"]:focus {
+/* Target calendar container specifically */
+[role="dialog"] .rdp-day_selected,
+[role="dialog"] .rdp-day[aria-selected="true"],
+[role="dialog"] button[aria-selected="true"],
+[role="dialog"] button[role="gridcell"][aria-selected="true"] {
+  background-color: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+  border-color: hsl(var(--primary)) !important;
+}
+
+/* Additional targeting for popover calendar */
+.popover-content .rdp-day_selected,
+.popover-content .rdp-day[aria-selected="true"],
+.popover-content button[aria-selected="true"],
+.popover-content button[role="gridcell"][aria-selected="true"] {
   background-color: hsl(var(--primary)) !important;
   color: hsl(var(--primary-foreground)) !important;
   border-color: hsl(var(--primary)) !important;
