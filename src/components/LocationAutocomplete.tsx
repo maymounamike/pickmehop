@@ -479,7 +479,7 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
           className={cn(
             "pl-10 pr-10 h-11 transition-all duration-200 ease-in-out",
             error && "border-destructive focus:ring-destructive",
-            isValidSelection && "border-green-500",
+            isValidSelection && "border-green-500 focus:border-green-500 focus:ring-green-500",
             className
           )}
           autoComplete="off"
