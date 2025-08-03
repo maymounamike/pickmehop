@@ -1007,8 +1007,7 @@ const BookingForm = () => {
               variant="outline"
               className="border-orange-300 text-orange-700 hover:bg-orange-100"
               onClick={() => {
-                // You can add navigation to contact page or open contact form
-                window.open('mailto:contact@pickmehop.com?subject=Custom Quote Request', '_blank');
+                navigate('/contact');
               }}
             >
               Get Custom Quote
