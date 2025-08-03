@@ -19,9 +19,9 @@ serve(async (req) => {
       throw new Error('Message is required');
     }
 
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openAIApiKey) {
-      throw new Error('OpenAI API key not configured');
+    const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
+    if (!anthropicApiKey) {
+      throw new Error('Anthropic API key not configured');
     }
 
     // System prompt for PickMeHop customer support
@@ -52,32 +52,34 @@ serve(async (req) => {
       { role: 'user', content: message }
     ];
 
-    console.log('Sending request to OpenAI with messages:', messages.length);
+    console.log('Sending request to Anthropic with messages:', messages.length);
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
+        'Authorization': `Bearer ${anthropicApiKey}`,
         'Content-Type': 'application/json',
+        'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'gpt-4.1-2025-04-14',
-        messages: messages,
+        model: 'claude-3-5-sonnet-20241022',
         max_tokens: 500,
         temperature: 0.7,
+        system: systemPrompt,
+        messages: conversationHistory ? [...conversationHistory, { role: 'user', content: message }] : [{ role: 'user', content: message }],
       }),
     });
 
     if (!response.ok) {
       const errorData = await response.text();
-      console.error('OpenAI API error:', errorData);
-      throw new Error(`OpenAI API error: ${response.status}`);
+      console.error('Anthropic API error:', errorData);
+      throw new Error(`Anthropic API error: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log('OpenAI response received');
+    console.log('Anthropic response received');
 
-    const aiResponse = data.choices[0].message.content;
+    const aiResponse = data.content[0].text;
 
     return new Response(
       JSON.stringify({ 
