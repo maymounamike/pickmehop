@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { 
   Users, 
   Car, 
@@ -19,10 +18,10 @@ import {
   Bell,
   Settings,
   BarChart3,
-  MapPin
+  MapPin,
+  Menu
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import AdminSidebar from "@/components/AdminSidebar";
 
 interface AdminStats {
   totalUsers: number;
@@ -194,61 +193,63 @@ const AdminDashboard = () => {
   }
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen w-full flex bg-gray-50">
-        <AdminSidebar 
-          activeTab="overview" 
-          onTabChange={() => {}}
-          stats={stats}
-        />
-
-        <div className="flex-1 flex flex-col">
-          {/* Admin Header */}
-          <header className="bg-gradient-to-r from-[#0D2C54] to-[#1a4480] text-white p-4 shadow-lg">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <SidebarTrigger className="text-white hover:bg-white/10" />
+    <div className="min-h-screen bg-gray-50">
+      {/* Admin Header */}
+      <header className="bg-gradient-to-r from-[#0D2C54] to-[#1a4480] text-white shadow-lg sticky top-0 z-50">
+        <div className="container mx-auto px-4 lg:px-6">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-[#FFB400] rounded-full flex items-center justify-center">
+                  <span className="text-[#0D2C54] font-bold text-lg">A</span>
+                </div>
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-[#FFB400] rounded-full flex items-center justify-center">
-                    <span className="text-[#0D2C54] font-bold text-lg">A</span>
-                  </div>
-                  <div>
-                    <span className="text-white font-semibold text-lg">Admin Control Panel - PickMeHop</span>
-                    <Badge variant="secondary" className="bg-[#FFB400] text-[#0D2C54] border-[#FFB400] ml-3">
-                      Administrator
-                    </Badge>
-                  </div>
+                  <span className="text-white font-semibold text-lg">Admin Control Panel - PickMeHop</span>
+                  <Badge variant="secondary" className="bg-[#FFB400] text-[#0D2C54] border-[#FFB400]">
+                    Administrator
+                  </Badge>
                 </div>
               </div>
-              
-              <div className="flex items-center space-x-4">
-                <Button variant="ghost" className="text-white hover:bg-white/10 relative">
-                  <Bell className="h-5 w-5" />
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <Button variant="ghost" className="text-white hover:bg-white/10 relative">
+                <Bell className="h-5 w-5" />
+                {stats.pendingDrivers > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
                     {stats.pendingDrivers}
                   </span>
-                </Button>
-                <Button variant="ghost" className="text-white hover:bg-white/10">
-                  <Settings className="mr-2 h-4 w-4" />
-                  Settings
-                </Button>
-                <span className="text-sm">Welcome, Admin</span>
-                <Button
-                  variant="ghost"
-                  className="text-white hover:bg-red-500/20"
-                  onClick={handleSignOut}
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Sign Out
-                </Button>
-              </div>
+                )}
+              </Button>
+              <Button variant="ghost" className="text-white hover:bg-white/10">
+                <Settings className="mr-2 h-4 w-4" />
+                Settings
+              </Button>
+              <span className="text-sm hidden md:block">Welcome, Admin</span>
+              <Button
+                variant="ghost"
+                className="text-white hover:bg-red-500/20"
+                onClick={handleSignOut}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                <span className="hidden md:inline">Sign Out</span>
+              </Button>
             </div>
-          </header>
+          </div>
+        </div>
+      </header>
 
-          {/* Main Content */}
-          <main className="flex-1 p-6 overflow-y-auto">
-            {/* Quick Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      {/* Main Content */}
+      <main className="container mx-auto px-4 lg:px-6 py-8 max-w-7xl">
+        <div className="space-y-8">
+        {/* Dashboard Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-[#0D2C54] mb-2">Dashboard Overview</h1>
+          <p className="text-gray-600">Monitor your transportation business performance and manage operations</p>
+        </div>
+
+        {/* Quick Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
@@ -296,12 +297,13 @@ const AdminDashboard = () => {
                   </div>
                 </CardContent>
               </Card>
-            </div>
+          </div>
 
-            {/* Quick Actions */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-              <Card>
-                <CardHeader>
+          {/* Dashboard Content Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            {/* Quick Actions Card */}
+            <Card className="h-fit">
+              <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <UserPlus className="h-5 w-5 text-[#0D2C54]" />
                     Quick Actions
@@ -334,7 +336,8 @@ const AdminDashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card>
+              {/* Performance Overview Card */}
+              <Card className="h-fit">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <BarChart3 className="h-5 w-5 text-[#0D2C54]" />
@@ -362,7 +365,8 @@ const AdminDashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card>
+              {/* Recent Activity Card */}
+              <Card className="h-fit">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Clock className="h-5 w-5 text-[#0D2C54]" />
@@ -388,7 +392,7 @@ const AdminDashboard = () => {
               </Card>
             </div>
 
-            {/* System Alerts */}
+            {/* System Alerts Section */}
             {stats.pendingDrivers > 0 && (
               <Card className="border-l-4 border-l-[#FFB400] bg-[#FFB400]/5">
                 <CardContent className="p-4">
@@ -411,11 +415,10 @@ const AdminDashboard = () => {
                 </CardContent>
               </Card>
             )}
-          </main>
-        </div>
+          </div>
+        </main>
       </div>
-    </SidebarProvider>
-  );
-};
+    );
+  };
 
-export default AdminDashboard;
+  export default AdminDashboard;
