@@ -288,13 +288,25 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     onChange(newValue);
-    setIsValidSelection(false);
-    onValidSelection?.(false);
+    
+    // Validate the input as user types
+    const isValid = newValue.length >= 5 && (
+      // Check if it's a complete address-like format
+      newValue.includes(',') || 
+      !!newValue.match(/\d+/) || // Has numbers (address/postal code)
+      airportPresets.some(preset => preset.address.toLowerCase().includes(newValue.toLowerCase())) ||
+      trainStations.some(station => station.address.toLowerCase().includes(newValue.toLowerCase()))
+    );
+    
+    setIsValidSelection(isValid);
+    onValidSelection?.(isValid);
     
     if (newValue.length > 0) {
       setIsOpen(true);
     } else {
       setIsOpen(false);
+      setIsValidSelection(false);
+      onValidSelection?.(false);
     }
     setSelectedIndex(-1);
   };
@@ -402,9 +414,9 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
         <div
           ref={listRef}
           className={cn(
-            "absolute top-full left-0 right-0 z-[9999] mt-1 max-h-[300px] overflow-y-auto overscroll-contain rounded-lg border bg-popover shadow-xl",
+            "absolute top-full left-0 right-0 z-[9999] mt-1 max-h-[300px] overflow-y-auto overscroll-contain rounded-lg border autocomplete-dropdown",
             "animate-in fade-in-0 zoom-in-95 slide-in-from-top-2",
-            "will-change-transform"
+            "will-change-transform pointer-events-auto"
           )}
         >
           <div className="p-1">

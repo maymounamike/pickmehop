@@ -671,10 +671,7 @@ const BookingForm = () => {
                         <FormControl>
                           <LocationAutocomplete
                             value={field.value || ""}
-                            onChange={(value) => {
-                              field.onChange(value);
-                              setValidFromSelected(false);
-                            }}
+                            onChange={field.onChange}
                             onValidSelection={(isValid) => {
                               setValidFromSelected(isValid);
                               if (isValid) {
@@ -699,10 +696,7 @@ const BookingForm = () => {
                         <FormControl>
                           <LocationAutocomplete
                             value={field.value || ""}
-                            onChange={(value) => {
-                              field.onChange(value);
-                              setValidToSelected(false);
-                            }}
+                            onChange={field.onChange}
                             onValidSelection={(isValid) => {
                               setValidToSelected(isValid);
                               if (isValid) {
