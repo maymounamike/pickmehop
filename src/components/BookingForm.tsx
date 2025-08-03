@@ -638,9 +638,15 @@ const BookingForm = () => {
           {currentStep === 1 ? "Allez Hop ! Let's Book a Ride" : currentStep === 2 ? "Your details" : "Payment Method"}
         </CardTitle>
         {currentStep === 1 && estimatedPrice && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-secondary/50 p-3 rounded-md text-center justify-center mt-4" role="status" aria-live="polite">
-            <Euro className="h-4 w-4" aria-hidden="true" />
-            <span>€{estimatedPrice}</span>
+          <div 
+            className="flex items-center gap-3 bg-gradient-to-r from-primary/10 to-accent/10 p-4 rounded-lg border border-primary/20 text-center justify-center mt-4 animate-fade-in" 
+            role="status" 
+            aria-live="polite"
+          >
+            <Euro className="h-5 w-5 text-primary animate-pulse" aria-hidden="true" />
+            <span className="text-2xl font-bold text-primary animate-scale-in">
+              {estimatedPrice}
+            </span>
           </div>
         )}
       </CardHeader>
