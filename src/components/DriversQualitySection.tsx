@@ -79,28 +79,30 @@ const DriversQualitySection = () => {
 
           {/* Mobile Layout - Enhanced Cards */}
           <div className="lg:hidden">
-            {/* Grid Container for Mobile */}
-            <div className="grid grid-cols-2 gap-3 px-4 sm:grid-cols-4 sm:gap-4">
+            {/* Grid Container for Mobile - 2x2 Layout */}
+            <div className="grid grid-cols-2 gap-4 px-2 max-w-md mx-auto">
               {vettingProcess.map((step, index) => (
                 <div key={index} className="relative">
                   {/* Enhanced Mobile Card */}
-                  <div className="vetting-card vetting-card-animated text-center">
-                    <div className="vetting-icon mx-auto w-12 h-12 mb-3">
-                      <step.icon className="w-6 h-6" />
+                  <div className="vetting-card vetting-card-animated text-center p-4 min-h-[180px] flex flex-col justify-between">
+                    <div>
+                      <div className="vetting-icon mx-auto w-14 h-14 mb-3">
+                        <step.icon className="w-7 h-7" />
+                      </div>
+                      <h3 className="text-sm font-bold text-foreground leading-tight font-display mb-1">
+                        {step.title}
+                      </h3>
+                      <h4 className="text-sm font-semibold text-primary leading-tight mb-3">
+                        {step.subtitle}
+                      </h4>
                     </div>
-                    <h3 className="text-xs font-bold text-foreground leading-tight font-display mb-1">
-                      {step.title}
-                    </h3>
-                    <h4 className="text-xs font-semibold text-primary leading-tight mb-2">
-                      {step.subtitle}
-                    </h4>
-                    <p className="text-xs text-muted-foreground leading-relaxed hidden sm:block">
+                    <p className="text-xs text-muted-foreground leading-relaxed">
                       {step.description}
                     </p>
                   </div>
 
                   {/* Enhanced Step Number Badge */}
-                  <div className="absolute top-1 left-1 w-6 h-6 bg-gradient-to-br from-primary to-primary/80 text-white rounded-full flex items-center justify-center text-xs font-bold shadow-lg border border-white">
+                  <div className="absolute -top-2 -left-2 w-7 h-7 bg-gradient-to-br from-primary to-primary/80 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-lg border-2 border-white">
                     {index + 1}
                   </div>
                 </div>
