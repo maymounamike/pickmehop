@@ -251,16 +251,22 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
                       );
                     });
                     
-                    // Use the formatted address from place details which includes street numbers
-                    const displayAddress = placeDetails.formatted_address || prediction.description;
-                    console.log(`📍 Detailed address: ${displayAddress}`);
+                    // Use the establishment name if available, otherwise use formatted address
+                    let displayAddress = placeDetails.formatted_address || prediction.description;
                     
-                    // Determine if this is an establishment based on types
+                    // If this is an establishment with a name, show the name prominently
                     const isEstablishment = placeDetails.types?.includes('establishment') || 
                                            placeDetails.types?.includes('lodging') ||
                                            placeDetails.types?.includes('restaurant') ||
                                            placeDetails.types?.includes('store') ||
                                            prediction.types?.includes('establishment');
+                    
+                    if (isEstablishment && placeDetails.name) {
+                      // For establishments, show the business name as primary text with address as secondary
+                      displayAddress = `${placeDetails.name}, ${placeDetails.formatted_address || prediction.description}`;
+                    }
+                    
+                    console.log(`📍 Final display address: ${displayAddress}`);
                     
                     return {
                       id: `google-${index}`,
