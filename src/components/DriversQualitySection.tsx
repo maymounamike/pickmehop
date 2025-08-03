@@ -77,32 +77,34 @@ const DriversQualitySection = () => {
             ))}
           </div>
 
-          {/* Mobile Layout - Enhanced Cards */}
+          {/* Mobile Layout - Single Column */}
           <div className="lg:hidden">
-            {/* Grid Container for Mobile - 2x2 Layout */}
-            <div className="grid grid-cols-2 gap-4 px-2 max-w-md mx-auto">
+            {/* Single Column Layout for Mobile */}
+            <div className="space-y-4 px-4 max-w-sm mx-auto">
               {vettingProcess.map((step, index) => (
                 <div key={index} className="relative">
-                  {/* Enhanced Mobile Card */}
-                  <div className="vetting-card vetting-card-animated text-center p-4 min-h-[180px] flex flex-col justify-between">
-                    <div>
-                      <div className="vetting-icon mx-auto w-14 h-14 mb-3">
-                        <step.icon className="w-7 h-7" />
+                  {/* Mobile Card - Horizontal Layout */}
+                  <div className="vetting-card vetting-card-animated p-4 flex items-center gap-4">
+                    <div className="flex-shrink-0">
+                      <div className="vetting-icon w-16 h-16">
+                        <step.icon className="w-8 h-8" />
                       </div>
-                      <h3 className="text-sm font-bold text-foreground leading-tight font-display mb-1">
+                    </div>
+                    <div className="flex-1 text-left">
+                      <h3 className="text-base font-bold text-foreground leading-tight font-display mb-1">
                         {step.title}
                       </h3>
-                      <h4 className="text-sm font-semibold text-primary leading-tight mb-3">
+                      <h4 className="text-sm font-semibold text-primary leading-tight mb-2">
                         {step.subtitle}
                       </h4>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {step.description}
+                      </p>
                     </div>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      {step.description}
-                    </p>
                   </div>
 
-                  {/* Enhanced Step Number Badge */}
-                  <div className="absolute -top-2 -left-2 w-7 h-7 bg-gradient-to-br from-primary to-primary/80 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-lg border-2 border-white">
+                  {/* Step Number Badge */}
+                  <div className="absolute -top-2 -left-2 w-8 h-8 bg-gradient-to-br from-primary to-primary/80 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-lg border-2 border-white">
                     {index + 1}
                   </div>
                 </div>
