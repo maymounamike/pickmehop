@@ -221,42 +221,70 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
             componentRestrictions: { country: 'FR' },
             types: ['geocode', 'establishment'] // Include both geocode and establishment to recognize hotels
           },
-          (predictions, status) => {
+          async (predictions, status) => {
             console.log('📍 Google API response:', { status, predictionsCount: predictions?.length || 0 });
             
             if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
-              const suggestions = predictions.slice(0, 5).map((prediction, index) => {
-                console.log(`📍 Prediction ${index}:`, prediction);
-                
-                // Use structured_formatting for better address display
-                const mainText = prediction.structured_formatting?.main_text || '';
-                const secondaryText = prediction.structured_formatting?.secondary_text || '';
-                const fullDescription = prediction.description;
-                
-                // Create a more complete address display
-                let displayAddress = fullDescription;
-                if (mainText && secondaryText) {
-                  displayAddress = `${mainText}, ${secondaryText}`;
-                }
-                
-                console.log(`📍 Display address: ${displayAddress}`);
-                
-                // Determine if this is an establishment based on types
-                const isEstablishment = prediction.types?.includes('establishment') || 
-                                       prediction.types?.includes('lodging') ||
-                                       prediction.types?.includes('restaurant') ||
-                                       prediction.types?.includes('store');
-                
-                return {
-                  id: `google-${index}`,
-                  address: displayAddress,
-                  type: (isEstablishment ? 'establishment' : 'address') as 'establishment' | 'address',
-                  description: isEstablishment ? 'Establishment' : 'Address',
-                  icon: isEstablishment 
-                    ? <Building className="h-4 w-4 text-blue-600" />
-                    : <MapPin className="h-4 w-4 text-gray-600" />
-                };
-              });
+              // Create a PlacesService to get detailed information
+              const placesService = new google.maps.places.PlacesService(document.createElement('div'));
+              
+              const suggestions = await Promise.all(
+                predictions.slice(0, 5).map(async (prediction, index) => {
+                  console.log(`📍 Prediction ${index}:`, prediction);
+                  
+                  try {
+                    // Get detailed place information including formatted address
+                    const placeDetails = await new Promise<google.maps.places.PlaceResult>((resolve) => {
+                      placesService.getDetails(
+                        {
+                          placeId: prediction.place_id,
+                          fields: ['formatted_address', 'name', 'types', 'address_components']
+                        },
+                        (result, status) => {
+                          if (status === google.maps.places.PlacesServiceStatus.OK && result) {
+                            resolve(result);
+                          } else {
+                            // Fallback to prediction description if detailed request fails
+                            resolve({ formatted_address: prediction.description } as google.maps.places.PlaceResult);
+                          }
+                        }
+                      );
+                    });
+                    
+                    // Use the formatted address from place details which includes street numbers
+                    const displayAddress = placeDetails.formatted_address || prediction.description;
+                    console.log(`📍 Detailed address: ${displayAddress}`);
+                    
+                    // Determine if this is an establishment based on types
+                    const isEstablishment = placeDetails.types?.includes('establishment') || 
+                                           placeDetails.types?.includes('lodging') ||
+                                           placeDetails.types?.includes('restaurant') ||
+                                           placeDetails.types?.includes('store') ||
+                                           prediction.types?.includes('establishment');
+                    
+                    return {
+                      id: `google-${index}`,
+                      address: displayAddress,
+                      type: (isEstablishment ? 'establishment' : 'address') as 'establishment' | 'address',
+                      description: isEstablishment ? 'Establishment' : 'Address',
+                      icon: isEstablishment 
+                        ? <Building className="h-4 w-4 text-blue-600" />
+                        : <MapPin className="h-4 w-4 text-gray-600" />
+                    };
+                  } catch (error) {
+                    console.log(`⚠️ Failed to get details for prediction ${index}, using fallback`);
+                    // Fallback to prediction description
+                    return {
+                      id: `google-${index}`,
+                      address: prediction.description,
+                      type: 'address' as const,
+                      description: 'Address',
+                      icon: <MapPin className="h-4 w-4 text-gray-600" />
+                    };
+                  }
+                })
+              );
+              
               console.log('✅ Returning Google suggestions:', suggestions.length);
               resolve(suggestions);
             } else {
