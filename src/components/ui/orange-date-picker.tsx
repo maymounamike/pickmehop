@@ -54,7 +54,7 @@ export function OrangeDatePicker({ selected, onSelect, disabled, className, plac
   }
   
   const isSelected = (date: Date) => {
-    if (!selected) return false;
+    if (!selected || !(selected instanceof Date) || isNaN(selected.getTime())) return false;
     return date.toDateString() === selected.toDateString();
   };
   
@@ -89,7 +89,7 @@ export function OrangeDatePicker({ selected, onSelect, disabled, className, plac
           )}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
-          {selected ? format(selected, "PPP") : <span>{placeholder}</span>}
+          {selected && selected instanceof Date && !isNaN(selected.getTime()) ? format(selected, "PPP") : <span>{placeholder}</span>}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
