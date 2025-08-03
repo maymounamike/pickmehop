@@ -271,7 +271,7 @@ const BookingForm = () => {
     setEstimatedPrice(price);
   }, [watchedValues]);
 
-  // Preset airport suggestions for common keywords
+  // Validate step 1 fields
   const getAirportPresets = (query: string): string[] => {
     const queryLower = query.toLowerCase();
     const presets: string[] = [];
@@ -417,57 +417,7 @@ const BookingForm = () => {
       }
     }
 
-    // Update the global suggestions list for validation
-    if (suggestions.length > 0) {
-      setAllSuggestions(prev => {
-        const combined = [...new Set([...prev, ...suggestions])];
-        return combined;
-      });
-    }
-
-    // Return all combined suggestions (airports, trains, hotels, + Google Maps)
     return suggestions.slice(0, 8); // Limit to 8 suggestions total
-  };
-
-  // Handle address input changes with suggestions
-  const handleFromLocationChange = async (value: string) => {
-    form.setValue('fromLocation', value);
-    setValidFromSelected(false); // Reset validation when user types
-    
-    if (value.length >= 1) {
-      const suggestions = await fetchAddressSuggestions(value);
-      setFromSuggestions(suggestions);
-      setShowFromSuggestions(true);
-    } else {
-      setShowFromSuggestions(false);
-    }
-  };
-
-  const handleToLocationChange = async (value: string) => {
-    form.setValue('toLocation', value);
-    setValidToSelected(false); // Reset validation when user types
-    
-    if (value.length >= 1) {
-      const suggestions = await fetchAddressSuggestions(value);
-      setToSuggestions(suggestions);
-      setShowToSuggestions(true);
-    } else {
-      setShowToSuggestions(false);
-    }
-  };
-
-  const selectFromSuggestion = (suggestion: string) => {
-    form.setValue('fromLocation', suggestion);
-    setValidFromSelected(true); // Mark as valid selection
-    setShowFromSuggestions(false);
-    form.clearErrors('fromLocation'); // Clear any validation errors
-  };
-
-  const selectToSuggestion = (suggestion: string) => {
-    form.setValue('toLocation', suggestion);
-    setValidToSelected(true); // Mark as valid selection
-    setShowToSuggestions(false);
-    form.clearErrors('toLocation'); // Clear any validation errors
   };
 
   // Validate step 1 fields
