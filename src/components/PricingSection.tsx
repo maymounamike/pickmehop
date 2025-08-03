@@ -91,7 +91,7 @@ const PricingSection = () => {
   ];
 
   const amenities = [
-    { icon: Clock, text: "Free waiting time" },
+    { icon: Clock, text: "1 hour free waiting time at airports" },
     { icon: Shield, text: "Meet & greet service" },
     { icon: MapPin, text: "Flight tracking" }
   ];
@@ -139,7 +139,7 @@ const PricingSection = () => {
                           {option.vehicle}
                         </span>
                       </div>
-                      <div className="text-2xl font-bold text-primary">
+                      <div className="text-2xl font-bold text-green-600">
                         €{option.price}
                       </div>
                     </div>
