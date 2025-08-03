@@ -75,25 +75,20 @@ const HowItWorksSection = () => {
 
         {/* Reliable and safe */}
         <div className="text-center">
-          <h2 className="font-display text-3xl lg:text-4xl font-bold text-foreground mb-4">
+          <h2 className="font-display text-3xl lg:text-4xl font-bold text-foreground mb-16">
             Reliable and safe
           </h2>
-          <p className="text-muted-foreground text-lg mb-16 max-w-2xl mx-auto">
-            Your peace of mind is our priority. Here's what makes us different.
-          </p>
           
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {features.map((feature, index) => (
-              <Card key={index} className="border border-border shadow-card hover:shadow-elegant transition-all duration-300 group bg-card">
-                <CardContent className="p-6 text-center">
-                  <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-105 transition-transform duration-300">
-                    <feature.icon className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="font-display text-lg font-semibold text-foreground leading-tight">
-                    {feature.title}
-                  </h3>
-                </CardContent>
-              </Card>
+              <div key={index} className="flex flex-col md:flex-row items-center text-center md:text-left group">
+                <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-4 md:mb-0 md:mr-6 group-hover:scale-105 transition-transform duration-300 flex-shrink-0">
+                  <feature.icon className="w-8 h-8 text-primary" />
+                </div>
+                <h3 className="font-display text-lg font-semibold text-foreground leading-tight">
+                  {feature.title}
+                </h3>
+              </div>
             ))}
           </div>
         </div>
