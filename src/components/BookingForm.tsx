@@ -339,6 +339,12 @@ const BookingForm = () => {
       return locationLower.includes('orly') || locationLower.includes('ory');
     };
     
+    // Helper function to check if location is Beauvais
+    const isBeauvaisLocation = (location: string) => {
+      const locationLower = location.toLowerCase();
+      return locationLower.includes('beauvais') || locationLower.includes('bva') || locationLower.includes('tillé');
+    };
+    
     // Check if either origin OR destination is within Disneyland Paris geofence
     const isDisneyOriginByName = fromLower.includes('disneyland') || fromLower.includes('disney');
     const isDisneyDestinationByName = toLower.includes('disneyland') || toLower.includes('disney');
@@ -357,9 +363,9 @@ const BookingForm = () => {
     const isOriginWithinDisneyGeofence = isDisneyOriginByName || isDisneyOriginByLocation;
     const isDestinationWithinDisneyGeofence = isDisneyDestinationByName || isDisneyDestinationByLocation;
     
-    // Check if locations are within our service area (Disneyland, CDG, or Orly)
-    const isOriginInServiceArea = isOriginWithinDisneyGeofence || isCDGLocation(from) || isOrlyLocation(from);
-    const isDestinationInServiceArea = isDestinationWithinDisneyGeofence || isCDGLocation(to) || isOrlyLocation(to);
+    // Check if locations are within our service area (Disneyland, CDG, Orly, or Beauvais)
+    const isOriginInServiceArea = isOriginWithinDisneyGeofence || isCDGLocation(from) || isOrlyLocation(from) || isBeauvaisLocation(from);
+    const isDestinationInServiceArea = isDestinationWithinDisneyGeofence || isCDGLocation(to) || isOrlyLocation(to) || isBeauvaisLocation(to);
     
     // If neither origin nor destination is in our service area, require custom quote
     if (!isOriginInServiceArea && !isDestinationInServiceArea) {
