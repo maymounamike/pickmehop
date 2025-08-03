@@ -327,6 +327,18 @@ const BookingForm = () => {
     const fromLower = from.toLowerCase();
     const toLower = to.toLowerCase();
     
+    // Helper function to check if location is CDG
+    const isCDGLocation = (location: string) => {
+      const locationLower = location.toLowerCase();
+      return locationLower.includes('charles de gaulle') || locationLower.includes('cdg');
+    };
+    
+    // Helper function to check if location is Orly
+    const isOrlyLocation = (location: string) => {
+      const locationLower = location.toLowerCase();
+      return locationLower.includes('orly') || locationLower.includes('ory');
+    };
+    
     // Check if either origin OR destination is within Disneyland Paris geofence
     const isDisneyOriginByName = fromLower.includes('disneyland') || fromLower.includes('disney');
     const isDisneyDestinationByName = toLower.includes('disneyland') || toLower.includes('disney');
@@ -344,6 +356,16 @@ const BookingForm = () => {
     
     const isOriginWithinDisneyGeofence = isDisneyOriginByName || isDisneyOriginByLocation;
     const isDestinationWithinDisneyGeofence = isDisneyDestinationByName || isDisneyDestinationByLocation;
+    
+    // Check if locations are within our service area (Disneyland, CDG, or Orly)
+    const isOriginInServiceArea = isOriginWithinDisneyGeofence || isCDGLocation(from) || isOrlyLocation(from);
+    const isDestinationInServiceArea = isDestinationWithinDisneyGeofence || isCDGLocation(to) || isOrlyLocation(to);
+    
+    // If neither origin nor destination is in our service area, require custom quote
+    if (!isOriginInServiceArea && !isDestinationInServiceArea) {
+      return { price: null, isDisneyland: false, needsQuote: true, isBeauvaisParisRoute: false };
+    }
+    
     const isDisneylandRoute = isOriginWithinDisneyGeofence || isDestinationWithinDisneyGeofence;
     
     // Check for Beauvais Airport routes
