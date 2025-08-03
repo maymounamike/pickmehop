@@ -116,6 +116,37 @@
   color: hsl(var(--primary-foreground)) !important;
 }
 
+/* Additional overrides for different React Day Picker versions and class variations */
+.rdp-button[aria-selected="true"] {
+  background-color: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+}
+
+button[aria-selected="true"] {
+  background-color: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+}
+
+/* Target the specific day button when selected */
+.rdp-day.rdp-day_selected,
+.rdp-day[aria-selected="true"],
+button.rdp-day_selected,
+button[role="gridcell"][aria-selected="true"] {
+  background-color: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+  border-color: hsl(var(--primary)) !important;
+}
+
+/* Override any focus states */
+.rdp-day.rdp-day_selected:focus,
+.rdp-day[aria-selected="true"]:focus,
+button.rdp-day_selected:focus,
+button[role="gridcell"][aria-selected="true"]:focus {
+  background-color: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+  border-color: hsl(var(--primary)) !important;
+}
+
 /* Ensure dropdown appears above other elements */
 .location-dropdown {
   z-index: 999999 !important;
