@@ -1,6 +1,9 @@
 import { Car, Users, Luggage, Plane, MapPin, Clock, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { useState } from "react";
 import MickeyMouseIcon from "./MickeyMouseIcon";
 
 const PricingSection = () => {
@@ -91,7 +94,21 @@ const PricingSection = () => {
     }
   ];
 
-  const handleBookNow = () => {
+  // State for vehicle selection for each destination
+  const [selectedVehicles, setSelectedVehicles] = useState<Record<number, number>>(
+    destinations.reduce((acc, _, index) => ({ ...acc, [index]: 0 }), {})
+  );
+
+  const handleVehicleChange = (destinationIndex: number, optionIndex: number) => {
+    setSelectedVehicles(prev => ({
+      ...prev,
+      [destinationIndex]: optionIndex
+    }));
+  };
+
+  const handleBookNow = (destinationIndex: number) => {
+    const selectedOption = destinations[destinationIndex].options[selectedVehicles[destinationIndex]];
+    console.log(`Booking for ${destinations[destinationIndex].name} - ${selectedOption.vehicle} - €${selectedOption.price}`);
     // Scroll to booking form at the top of the page
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -135,40 +152,59 @@ const PricingSection = () => {
                 </p>
               </CardHeader>
               
-              <CardContent className="space-y-3 px-4 pb-4">
-                {destination.options.map((option, optionIndex) => (
-                  <div key={optionIndex} className="border rounded-lg p-3 hover:border-primary/50 transition-colors">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <div className="flex items-center gap-1.5">
-                        <option.vehicleIcon className="w-3.5 h-3.5 text-primary" />
-                        <span className="text-xs font-medium text-muted-foreground">
-                          {option.vehicle}
-                        </span>
-                      </div>
-                      <div className="text-xl font-bold text-green-600">
-                        €{option.price}
-                      </div>
+              <CardContent className="space-y-4 px-4 pb-4">
+                {/* Vehicle Selection */}
+                <RadioGroup
+                  value={selectedVehicles[index].toString()}
+                  onValueChange={(value) => handleVehicleChange(index, parseInt(value))}
+                  className="space-y-3"
+                >
+                  {destination.options.map((option, optionIndex) => (
+                    <div key={optionIndex} className="flex items-center space-x-3">
+                      <RadioGroupItem 
+                        value={optionIndex.toString()} 
+                        id={`${index}-${optionIndex}`}
+                        className="mt-0.5"
+                      />
+                      <Label 
+                        htmlFor={`${index}-${optionIndex}`} 
+                        className="flex-1 cursor-pointer"
+                      >
+                        <div className="border rounded-lg p-3 hover:border-primary/50 transition-colors">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <div className="flex items-center gap-1.5">
+                              <option.vehicleIcon className="w-3.5 h-3.5 text-primary" />
+                              <span className="text-xs font-medium text-muted-foreground">
+                                {option.vehicle}
+                              </span>
+                            </div>
+                            <div className="text-xl font-bold text-green-600">
+                              €{option.price}
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                              <Users className="w-2.5 h-2.5" />
+                              <span>{option.passengers} passengers</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Luggage className="w-2.5 h-2.5" />
+                              <span>{option.luggage} pieces</span>
+                            </div>
+                          </div>
+                        </div>
+                      </Label>
                     </div>
-                    
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <Users className="w-2.5 h-2.5" />
-                        <span>{option.passengers} passengers</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Luggage className="w-2.5 h-2.5" />
-                        <span>{option.luggage} pieces</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </RadioGroup>
                 
                 <Button 
-                  onClick={handleBookNow}
+                  onClick={() => handleBookNow(index)}
                   className="w-full mt-3 bg-primary hover:bg-primary/90 text-primary-foreground"
                   size="default"
                 >
-                  Book Now
+                  Book Now - €{destination.options[selectedVehicles[index]].price}
                 </Button>
               </CardContent>
             </Card>
