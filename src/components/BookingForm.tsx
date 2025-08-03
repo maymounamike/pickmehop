@@ -1033,7 +1033,7 @@ const BookingForm = () => {
           >
             <Euro className="h-5 w-5 text-primary animate-pulse" aria-hidden="true" />
             <span className="text-2xl font-bold text-primary animate-scale-in">
-              €{estimatedPrice}
+              {estimatedPrice}
             </span>
           </div>
         )}
