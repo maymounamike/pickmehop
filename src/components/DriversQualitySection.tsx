@@ -35,7 +35,7 @@ const DriversQualitySection = () => {
         {/* Main Driver Profile Section */}
         <div className="text-center mb-16">
           <h2 className="text-3xl lg:text-4xl font-bold text-[#0D2C54] mb-4">
-            The best drivers in each destination
+            The best drivers in Paris
           </h2>
         </div>
 
