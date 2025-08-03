@@ -258,32 +258,36 @@ const BookingForm = () => {
 
   // Calculate estimated price with special airport rules and Disneyland geofencing
   const calculatePrice = async (from: string, to: string, passengers: number, luggage: number = 1) => {
-    if (!from || !to) return null;
+    if (!from || !to) return { price: null, isDisneyland: false, needsQuote: false };
     
     // Cannot accept rides with more than 8 passengers or more than 10 pieces of luggage
-    if (passengers > 8 || luggage > 10) return null;
+    if (passengers > 8 || luggage > 10) return { price: null, isDisneyland: false, needsQuote: true };
     
     const fromLower = from.toLowerCase();
     const toLower = to.toLowerCase();
     
     // Check if origin is within Disneyland Paris geofence
     const isDisneyOriginByName = fromLower.includes('disneyland') || fromLower.includes('disney');
-    const isDisneyOriginByLocation = await isWithinDisneylandGeofence(from);
-    const isOriginWithinDisneyGeofence = isDisneyOriginByName || isDisneyOriginByLocation;
+    let isDisneyOriginByLocation = false;
     
-    // Update state for UI
-    setIsDisneylandOrigin(isOriginWithinDisneyGeofence);
+    try {
+      isDisneyOriginByLocation = await isWithinDisneylandGeofence(from);
+    } catch (error) {
+      console.error('Error checking Disneyland geofence:', error);
+      isDisneyOriginByLocation = false;
+    }
+    
+    const isOriginWithinDisneyGeofence = isDisneyOriginByName || isDisneyOriginByLocation;
     
     // Disneyland Paris pricing rules
     if (isOriginWithinDisneyGeofence) {
       if (passengers >= 5 && passengers <= 8 && luggage <= 8) {
-        return 110; // Minivan from Disneyland
+        return { price: 110, isDisneyland: true, needsQuote: false }; // Minivan from Disneyland
       } else if (passengers <= 4 && luggage <= 4) {
-        return 80; // Sedan from Disneyland
+        return { price: 80, isDisneyland: true, needsQuote: false }; // Sedan from Disneyland
       } else {
         // Outside capacity limits - needs custom quote
-        setNeedsCustomQuote(true);
-        return null;
+        return { price: null, isDisneyland: true, needsQuote: true };
       }
     }
     
@@ -298,13 +302,13 @@ const BookingForm = () => {
     // Van service pricing (5-8 passengers OR >4 luggage, luggage ≤8)
     if ((passengers >= 5 && passengers <= 8 && luggage <= 8) || (luggage > 4 && luggage <= 8)) {
       if (isBeauvaisRoute) {
-        return 220; // Van price for Beauvais
+        return { price: 220, isDisneyland: false, needsQuote: false }; // Van price for Beauvais
       }
       if (isCDGRoute) {
-        return 135; // Van price for CDG
+        return { price: 135, isDisneyland: false, needsQuote: false }; // Van price for CDG
       }
       if (isOrlyRoute) {
-        return 90; // Van price for Orly
+        return { price: 90, isDisneyland: false, needsQuote: false }; // Van price for Orly
       }
     }
     
@@ -313,24 +317,23 @@ const BookingForm = () => {
     
     if (qualifiesForComfortPricing) {
       if (isBeauvaisRoute) {
-        return 150; // Comfort price for Beauvais
+        return { price: 150, isDisneyland: false, needsQuote: false }; // Comfort price for Beauvais
       }
       
       const isParisAddress = from.includes('75') || to.includes('75') || 
                             fromLower.includes('paris') || toLower.includes('paris');
       
       if (isCDGRoute && isParisAddress) {
-        return 75; // Comfort price for CDG + Paris
+        return { price: 75, isDisneyland: false, needsQuote: false }; // Comfort price for CDG + Paris
       }
       
       if (isOrlyRoute && isParisAddress) {
-        return 65; // Comfort price for Orly + Paris
+        return { price: 65, isDisneyland: false, needsQuote: false }; // Comfort price for Orly + Paris
       }
     }
     
     // If no special pricing applies, suggest custom quote
-    setNeedsCustomQuote(true);
-    return null;
+    return { price: null, isDisneyland: false, needsQuote: true };
   };
 
   // Watch form values to calculate price
@@ -342,10 +345,34 @@ const BookingForm = () => {
       // Reset states
       setNeedsCustomQuote(false);
       setIsDisneylandOrigin(false);
+      setEstimatedPrice(null); // Clear price while calculating
       
       const [from, to, passengers, luggage] = watchedValues;
-      const price = await calculatePrice(from, to, passengers, luggage);
-      setEstimatedPrice(price);
+      
+      // Only calculate if we have valid inputs
+      if (!from || !to || from.length < 3 || to.length < 3) {
+        setEstimatedPrice(null);
+        return;
+      }
+      
+      try {
+        console.log('Calculating price for:', { from, to, passengers, luggage });
+        const result = await calculatePrice(from, to, passengers, luggage);
+        console.log('Calculated result:', result);
+        
+        if (result) {
+          setEstimatedPrice(result.price);
+          setIsDisneylandOrigin(result.isDisneyland);
+          setNeedsCustomQuote(result.needsQuote);
+        } else {
+          setEstimatedPrice(null);
+        }
+      } catch (error) {
+        console.error('Error calculating price:', error);
+        setEstimatedPrice(null);
+        setIsDisneylandOrigin(false);
+        setNeedsCustomQuote(false);
+      }
     };
     
     updatePrice();
@@ -788,7 +815,7 @@ const BookingForm = () => {
             </div>
             
             {/* Show selected price */}
-            {estimatedPrice && (
+            {estimatedPrice && typeof estimatedPrice === 'number' && (
               <div 
                 className="flex items-center gap-3 bg-green-50 p-3 rounded-lg border border-green-200 text-center justify-center animate-fade-in" 
                 role="status" 
@@ -803,7 +830,7 @@ const BookingForm = () => {
           </div>
         )}
         
-        {currentStep === 1 && estimatedPrice && !isDisneylandOrigin && (
+        {currentStep === 1 && estimatedPrice && typeof estimatedPrice === 'number' && !isDisneylandOrigin && (
           <div 
             className="flex items-center gap-3 bg-gradient-to-r from-primary/10 to-accent/10 p-4 rounded-lg border border-primary/20 text-center justify-center mt-4 animate-fade-in" 
             role="status" 
