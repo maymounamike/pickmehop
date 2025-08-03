@@ -280,7 +280,23 @@ const BookingForm = () => {
     
     const isOriginWithinDisneyGeofence = isDisneyOriginByName || isDisneyOriginByLocation;
     
-    // Disneyland Paris pricing rules (only for origins from Disneyland)
+    // Check for Beauvais Airport routes
+    const isBeauvaisFrom = fromLower.includes('beauvais') || fromLower.includes('bva') || fromLower.includes('tillé');
+    const isBeauvaisTo = toLower.includes('beauvais') || toLower.includes('bva') || toLower.includes('tillé');
+    
+    // Special pricing for Disneyland Paris to Beauvais Airport routes (higher priority)
+    if (isOriginWithinDisneyGeofence && isBeauvaisTo) {
+      if (passengers >= 5 && passengers <= 8 && luggage <= 8) {
+        return { price: 275, isDisneyland: true, needsQuote: false, isBeauvaisParisRoute: false }; // Minivan from Disneyland to Beauvais
+      } else if (passengers <= 4 && luggage <= 4) {
+        return { price: 200, isDisneyland: true, needsQuote: false, isBeauvaisParisRoute: false }; // Sedan from Disneyland to Beauvais
+      } else {
+        // Outside capacity limits - needs custom quote
+        return { price: null, isDisneyland: true, needsQuote: true, isBeauvaisParisRoute: false };
+      }
+    }
+    
+    // Standard Disneyland Paris pricing rules (only for origins from Disneyland to other destinations)
     if (isOriginWithinDisneyGeofence) {
       if (passengers >= 5 && passengers <= 8 && luggage <= 8) {
         return { price: 110, isDisneyland: true, needsQuote: false, isBeauvaisParisRoute: false }; // Minivan from Disneyland
@@ -291,10 +307,6 @@ const BookingForm = () => {
         return { price: null, isDisneyland: true, needsQuote: true, isBeauvaisParisRoute: false };
       }
     }
-    
-    // Check for Beauvais Airport routes
-    const isBeauvaisFrom = fromLower.includes('beauvais') || fromLower.includes('bva') || fromLower.includes('tillé');
-    const isBeauvaisTo = toLower.includes('beauvais') || toLower.includes('bva') || toLower.includes('tillé');
     
     // Check for Paris, CDG, or Orly locations
     const isParisLocation = (location: string) => {
