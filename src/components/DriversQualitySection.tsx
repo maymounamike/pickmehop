@@ -102,11 +102,6 @@ const DriversQualitySection = () => {
                       </p>
                     </div>
                   </div>
-
-                  {/* Step Number Badge */}
-                  <div className="absolute -top-2 -left-2 w-8 h-8 bg-gradient-to-br from-primary to-primary/80 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-lg border-2 border-white">
-                    {index + 1}
-                  </div>
                 </div>
               ))}
             </div>

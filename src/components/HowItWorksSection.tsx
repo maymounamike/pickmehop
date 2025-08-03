@@ -4,19 +4,16 @@ import { Monitor, UserCheck, Car, Plane, RefreshCw, Phone } from "lucide-react";
 const HowItWorksSection = () => {
   const steps = [
     {
-      number: "1",
       title: "Book your transfer",
       description: "Reserve and pay for your ride using the form at the top of this page. You will get your driver's details and instructions a few days before the transfer.",
       icon: Monitor
     },
     {
-      number: "2", 
       title: "Meet your driver",
       description: "Your driver will be waiting for you at the arranged meeting point, at the right time. Even if your arrival is delayed.",
       icon: UserCheck
     },
     {
-      number: "3",
       title: "Enjoy your ride", 
       description: "The driver will escort you to the car, help you with luggage and offer tips about your stay. You can relax in our comfortable, air-conditioned car.",
       icon: Car
@@ -59,9 +56,6 @@ const HowItWorksSection = () => {
                 <div className="relative mb-8">
                   <div className="w-20 h-20 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-card group-hover:scale-105 transition-all duration-300">
                     <step.icon className="w-8 h-8 text-white" />
-                  </div>
-                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-accent text-white rounded-full flex items-center justify-center text-sm font-bold shadow-lg">
-                    {step.number}
                   </div>
                   {/* Connection line */}
                   {index < steps.length - 1 && (
