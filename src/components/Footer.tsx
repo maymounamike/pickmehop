@@ -5,11 +5,8 @@ const Footer = () => {
   const navigate = useNavigate();
 
   return (
-    <footer className="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(168,85,247,0.1),transparent_70%)]" />
-      
-      <div className="container mx-auto px-4 py-12 relative">
+    <footer className="bg-gradient-to-br from-foreground via-foreground to-primary text-white py-16">
+      <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {/* Company Logo and Help */}
           <div className="space-y-6">
