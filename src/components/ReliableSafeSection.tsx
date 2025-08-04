@@ -18,22 +18,30 @@ const ReliableSafeSection = () => {
 
   return (
     <section className="bg-gray-50 py-16">
-      <div className="container mx-auto px-5 max-w-6xl">
-        <h2 className="text-3xl font-semibold text-[#2c3e50] mb-12 text-left">
-          Reliable and safe
-        </h2>
-        
-        <div className="flex flex-row justify-between items-start gap-8 flex-wrap">
-          {features.map((feature, index) => (
-            <div key={index} className="flex items-center gap-5 flex-1 min-w-0">
-              <div className="w-15 h-15 bg-[#ffdfcc] rounded-full flex items-center justify-center flex-shrink-0">
-                <feature.icon className="w-6 h-6 text-[#ff6b35]" />
-              </div>
-              <p className="text-[#5a6c7d] text-base leading-relaxed">
-                {feature.text}
-              </p>
+      <div className="container mx-auto px-4">
+        <div className="bg-gradient-to-r from-[#0D2C54]/5 to-[#FFB400]/5 rounded-2xl p-8 lg:p-12">
+          <div className="max-w-5xl mx-auto">
+            {/* Centered Title */}
+            <div className="text-center mb-12">
+              <h2 className="text-2xl lg:text-3xl font-bold text-[#0D2C54] leading-tight">
+                Reliable and safe
+              </h2>
             </div>
-          ))}
+            
+            {/* Features grid - centered */}
+            <div className="flex items-start justify-center gap-8 flex-wrap">
+              {features.map((feature, index) => (
+                <div key={index} className="text-center max-w-[200px]">
+                  <div className="w-16 h-16 bg-[#ffdfcc] rounded-full flex items-center justify-center mb-4 mx-auto">
+                    <feature.icon className="w-8 h-8 text-[#ff6b35]" />
+                  </div>
+                  <p className="text-sm text-[#0D2C54] font-semibold leading-tight">
+                    {feature.text}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </section>
