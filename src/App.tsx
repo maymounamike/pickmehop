@@ -18,6 +18,7 @@ import DriversManagement from "./pages/DriversManagement";
 import DriverOngoing from "./pages/DriverOngoing";
 import AdminDashboard from "./pages/NewAdminDashboard";
 import BookingConfirmation from "./pages/BookingConfirmation";
+import BookingCompletionPage from "./components/BookingCompletionPage";
 import DriverAuth from "./pages/DriverAuth";
 import PartnerAuth from "./pages/PartnerAuth";
 import PartnerDashboard from "./pages/StandardPartnerDashboard";
@@ -92,6 +93,7 @@ const App = () => (
               </RoleBasedRoute>
             } />
             
+            <Route path="/booking" element={<BookingCompletionPage />} />
             <Route path="/booking-confirmation" element={<BookingConfirmation />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/payment-canceled" element={<PaymentCanceled />} />
