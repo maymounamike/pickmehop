@@ -23,7 +23,7 @@ const HeroSection = () => {
 
   return (
     <section 
-      className="relative min-h-screen lg:min-h-[140vh] flex items-center justify-center overflow-hidden pt-16 sm:pt-20 pb-20 sm:pb-32 bg-gradient-hero"
+      className="relative min-h-screen lg:min-h-[140vh] flex items-center justify-center overflow-hidden pt-16 sm:pt-20 pb-20 sm:pb-32 bg-primary"
       aria-label="Book a ride service"
     >
       {/* Background Image - Hidden on mobile and tablet, visible on desktop */}
@@ -55,7 +55,7 @@ const HeroSection = () => {
           </h1>
           <p className="text-lg sm:text-xl lg:text-2xl text-white mb-8 leading-relaxed font-normal"
              style={{ textShadow: '1px 1px 2px rgba(45, 52, 54, 0.8)' }}>
-            Friendly, experienced, reliable English-speaking drivers just waiting for you to <span className="text-secondary underline cursor-pointer hover:text-highlight transition-colors">Hop On In</span>
+            Friendly, experienced, reliable English-speaking drivers just waiting for you to <span className="text-secondary cursor-pointer hover:text-highlight transition-colors">Hop On In</span>
           </p>
         </div>
         
