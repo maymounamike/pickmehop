@@ -36,7 +36,7 @@ const HeroSection = () => {
       />
       
       {/* Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/80 via-primary/60 to-foreground/90" />
+      <div className="absolute inset-0 bg-gradient-to-b from-primary/20 via-background/40 to-primary/30" />
       
       {/* Content */}
       <div 
@@ -47,11 +47,11 @@ const HeroSection = () => {
       >
         {/* Hero Text */}
         <div className="text-center lg:text-left max-w-2xl lg:flex-1 lg:pr-12 animate-fade-in">
-          <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-6 leading-tight">
+          <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-foreground mb-6 leading-tight">
             Pick Me Hop<br />
             <span className="bg-gradient-to-r from-secondary to-highlight bg-clip-text text-transparent">Before We Go Go</span>
           </h1>
-          <p className="text-lg sm:text-xl lg:text-2xl text-white/90 mb-8 leading-relaxed font-normal">
+          <p className="text-lg sm:text-xl lg:text-2xl text-muted-foreground mb-8 leading-relaxed font-normal">
             Friendly, experienced, reliable English-speaking drivers just waiting for you to <span className="bg-gradient-to-r from-secondary to-highlight bg-clip-text text-transparent">Hop On In</span>
           </p>
         </div>

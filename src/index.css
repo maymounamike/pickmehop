@@ -162,129 +162,153 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 213 69% 19%;
+    /* Pick Me Hop Refined Color Palette */
+    --background: 0 0% 99.2%; /* Soft White: #FDFDFD */
+    --foreground: 217 17% 20%; /* Deep Charcoal: #2D3436 */
 
-    --card: 0 0% 100%;
-    --card-foreground: 213 69% 19%;
+    --card: 80 50% 95%; /* Light Sage: #F1F8E9 */
+    --card-foreground: 217 17% 20%; /* Deep Charcoal: #2D3436 */
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 213 69% 19%;
+    --popover: 0 0% 99.2%; /* Soft White: #FDFDFD */
+    --popover-foreground: 217 17% 20%; /* Deep Charcoal: #2D3436 */
 
-    --primary: 17 93% 54%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 151 48% 52%; /* Frog Green: #52B788 */
+    --primary-foreground: 0 0% 100%; /* White */
 
-    --secondary: 42 100% 50%;
-    --secondary-foreground: 213 69% 19%;
+    --secondary: 50 100% 52%; /* Sunshine Yellow: #FFD60A */
+    --secondary-foreground: 217 17% 20%; /* Deep Charcoal: #2D3436 */
 
-    --muted: 210 40% 96%;
-    --muted-foreground: 213 35% 45%;
+    --coral: 0 83% 69%; /* Coral Red: #FF6B6B */
+    --coral-foreground: 0 0% 100%; /* White */
 
-    --accent: 199 100% 46%;
-    --accent-foreground: 0 0% 100%;
+    --muted: 217 17% 96%; /* Light variation of background */
+    --muted-foreground: 209 14% 37%; /* Warm Gray: #636E72 */
 
-    --highlight: 82 100% 36%;
-    --highlight-foreground: 0 0% 100%;
+    --accent: 151 48% 52%; /* Frog Green: #52B788 */
+    --accent-foreground: 0 0% 100%; /* White */
 
-    --success: 82 100% 36%;
-    --success-foreground: 0 0% 100%;
+    --highlight: 50 100% 52%; /* Sunshine Yellow: #FFD60A */
+    --highlight-foreground: 217 17% 20%; /* Deep Charcoal: #2D3436 */
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
+    /* Functional Colors */
+    --success: 134 61% 41%; /* Success: #27AE60 */
+    --success-foreground: 0 0% 100%; /* White */
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 17 93% 54%;
+    --destructive: 4 90% 58%; /* Error: #E74C3C */
+    --destructive-foreground: 0 0% 100%; /* White */
 
-    --dark-base: 213 69% 19%;
-    --dark-base-foreground: 0 0% 100%;
+    --warning: 37 92% 50%; /* Warning: #F39C12 */
+    --warning-foreground: 0 0% 100%; /* White */
 
-    --hero-overlay: 213 69% 19% / 0.8;
-    --gradient-primary: linear-gradient(135deg, hsl(17 93% 54%), hsl(42 100% 50%));
-    --gradient-secondary: linear-gradient(135deg, hsl(199 100% 46%), hsl(82 100% 36%));
-    --gradient-hero: linear-gradient(135deg, hsl(213 69% 19% / 0.95), hsl(17 93% 54% / 0.9));
-    --gradient-accent: linear-gradient(135deg, hsl(199 100% 46%), hsl(17 93% 54%));
-    --gradient-highlight: linear-gradient(135deg, hsl(82 100% 36%), hsl(42 100% 50%));
-    --shadow-elegant: 0 25px 50px -12px hsl(17 93% 54% / 0.25);
-    --shadow-card: 0 8px 25px -5px hsl(213 69% 19% / 0.1);
-    --shadow-glow: 0 0 40px hsl(17 93% 54% / 0.3);
+    --info: 204 70% 53%; /* Info: #3498DB */
+    --info-foreground: 0 0% 100%; /* White */
+
+    --border: 151 48% 85%; /* Light Frog Green for borders */
+    --input: 151 48% 90%; /* Very light Frog Green for inputs */
+    --ring: 151 48% 52%; /* Frog Green: #52B788 */
+
+    --dark-base: 217 17% 20%; /* Deep Charcoal: #2D3436 */
+    --dark-base-foreground: 0 0% 99.2%; /* Soft White: #FDFDFD */
+
+    /* Gradients */
+    --hero-overlay: 217 17% 20% / 0.8;
+    --gradient-primary: linear-gradient(135deg, hsl(151 48% 52%), hsl(50 100% 52%));
+    --gradient-secondary: linear-gradient(135deg, hsl(0 83% 69%), hsl(151 48% 52%));
+    --gradient-hero: linear-gradient(135deg, hsl(0 0% 99.2%), hsl(80 50% 95%));
+    --gradient-accent: linear-gradient(135deg, hsl(151 48% 52%), hsl(0 83% 69%));
+    --gradient-highlight: linear-gradient(135deg, hsl(50 100% 52%), hsl(50 100% 42%));
+    
+    /* Shadows */
+    --shadow-elegant: 0 25px 50px -12px hsl(151 48% 52% / 0.15);
+    --shadow-card: 0 8px 25px -5px hsl(217 17% 20% / 0.08);
+    --shadow-glow: 0 0 40px hsl(151 48% 52% / 0.2);
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     --radius: 0.75rem;
 
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Sidebar colors */
+    --sidebar-background: 0 0% 99.2%; /* Soft White */
+    --sidebar-foreground: 217 17% 20%; /* Deep Charcoal */
+    --sidebar-primary: 151 48% 52%; /* Frog Green */
+    --sidebar-primary-foreground: 0 0% 100%; /* White */
+    --sidebar-accent: 80 50% 95%; /* Light Sage */
+    --sidebar-accent-foreground: 217 17% 20%; /* Deep Charcoal */
+    --sidebar-border: 151 48% 85%; /* Light Frog Green */
+    --sidebar-ring: 151 48% 52%; /* Frog Green */
   }
 
   .dark {
-    --background: 213 69% 19%;
-    --foreground: 0 0% 98%;
+    /* Dark mode with refined Pick Me Hop colors */
+    --background: 217 17% 20%; /* Deep Charcoal: #2D3436 */
+    --foreground: 0 0% 99.2%; /* Soft White: #FDFDFD */
 
-    --card: 213 65% 22%;
-    --card-foreground: 0 0% 98%;
+    --card: 217 17% 25%; /* Darker variation of Deep Charcoal */
+    --card-foreground: 0 0% 99.2%; /* Soft White: #FDFDFD */
 
-    --popover: 213 65% 22%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 217 17% 25%; /* Darker variation of Deep Charcoal */
+    --popover-foreground: 0 0% 99.2%; /* Soft White: #FDFDFD */
 
-    --primary: 17 93% 54%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 151 48% 52%; /* Frog Green: #52B788 */
+    --primary-foreground: 0 0% 100%; /* White */
 
-    --secondary: 42 100% 50%;
-    --secondary-foreground: 213 69% 19%;
+    --secondary: 50 100% 52%; /* Sunshine Yellow: #FFD60A */
+    --secondary-foreground: 217 17% 20%; /* Deep Charcoal: #2D3436 */
 
-    --muted: 213 45% 25%;
-    --muted-foreground: 0 0% 70%;
+    --coral: 0 83% 69%; /* Coral Red: #FF6B6B */
+    --coral-foreground: 0 0% 100%; /* White */
 
-    --accent: 199 100% 46%;
-    --accent-foreground: 0 0% 100%;
+    --muted: 217 17% 30%; /* Lighter variation of background */
+    --muted-foreground: 209 14% 60%; /* Lighter Warm Gray */
 
-    --highlight: 82 100% 36%;
-    --highlight-foreground: 0 0% 100%;
+    --accent: 151 48% 52%; /* Frog Green: #52B788 */
+    --accent-foreground: 0 0% 100%; /* White */
 
-    --success: 82 100% 36%;
-    --success-foreground: 0 0% 100%;
+    --highlight: 50 100% 52%; /* Sunshine Yellow: #FFD60A */
+    --highlight-foreground: 217 17% 20%; /* Deep Charcoal: #2D3436 */
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
+    /* Functional Colors */
+    --success: 134 61% 41%; /* Success: #27AE60 */
+    --success-foreground: 0 0% 100%; /* White */
 
-    --border: 213 45% 25%;
-    --input: 213 45% 25%;
-    --ring: 17 93% 54%;
+    --destructive: 4 90% 58%; /* Error: #E74C3C */
+    --destructive-foreground: 0 0% 100%; /* White */
 
-    --dark-base: 213 69% 19%;
-    --dark-base-foreground: 0 0% 100%;
+    --warning: 37 92% 50%; /* Warning: #F39C12 */
+    --warning-foreground: 0 0% 100%; /* White */
 
-    --hero-overlay: 213 69% 19% / 0.9;
-    --gradient-primary: linear-gradient(135deg, hsl(17 93% 54%), hsl(42 100% 50%));
-    --gradient-secondary: linear-gradient(135deg, hsl(199 100% 46%), hsl(82 100% 36%));
-    --gradient-hero: linear-gradient(135deg, hsl(213 69% 19% / 0.95), hsl(17 93% 54% / 0.9));
-    --gradient-accent: linear-gradient(135deg, hsl(199 100% 46%), hsl(17 93% 54%));
-    --gradient-highlight: linear-gradient(135deg, hsl(82 100% 36%), hsl(42 100% 50%));
-    --shadow-elegant: 0 25px 50px -12px hsl(17 93% 54% / 0.4);
-    --shadow-card: 0 8px 25px -5px hsl(213 69% 19% / 0.3);
-    --shadow-glow: 0 0 40px hsl(17 93% 54% / 0.5);
+    --info: 204 70% 53%; /* Info: #3498DB */
+    --info-foreground: 0 0% 100%; /* White */
+
+    --border: 217 17% 35%; /* Darker border */
+    --input: 217 17% 35%; /* Darker input */
+    --ring: 151 48% 52%; /* Frog Green: #52B788 */
+
+    --dark-base: 217 17% 20%; /* Deep Charcoal: #2D3436 */
+    --dark-base-foreground: 0 0% 99.2%; /* Soft White: #FDFDFD */
+
+    /* Dark mode gradients */
+    --hero-overlay: 217 17% 20% / 0.9;
+    --gradient-primary: linear-gradient(135deg, hsl(151 48% 52%), hsl(50 100% 52%));
+    --gradient-secondary: linear-gradient(135deg, hsl(0 83% 69%), hsl(151 48% 52%));
+    --gradient-hero: linear-gradient(135deg, hsl(217 17% 20% / 0.95), hsl(151 48% 52% / 0.9));
+    --gradient-accent: linear-gradient(135deg, hsl(151 48% 52%), hsl(0 83% 69%));
+    --gradient-highlight: linear-gradient(135deg, hsl(50 100% 52%), hsl(50 100% 42%));
+    
+    /* Dark mode shadows */
+    --shadow-elegant: 0 25px 50px -12px hsl(151 48% 52% / 0.3);
+    --shadow-card: 0 8px 25px -5px hsl(217 17% 20% / 0.4);
+    --shadow-glow: 0 0 40px hsl(151 48% 52% / 0.4);
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --sidebar-background: 213 69% 19%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 17 93% 54%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 213 45% 25%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 213 45% 25%;
-    --sidebar-ring: 17 93% 54%;
+    
+    /* Dark sidebar colors */
+    --sidebar-background: 217 17% 20%; /* Deep Charcoal */
+    --sidebar-foreground: 0 0% 99.2%; /* Soft White */
+    --sidebar-primary: 151 48% 52%; /* Frog Green */
+    --sidebar-primary-foreground: 0 0% 100%; /* White */
+    --sidebar-accent: 217 17% 25%; /* Darker variation */
+    --sidebar-accent-foreground: 0 0% 99.2%; /* Soft White */
+    --sidebar-border: 217 17% 35%; /* Darker border */
+    --sidebar-ring: 151 48% 52%; /* Frog Green */
   }
 }
 
