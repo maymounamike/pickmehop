@@ -108,11 +108,7 @@ const Header = () => {
   };
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      isScrolled 
-        ? 'bg-background/95 backdrop-blur-lg border-b border-border shadow-card' 
-        : 'bg-background/95 backdrop-blur-sm'
-    }`}>
+    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-dark-base/95 backdrop-blur-lg border-b border-primary/20 shadow-card`}>
       <div className="container mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <img 
@@ -122,9 +118,7 @@ const Header = () => {
             onClick={() => navigate("/")}
           />
           <span 
-            className={`font-display font-semibold text-lg sm:text-xl cursor-pointer transition-colors duration-300 ${
-              isScrolled ? 'text-foreground' : 'text-white'
-            }`}
+            className="font-display font-semibold text-lg sm:text-xl cursor-pointer transition-colors duration-300 text-white hover:text-secondary"
             onClick={() => navigate("/")}
           >
             Pick Me Hop
@@ -136,33 +130,21 @@ const Header = () => {
           <nav className="hidden md:flex items-center space-x-2">
             <Button 
               variant="ghost" 
-              className={`font-medium transition-all duration-300 hover:scale-105 ${
-                isScrolled 
-                  ? 'text-foreground hover:text-primary hover:bg-primary/10' 
-                  : 'text-white hover:text-secondary hover:bg-white/20'
-              }`}
+              className="font-medium transition-all duration-300 hover:scale-105 text-white hover:text-secondary hover:bg-white/10"
               onClick={() => navigate("/services")}
             >
               Services
             </Button>
             <Button 
               variant="ghost" 
-              className={`font-medium transition-all duration-300 hover:scale-105 ${
-                isScrolled 
-                  ? 'text-foreground hover:text-primary hover:bg-primary/10' 
-                  : 'text-white hover:text-secondary hover:bg-white/20'
-              }`}
+              className="font-medium transition-all duration-300 hover:scale-105 text-white hover:text-secondary hover:bg-white/10"
               onClick={() => navigate("/about")}
             >
               About
             </Button>
             <Button 
               variant="ghost" 
-              className={`font-medium transition-all duration-300 hover:scale-105 ${
-                isScrolled 
-                  ? 'text-foreground hover:text-primary hover:bg-primary/10' 
-                  : 'text-white hover:text-secondary hover:bg-white/20'
-              }`}
+              className="font-medium transition-all duration-300 hover:scale-105 text-white hover:text-secondary hover:bg-white/10"
               onClick={() => navigate("/contact")}
             >
               Contact
@@ -177,11 +159,7 @@ const Header = () => {
                 <>
                   <Button 
                     variant="ghost" 
-                    className={`font-medium transition-all duration-300 ${
-                      isScrolled 
-                        ? 'text-foreground hover:text-primary hover:bg-primary/10' 
-                        : 'text-white hover:text-accent hover:bg-white/20'
-                    }`}
+                    className="font-medium transition-all duration-300 text-white hover:text-secondary hover:bg-white/10"
                     onClick={() => navigate("/admin")}
                   >
                     <User className="mr-2 h-4 w-4" />
@@ -189,11 +167,7 @@ const Header = () => {
                   </Button>
                   <Button 
                     variant="ghost" 
-                    className={`font-medium transition-all duration-300 ${
-                      isScrolled 
-                        ? 'text-foreground hover:text-primary hover:bg-primary/10' 
-                        : 'text-white hover:text-accent hover:bg-white/20'
-                    }`}
+                    className="font-medium transition-all duration-300 text-white hover:text-secondary hover:bg-white/10"
                     onClick={() => navigate("/drivers")}
                   >
                     <User className="mr-2 h-4 w-4" />
@@ -205,11 +179,7 @@ const Header = () => {
                 <>
                   <Button 
                     variant="ghost" 
-                    className={`font-medium transition-all duration-300 ${
-                      isScrolled 
-                        ? 'text-foreground hover:text-primary hover:bg-primary/10' 
-                        : 'text-white hover:text-accent hover:bg-white/20'
-                    }`}
+                    className="font-medium transition-all duration-300 text-white hover:text-secondary hover:bg-white/10"
                     onClick={() => navigate("/driver")}
                   >
                     <User className="mr-2 h-4 w-4" />
@@ -217,11 +187,7 @@ const Header = () => {
                   </Button>
                   <Button 
                     variant="ghost" 
-                    className={`font-medium transition-all duration-300 ${
-                      isScrolled 
-                        ? 'text-foreground hover:text-primary hover:bg-primary/10' 
-                        : 'text-white hover:text-accent hover:bg-white/20'
-                    }`}
+                    className="font-medium transition-all duration-300 text-white hover:text-secondary hover:bg-white/10"
                     onClick={() => navigate("/driver/scheduled")}
                   >
                     <User className="mr-2 h-4 w-4" />
@@ -232,11 +198,7 @@ const Header = () => {
               {(userRole === 'user' || !userRole) && (
                 <Button 
                   variant="ghost" 
-                  className={`font-medium transition-all duration-300 ${
-                    isScrolled 
-                      ? 'text-foreground hover:text-primary hover:bg-primary/10' 
-                      : 'text-white hover:text-accent hover:bg-white/20'
-                  }`}
+                  className="font-medium transition-all duration-300 text-white hover:text-secondary hover:bg-white/10"
                   onClick={() => navigate("/dashboard")}
                 >
                   <User className="mr-2 h-4 w-4" />
@@ -245,11 +207,7 @@ const Header = () => {
               )}
               <Button 
                 variant="ghost" 
-                className={`font-medium transition-all duration-300 ${
-                  isScrolled 
-                    ? 'text-foreground hover:text-destructive hover:bg-destructive/10' 
-                    : 'text-white hover:text-accent hover:bg-white/20'
-                }`}
+                className="font-medium transition-all duration-300 text-white hover:text-destructive hover:bg-white/10"
                 onClick={handleSignOut}
               >
                 <LogOut className="mr-2 h-4 w-4" />
@@ -261,11 +219,7 @@ const Header = () => {
           <HelpDialog>
             <Button 
               variant="ghost" 
-              className={`font-medium transition-all duration-300 hover:scale-105 ${
-                isScrolled 
-                  ? 'text-foreground hover:text-primary hover:bg-primary/10' 
-                  : 'text-white hover:text-accent hover:bg-white/20'
-              } text-sm sm:text-base min-h-[44px] px-3 sm:px-4`}
+              className="font-medium transition-all duration-300 hover:scale-105 text-white hover:text-secondary hover:bg-white/10 text-sm sm:text-base min-h-[44px] px-3 sm:px-4"
             >
               Help
             </Button>

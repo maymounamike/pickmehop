@@ -910,7 +910,9 @@ const BookingForm = () => {
   };
 
   return (
-    <Card className="w-full max-w-lg mx-auto bg-white shadow-elegant border-0" role="form" aria-labelledby="booking-form-title">
+    <Card className="w-full max-w-lg mx-auto bg-background/95 backdrop-blur-sm shadow-2xl border border-muted-foreground/30" 
+          style={{ boxShadow: '0 25px 50px -12px rgba(45, 52, 54, 0.2)' }}
+          role="form" aria-labelledby="booking-form-title">
       <CardHeader className="pb-4 px-6 pt-6">
         <CardTitle id="booking-form-title" className="text-lg font-semibold text-foreground text-center">
           {currentStep === 1 ? "Allez Hop ! Let's Book a Ride" : currentStep === 2 ? "Your details" : "Payment Method"}

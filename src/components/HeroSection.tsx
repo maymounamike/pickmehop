@@ -35,8 +35,9 @@ const HeroSection = () => {
         }}
       />
       
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/20 via-background/40 to-primary/30" />
+      {/* Improved Overlay for Better Contrast */}
+      <div className="absolute inset-0 bg-dark-base/40" />
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10" />
       
       {/* Content */}
       <div 
@@ -47,30 +48,32 @@ const HeroSection = () => {
       >
         {/* Hero Text */}
         <div className="text-center lg:text-left max-w-2xl lg:flex-1 lg:pr-12 animate-fade-in">
-          <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-foreground mb-6 leading-tight">
+          <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-6 leading-tight"
+              style={{ textShadow: '1px 1px 2px rgba(45, 52, 54, 0.8)' }}>
             Pick Me Hop<br />
-            <span className="bg-gradient-to-r from-secondary to-highlight bg-clip-text text-transparent">Before We Go Go</span>
+            <span className="text-secondary" style={{ textShadow: '1px 1px 2px rgba(45, 52, 54, 0.8)' }}>Before We Go Go</span>
           </h1>
-          <p className="text-lg sm:text-xl lg:text-2xl text-muted-foreground mb-8 leading-relaxed font-normal">
-            Friendly, experienced, reliable English-speaking drivers just waiting for you to <span className="bg-gradient-to-r from-secondary to-highlight bg-clip-text text-transparent">Hop On In</span>
+          <p className="text-lg sm:text-xl lg:text-2xl text-white mb-8 leading-relaxed font-normal"
+             style={{ textShadow: '1px 1px 2px rgba(45, 52, 54, 0.8)' }}>
+            Friendly, experienced, reliable English-speaking drivers just waiting for you to <span className="text-secondary underline cursor-pointer hover:text-highlight transition-colors">Hop On In</span>
           </p>
         </div>
         
         {/* Booking Form Section */}
         <div className="w-full max-w-md lg:max-w-lg lg:flex-shrink-0 animate-scale-in delay-300">
           {/* Trust Indicators - Now above the form */}
-          <div className="flex flex-wrap items-center justify-center gap-6 text-white/90 text-sm font-medium mb-6">
+          <div className="flex flex-wrap items-center justify-center gap-6 text-white text-sm font-medium mb-6">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
-              <span>Fixed Prices</span>
+              <span style={{ textShadow: '1px 1px 2px rgba(45, 52, 54, 0.6)' }}>Fixed Prices</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-highlight rounded-full animate-pulse delay-100" />
-              <span>24/7 Support</span>
+              <span style={{ textShadow: '1px 1px 2px rgba(45, 52, 54, 0.6)' }}>24/7 Support</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-accent rounded-full animate-pulse delay-200" />
-              <span>Flight Tracking</span>
+              <div className="w-2 h-2 bg-primary rounded-full animate-pulse delay-200" />
+              <span style={{ textShadow: '1px 1px 2px rgba(45, 52, 54, 0.6)' }}>Flight Tracking</span>
             </div>
           </div>
           
