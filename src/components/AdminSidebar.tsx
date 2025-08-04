@@ -39,31 +39,37 @@ const AdminSidebar = ({ activeTab, onTabChange, stats }: AdminSidebarProps) => {
 
   const menuItems = [
     {
-      id: "bookings",
-      label: "Unassigned Requests",
+      id: "dashboard",
+      label: "Dashboard",
+      icon: BarChart3,
+      description: "Overview & metrics"
+    },
+    {
+      id: "users",
+      label: "Manage Users",
+      icon: Users,
+      description: "All platform users"
+    },
+    {
+      id: "driver-approvals",
+      label: "Driver Approvals",
+      icon: Car,
+      count: stats.pendingDrivers,
+      description: "Pending applications"
+    },
+    {
+      id: "assign-rides",
+      label: "Assign Rides",
       icon: AlertTriangle,
       count: stats.unassignedRides,
-      description: "Rides needing assignment"
+      description: "Unassigned requests"
     },
     {
-      id: "assignments",
-      label: "Bookings",
+      id: "all-requests",
+      label: "All Requests",
       icon: ClipboardList,
       count: stats.totalBookings,
-      description: "All ride bookings"
-    },
-    {
-      id: "drivers",
-      label: "Drivers",
-      icon: Car,
-      count: stats.activeDrivers,
-      description: "Active drivers"
-    },
-    {
-      id: "analytics",
-      label: "Analytics",
-      icon: BarChart3,
-      description: "Performance metrics"
+      description: "Complete ride history"
     }
   ];
 

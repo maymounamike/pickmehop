@@ -17,6 +17,10 @@ import DriverScheduled from "./pages/DriverScheduled";
 import DriversManagement from "./pages/DriversManagement";
 import DriverOngoing from "./pages/DriverOngoing";
 import AdminDashboard from "./pages/NewAdminDashboard";
+import AdminUsers from "./pages/AdminUsers";
+import AdminDriverApprovals from "./pages/AdminDriverApprovals";
+import AdminAssignRides from "./pages/AdminAssignRides";
+import AdminAllRequests from "./pages/AdminAllRequests";
 import BookingConfirmation from "./pages/BookingConfirmation";
 import DriverAuth from "./pages/DriverAuth";
 import PartnerAuth from "./pages/PartnerAuth";
@@ -82,6 +86,26 @@ const App = () => (
             <Route path="/admin" element={
               <RoleBasedRoute allowedRoles={['admin']}>
                 <AdminDashboard />
+              </RoleBasedRoute>
+            } />
+            <Route path="/admin/users" element={
+              <RoleBasedRoute allowedRoles={['admin']}>
+                <AdminUsers />
+              </RoleBasedRoute>
+            } />
+            <Route path="/admin/driver-approvals" element={
+              <RoleBasedRoute allowedRoles={['admin']}>
+                <AdminDriverApprovals />
+              </RoleBasedRoute>
+            } />
+            <Route path="/admin/assign-rides" element={
+              <RoleBasedRoute allowedRoles={['admin']}>
+                <AdminAssignRides />
+              </RoleBasedRoute>
+            } />
+            <Route path="/admin/all-requests" element={
+              <RoleBasedRoute allowedRoles={['admin']}>
+                <AdminAllRequests />
               </RoleBasedRoute>
             } />
             
