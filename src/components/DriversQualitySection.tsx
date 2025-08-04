@@ -105,66 +105,38 @@ const DriversQualitySection = () => {
         </div>
 
         {/* Vetting Process Section */}
-        <div className="bg-gradient-to-r from-[#0D2C54]/5 to-[#FFB400]/5 rounded-2xl p-8 lg:p-12">
-          <div className="text-center mb-12">
-            <h3 className="text-2xl lg:text-3xl font-bold text-[#0D2C54] mb-4">
-              Each driver is carefully handpicked and vetted by our team
-            </h3>
-          </div>
-
-          {/* Desktop Vetting Process */}
-          <div className="hidden lg:flex items-center justify-between max-w-5xl mx-auto">
-            {vettingProcess.map((step, index) => (
-              <div key={index} className="flex items-center">
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-[#ffdfcc] rounded-full flex items-center justify-center mb-4 mx-auto shadow-lg">
-                    <step.icon className="w-8 h-8 text-[#ff6b35]" />
-                  </div>
-                  <h4 className="font-bold text-[#0D2C54] mb-1 text-sm">
-                    {step.title}
-                  </h4>
-                  <p className="font-semibold text-[#FFB400] text-sm mb-2">
-                    {step.subtitle}
-                  </p>
-                  <p className="text-xs text-muted-foreground max-w-[120px]">
-                    {step.description}
-                  </p>
-                </div>
-                
-                {index < vettingProcess.length - 1 && (
-                  <div className="flex items-center mx-8">
-                    <div className="w-16 h-px bg-[#FFB400]/30"></div>
-                    <ArrowRight className="w-4 h-4 text-[#FFB400] ml-2" />
-                  </div>
-                )}
+        <div className="bg-[#c8f0e3] rounded-2xl p-8 lg:p-12">
+          <div className="max-w-5xl mx-auto">
+            <div className="grid lg:grid-cols-2 gap-8 items-center">
+              {/* Left side - Title */}
+              <div>
+                <h3 className="text-2xl lg:text-3xl font-bold text-[#2c3e50] leading-tight">
+                  Each driver is carefully handpicked and vetted by our team
+                </h3>
               </div>
-            ))}
-          </div>
-
-          {/* Mobile Vetting Process */}
-          <div className="lg:hidden space-y-6">
-            {vettingProcess.map((step, index) => (
-              <div key={index} className="flex items-center gap-4 bg-white/50 rounded-xl p-4">
-                <div className="w-12 h-12 bg-[#ffdfcc] rounded-full flex items-center justify-center flex-shrink-0">
-                  <step.icon className="w-6 h-6 text-[#ff6b35]" />
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-bold text-[#0D2C54] mb-1">
-                    {step.title} {step.subtitle}
-                  </h4>
-                  <p className="text-sm text-muted-foreground">
-                    {step.description}
-                  </p>
-                </div>
+              
+              {/* Right side - Process flow */}
+              <div className="flex items-center justify-between">
+                {vettingProcess.map((step, index) => (
+                  <div key={index} className="flex items-center">
+                    <div className="text-center">
+                      <div className="w-12 h-12 bg-[#ffdfcc] rounded-full flex items-center justify-center mb-3 mx-auto">
+                        <step.icon className="w-6 h-6 text-[#ff6b35]" />
+                      </div>
+                      <p className="text-xs text-[#2c3e50] font-medium max-w-[80px] leading-tight">
+                        {step.title} {step.subtitle}
+                      </p>
+                    </div>
+                    
+                    {index < vettingProcess.length - 1 && (
+                      <div className="flex items-center mx-3">
+                        <div className="w-8 border-t-2 border-dashed border-[#4a9c6d]"></div>
+                        <ArrowRight className="w-3 h-3 text-[#4a9c6d] ml-1" />
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-
-          {/* Final Badge */}
-          <div className="text-center mt-12">
-            <div className="inline-flex items-center gap-2 bg-[#0D2C54] text-white px-6 py-3 rounded-full shadow-lg">
-              <CheckCircle className="w-5 h-5 text-[#FFB400]" />
-              <span className="font-semibold">Ready for the first ride</span>
             </div>
           </div>
         </div>
