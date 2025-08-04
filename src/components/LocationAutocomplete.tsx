@@ -516,19 +516,17 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
         <div
           ref={listRef}
           className={cn(
-            "fixed left-0 right-0 mt-1 max-h-[300px] overflow-y-auto rounded-lg border shadow-2xl",
-            "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700",
-            "animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 duration-200"
+            "absolute left-0 right-0 mt-1 max-h-[300px] overflow-y-auto rounded-lg border shadow-2xl",
+            "bg-popover border-border",
+            "animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 duration-200",
+            "location-dropdown"
           )}
           style={{ 
-            position: 'fixed',
-            top: inputRef.current ? inputRef.current.getBoundingClientRect().bottom + window.scrollY + 4 : 0,
-            left: inputRef.current ? inputRef.current.getBoundingClientRect().left + window.scrollX : 0,
-            width: inputRef.current ? inputRef.current.getBoundingClientRect().width : 'auto',
             zIndex: 999999,
-            backgroundColor: 'hsl(var(--popover))',
-            borderColor: 'hsl(var(--border))',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+            position: 'absolute',
+            top: '100%',
+            left: 0,
+            right: 0
           }}
         >
           <div className="p-1">
