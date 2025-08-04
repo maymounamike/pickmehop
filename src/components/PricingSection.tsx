@@ -10,6 +10,24 @@ const PricingSection = () => {
   // Group services by destination for simplified display
   const destinations = [
     {
+      id: "cdg",
+      destination: "Charles de Gaulle Airport (CDG) - To/From Paris",
+      destinationCode: "CDG",
+      destinationIcon: Plane,
+      sedan: { id: "cdg-sedan", price: 75, passengers: "1-4", luggage: "up to 4" },
+      minivan: { id: "cdg-minivan", price: 135, passengers: "5-8", luggage: "up to 8" },
+      priceDifference: 60
+    },
+    {
+      id: "orly",
+      destination: "Paris Orly Airport (ORY) - To/From Paris",
+      destinationCode: "ORY",
+      destinationIcon: Plane,
+      sedan: { id: "orly-sedan", price: 65, passengers: "1-4", luggage: "up to 4" },
+      minivan: { id: "orly-minivan", price: 90, passengers: "5-8", luggage: "up to 8" },
+      priceDifference: 25
+    },
+    {
       id: "beauvais",
       destination: "Beauvais (BVA) - To/From Paris",
       destinationCode: "BVA",
@@ -19,26 +37,8 @@ const PricingSection = () => {
       priceDifference: 70
     },
     {
-      id: "orly",
-      destination: "Paris Orly Airport (ORY)",
-      destinationCode: "ORY",
-      destinationIcon: Plane,
-      sedan: { id: "orly-sedan", price: 65, passengers: "1-4", luggage: "up to 4" },
-      minivan: { id: "orly-minivan", price: 90, passengers: "5-8", luggage: "up to 8" },
-      priceDifference: 25
-    },
-    {
-      id: "cdg",
-      destination: "Charles de Gaulle Airport (CDG)",
-      destinationCode: "CDG",
-      destinationIcon: Plane,
-      sedan: { id: "cdg-sedan", price: 75, passengers: "1-4", luggage: "up to 4" },
-      minivan: { id: "cdg-minivan", price: 135, passengers: "5-8", luggage: "up to 8" },
-      priceDifference: 60
-    },
-    {
       id: "disney",
-      destination: "Disneyland Paris (Disney) - To/From Paris",
+      destination: "Disneyland Paris (Disney) - To/From Paris/CDG/ORY",
       destinationCode: "DLP",
       destinationIcon: MickeyMouseIcon,
       sedan: { id: "disney-sedan", price: 80, passengers: "1-4", luggage: "up to 4" },
@@ -180,16 +180,7 @@ const PricingSection = () => {
         </div>
 
         {/* Bottom Section */}
-        <div className="text-center space-y-6">
-          <div className="bg-card border border-border rounded-xl p-6 max-w-2xl mx-auto">
-            <p className="text-muted-foreground mb-4">
-              Need a different route? Contact us for a custom quote
-            </p>
-            <Button variant="outline" size="lg" className="bg-background hover:bg-primary hover:text-primary-foreground">
-              Get Custom Quote
-            </Button>
-          </div>
-          
+        <div className="text-center">
           <p className="text-sm text-muted-foreground max-w-3xl mx-auto">
             At Pick Me Hop, we believe in transparent pricing. All our rates are fixed with no surprises, 
             so you can relax knowing exactly what you'll pay.
