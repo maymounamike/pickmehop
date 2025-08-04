@@ -28,6 +28,7 @@ import PartnerDashboard from "./pages/StandardPartnerDashboard";
 import SignupRoleSelection from "./pages/SignupRoleSelection";
 import DriverSignup from "./pages/DriverSignup";
 import PartnerSignup from "./pages/PartnerSignup";
+import ProfileDashboard from "./pages/ProfileDashboard";
 import About from "./pages/About";
 import Services from "./pages/Services";
 import Contact from "./pages/Contact";
@@ -52,6 +53,7 @@ const App = () => (
             <Route path="/signup" element={<SignupRoleSelection />} />
             <Route path="/signup/driver" element={<DriverSignup />} />
             <Route path="/signup/partner" element={<PartnerSignup />} />
+            <Route path="/profile" element={<ProfileDashboard />} />
             <Route path="/driver-signup" element={<DriverAuth />} />
             <Route path="/partner-signup" element={<PartnerAuth />} />
             <Route path="/drivers" element={<DriversManagement />} />
