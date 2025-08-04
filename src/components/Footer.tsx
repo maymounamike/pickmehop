@@ -5,9 +5,9 @@ const Footer = () => {
   const navigate = useNavigate();
 
   return (
-    <footer className="bg-dark-base text-white py-16 relative overflow-hidden">
+    <footer className="text-white py-16 relative overflow-hidden" style={{ backgroundColor: 'rgba(139, 34, 34, 0.95)' }}>
       {/* Background gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-dark-base via-dark-base to-primary/20" />
+      <div className="absolute inset-0 bg-gradient-to-br from-black/10 via-transparent to-black/20" />
       <div className="container mx-auto px-4 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {/* Company Logo and Help */}
