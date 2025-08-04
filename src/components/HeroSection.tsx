@@ -23,7 +23,7 @@ const HeroSection = () => {
 
   return (
     <section 
-      className="relative min-h-screen lg:min-h-[140vh] flex items-center justify-center overflow-hidden pt-16 sm:pt-20 pb-20 sm:pb-32"
+      className="relative min-h-screen lg:min-h-[140vh] flex items-center justify-center overflow-hidden pb-20 sm:pb-32"
       style={{ backgroundColor: '#2d5d3d' }}
       aria-label="Book a ride service"
     >
