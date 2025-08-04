@@ -109,7 +109,7 @@ const PricingSection = () => {
                   {destination.destination.split(' (')[0]}
                 </h3>
                 <p className="text-sm text-muted-foreground font-medium">
-                  {destination.destinationCode}
+                  {destination.destinationCode} - {destination.id === 'disney' ? 'To/From Paris/CDG/ORY' : 'To/From Paris'}
                 </p>
               </div>
               
