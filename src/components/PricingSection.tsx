@@ -128,7 +128,7 @@ const PricingSection = () => {
                         <h4 className="font-semibold text-foreground text-sm">SEDAN</h4>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-foreground mb-1">
+                        <div className="text-2xl font-bold text-primary mb-1">
                           {destination.sedan.price} €
                         </div>
                         <div className="text-xs text-muted-foreground space-y-1">
@@ -157,7 +157,7 @@ const PricingSection = () => {
                         <h4 className="font-semibold text-foreground text-sm">MINIVAN</h4>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-foreground mb-1">
+                        <div className="text-2xl font-bold text-primary mb-1">
                           {destination.minivan.price} €
                         </div>
                         <div className="text-xs text-muted-foreground space-y-1">
