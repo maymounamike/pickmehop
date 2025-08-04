@@ -713,6 +713,69 @@ const AdminDashboard = () => {
               </Card>
             </div>
 
+            {/* Quick Actions Grid */}
+            <Card className="mb-8">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Users className="w-5 h-5 mr-2" />
+                  Quick Actions
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <Button 
+                    className="h-20 p-4 flex flex-col items-center justify-center space-y-2 bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-700 hover:text-emerald-800"
+                    variant="outline"
+                    onClick={() => navigate('/admin/users')}
+                  >
+                    <Users className="h-6 w-6" />
+                    <span className="text-sm font-medium">Manage Users</span>
+                  </Button>
+                  
+                  <Button 
+                    className="h-20 p-4 flex flex-col items-center justify-center space-y-2 bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700 hover:text-blue-800"
+                    variant="outline"
+                    onClick={() => navigate('/admin/driver-approvals')}
+                  >
+                    <div className="relative">
+                      <UserPlus className="h-6 w-6" />
+                      {stats.pendingDrivers > 0 && (
+                        <Badge className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs px-1.5 py-0.5 rounded-full min-w-[1.25rem] h-5 flex items-center justify-center">
+                          {stats.pendingDrivers}
+                        </Badge>
+                      )}
+                    </div>
+                    <span className="text-sm font-medium">Driver Approvals</span>
+                  </Button>
+                  
+                  <Button 
+                    className="h-20 p-4 flex flex-col items-center justify-center space-y-2 bg-orange-50 hover:bg-orange-100 border-orange-200 text-orange-700 hover:text-orange-800"
+                    variant="outline"
+                    onClick={() => navigate('/admin/assign-rides')}
+                  >
+                    <div className="relative">
+                      <Car className="h-6 w-6" />
+                      {stats.unassignedRides > 0 && (
+                        <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full min-w-[1.25rem] h-5 flex items-center justify-center">
+                          {stats.unassignedRides}
+                        </Badge>
+                      )}
+                    </div>
+                    <span className="text-sm font-medium">Assign Rides</span>
+                  </Button>
+                  
+                  <Button 
+                    className="h-20 p-4 flex flex-col items-center justify-center space-y-2 bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-700 hover:text-purple-800"
+                    variant="outline"
+                    onClick={() => navigate('/admin/all-requests')}
+                  >
+                    <BarChart3 className="h-6 w-6" />
+                    <span className="text-sm font-medium">All Requests</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
             <div className="space-y-6">
               {getTabContent()}
             </div>
