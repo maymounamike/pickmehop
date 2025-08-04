@@ -31,8 +31,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import AdminSidebar from '@/components/AdminSidebar';
-import { SidebarProvider } from '@/components/ui/sidebar';
 import { toast } from '@/hooks/use-toast';
 
 interface RideRequest {
@@ -304,9 +302,8 @@ const AdminAssignRides = () => {
               <div className="h-8 bg-gray-200 rounded w-1/3"></div>
               <div className="h-4 bg-gray-200 rounded w-1/2"></div>
             </div>
-          </main>
-        </div>
-      </SidebarProvider>
+        </main>
+      </div>
     );
   }
 

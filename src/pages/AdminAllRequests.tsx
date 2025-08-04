@@ -37,8 +37,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
-import AdminSidebar from '@/components/AdminSidebar';
-import { SidebarProvider } from '@/components/ui/sidebar';
 
 interface BookingRequest {
   id: string;
@@ -206,34 +204,20 @@ const AdminAllRequests = () => {
 
   if (loading) {
     return (
-      <SidebarProvider>
-        <div className="flex min-h-screen w-full">
-          <AdminSidebar 
-            activeTab="all-requests" 
-            onTabChange={(tab) => navigate(`/admin/${tab}`)}
-            stats={{ unassignedRides: 0, activeDrivers: 0, pendingDrivers: 0, totalBookings: 0 }}
-          />
-          <main className="flex-1 p-8">
-            <div className="animate-pulse space-y-4">
-              <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-            </div>
-          </main>
-        </div>
-      </SidebarProvider>
+      <div className="min-h-screen w-full bg-gray-50">
+        <main className="p-8">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+          </div>
+        </main>
+      </div>
     );
   }
 
   return (
-    <SidebarProvider>
-      <div className="flex min-h-screen w-full">
-        <AdminSidebar 
-          activeTab="all-requests" 
-          onTabChange={(tab) => navigate(`/admin/${tab}`)}
-          stats={{ unassignedRides: 0, activeDrivers: 0, pendingDrivers: 0, totalBookings: filteredRequests.length }}
-        />
-        
-        <main className="flex-1 p-8 bg-gray-50">
+    <div className="min-h-screen w-full bg-gray-50">
+      <main className="p-8">
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center space-x-3 mb-2">
@@ -420,8 +404,7 @@ const AdminAllRequests = () => {
               </Pagination>
             </div>
           )}
-        </main>
-      </div>
+      </main>
 
       {/* Request Details Dialog */}
       <Dialog open={selectedRequest !== null} onOpenChange={() => setSelectedRequest(null)}>
@@ -496,7 +479,7 @@ const AdminAllRequests = () => {
           )}
         </DialogContent>
       </Dialog>
-    </SidebarProvider>
+    </div>
   );
 };
 

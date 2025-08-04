@@ -31,8 +31,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import AdminSidebar from '@/components/AdminSidebar';
-import { SidebarProvider } from '@/components/ui/sidebar';
 
 interface User {
   id: string;
@@ -208,129 +206,112 @@ const AdminUsers = () => {
 
   if (loading) {
     return (
-      <SidebarProvider>
-        <div className="flex min-h-screen w-full">
-          <AdminSidebar 
-            activeTab="users" 
-            onTabChange={(tab) => navigate(`/admin/${tab}`)}
-            stats={{ unassignedRides: 0, activeDrivers: 0, pendingDrivers: 0, totalBookings: 0 }}
-          />
-          <main className="flex-1 p-8">
-            <div className="animate-pulse space-y-4">
-              <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-            </div>
-          </main>
-        </div>
-      </SidebarProvider>
+      <div className="min-h-screen w-full bg-gray-50">
+        <main className="p-8">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+          </div>
+        </main>
+      </div>
     );
   }
 
   return (
-    <SidebarProvider>
-      <div className="flex min-h-screen w-full">
-        <AdminSidebar 
-          activeTab="users" 
-          onTabChange={(tab) => navigate(`/admin/${tab}`)}
-          stats={{ unassignedRides: 0, activeDrivers: 0, pendingDrivers: 0, totalBookings: 0 }}
-        />
-        
-        <main className="flex-1 p-8 bg-gray-50">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center space-x-3 mb-2">
-              <Users className="h-8 w-8 text-emerald-600" />
-              <h1 className="text-3xl font-bold text-gray-800">Manage Users</h1>
-              <Badge variant="secondary" className="text-sm">
-                {filteredUsers.length} total
-              </Badge>
-            </div>
-            <p className="text-gray-600">Manage all platform users, roles, and permissions</p>
+    <div className="min-h-screen w-full bg-gray-50">
+      <main className="p-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center space-x-3 mb-2">
+            <Users className="h-8 w-8 text-emerald-600" />
+            <h1 className="text-3xl font-bold text-gray-800">Manage Users</h1>
+            <Badge variant="secondary" className="text-sm">
+              {filteredUsers.length} total
+            </Badge>
           </div>
+          <p className="text-gray-600">Manage all platform users, roles, and permissions</p>
+        </div>
 
-          {/* Controls */}
-          <div className="mb-6 space-y-4">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  placeholder="Search by name, email, or phone..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              
-              <Select value={filterRole} onValueChange={setFilterRole}>
-                <SelectTrigger className="w-[180px]">
-                  <Filter className="h-4 w-4 mr-2" />
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Users</SelectItem>
-                  <SelectItem value="user">Customers</SelectItem>
-                  <SelectItem value="driver">Drivers</SelectItem>
-                  <SelectItem value="partner">Partners</SelectItem>
-                  <SelectItem value="admin">Admins</SelectItem>
-                </SelectContent>
-              </Select>
-              
-              <Select value={sortOption} onValueChange={setSortOption}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="name-az">Name A-Z</SelectItem>
-                  <SelectItem value="name-za">Name Z-A</SelectItem>
-                  <SelectItem value="recent">Recently Added</SelectItem>
-                  <SelectItem value="role">By Role</SelectItem>
-                </SelectContent>
-              </Select>
+        {/* Controls */}
+        <div className="mb-6 space-y-4">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                placeholder="Search by name, email, or phone..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
             </div>
             
-            <div className="flex justify-between items-center">
-              <div className="flex space-x-2">
-                <Button
-                  variant={viewMode === 'grid' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setViewMode('grid')}
-                >
-                  <Grid className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant={viewMode === 'list' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setViewMode('list')}
-                >
-                  <List className="h-4 w-4" />
-                </Button>
-              </div>
+            <Select value={filterRole} onValueChange={setFilterRole}>
+              <SelectTrigger className="w-[180px]">
+                <Filter className="h-4 w-4 mr-2" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Users</SelectItem>
+                <SelectItem value="user">Customers</SelectItem>
+                <SelectItem value="driver">Drivers</SelectItem>
+                <SelectItem value="partner">Partners</SelectItem>
+                <SelectItem value="admin">Admins</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Select value={sortOption} onValueChange={setSortOption}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="name-az">Name A-Z</SelectItem>
+                <SelectItem value="name-za">Name Z-A</SelectItem>
+                <SelectItem value="recent">Recently Added</SelectItem>
+                <SelectItem value="role">By Role</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="flex justify-between items-center">
+            <div className="flex space-x-2">
+              <Button
+                variant={viewMode === 'grid' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('grid')}
+              >
+                <Grid className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+              >
+                <List className="h-4 w-4" />
+              </Button>
             </div>
           </div>
+        </div>
 
-          {/* Users Grid */}
-          {filteredUsers.length === 0 ? (
-            <Card>
-              <CardContent className="p-12 text-center">
-                <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-600 mb-2">No users found</h3>
-                <p className="text-gray-500">Try adjusting your search or filter criteria</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className={viewMode === 'grid' 
-              ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' 
-              : 'space-y-4'
-            }>
-              {filteredUsers.map((user) => (
-                <UserCard key={user.id} user={user} />
-              ))}
-            </div>
-          )}
-        </main>
-      </div>
-    </SidebarProvider>
+        {/* Users Grid */}
+        {filteredUsers.length === 0 ? (
+          <Card>
+            <CardContent className="p-12 text-center">
+              <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-600 mb-2">No users found</h3>
+              <p className="text-gray-500">Try adjusting your search or filter criteria</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className={viewMode === 'grid' 
+            ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' 
+            : 'space-y-4'
+          }>
+            {filteredUsers.map((user) => (
+              <UserCard key={user.id} user={user} />
+            ))}
+          </div>
+        )}
+      </main>
+    </div>
   );
 };
-
-export default AdminUsers;
