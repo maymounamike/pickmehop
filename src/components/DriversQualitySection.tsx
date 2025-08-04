@@ -115,7 +115,7 @@ const DriversQualitySection = () => {
             </div>
             
             {/* Process flow - centered */}
-            <div className="flex items-center justify-center gap-8">
+            <div className="flex items-start justify-center gap-8">
               {vettingProcess.map((step, index) => (
                 <div key={index} className="text-center">
                   <div className="w-16 h-16 bg-[#ffdfcc] rounded-full flex items-center justify-center mb-4 mx-auto">
