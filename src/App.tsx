@@ -46,6 +46,9 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/signup" element={<SignupRoleSelection />} />
+            <Route path="/signup/driver" element={<DriverSignup />} />
+            <Route path="/signup/partner" element={<PartnerSignup />} />
             <Route path="/driver-signup" element={<DriverAuth />} />
             <Route path="/partner-signup" element={<PartnerAuth />} />
             <Route path="/drivers" element={<DriversManagement />} />
