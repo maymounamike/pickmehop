@@ -105,34 +105,26 @@ const DriversQualitySection = () => {
         </div>
 
         {/* Vetting Process Section */}
-        <div className="bg-gray-50 py-16">
-          <div className="max-w-6xl mx-auto">
+        <div className="bg-gradient-to-r from-[#0D2C54]/5 to-[#FFB400]/5 rounded-2xl p-8 lg:p-12">
+          <div className="max-w-5xl mx-auto">
             {/* Centered Title */}
             <div className="text-center mb-12">
-              <h3 className="text-2xl lg:text-3xl font-bold text-[#0D2C54] leading-tight mb-4">
+              <h3 className="text-2xl lg:text-3xl font-bold text-[#0D2C54] leading-tight">
                 Each driver is carefully handpicked and vetted by our team
               </h3>
-              <p className="text-gray-600 max-w-2xl mx-auto">
-                Our rigorous vetting process ensures every driver meets our high standards for safety, professionalism, and service quality.
-              </p>
             </div>
             
-            {/* Card-based Process Flow */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Process flow - centered */}
+            <div className="flex items-center justify-center gap-8">
               {vettingProcess.map((step, index) => (
-                <Card key={index} className="bg-white shadow-lg hover:shadow-xl transition-shadow duration-300 border-0">
-                  <CardContent className="p-6 text-center">
-                    <div className="w-16 h-16 bg-[#ffdfcc] rounded-full flex items-center justify-center mb-4 mx-auto">
-                      <step.icon className="w-8 h-8 text-[#ff6b35]" />
-                    </div>
-                    <h4 className="text-lg font-semibold text-[#0D2C54] mb-2">
-                      {step.title} {step.subtitle}
-                    </h4>
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                      {step.description}
-                    </p>
-                  </CardContent>
-                </Card>
+                <div key={index} className="text-center">
+                  <div className="w-16 h-16 bg-[#ffdfcc] rounded-full flex items-center justify-center mb-4 mx-auto">
+                    <step.icon className="w-8 h-8 text-[#ff6b35]" />
+                  </div>
+                  <p className="text-sm text-[#0D2C54] font-semibold max-w-[120px] leading-tight">
+                    {step.title} {step.subtitle}
+                  </p>
+                </div>
               ))}
             </div>
           </div>
