@@ -304,37 +304,65 @@ const AdminDashboard = () => {
             {/* Quick Actions Card */}
             <Card className="h-fit">
               <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <UserPlus className="h-5 w-5 text-[#0D2C54]" />
-                    Quick Actions
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
+                <CardTitle className="flex items-center gap-2">
+                  <UserPlus className="h-5 w-5 text-[#0D2C54]" />
+                  Quick Actions
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-3">
                   <Button 
-                    className="w-full bg-[#0D2C54] hover:bg-[#0D2C54]/90 text-white"
-                    onClick={() => navigate('/admin')}
+                    className="h-20 p-3 flex flex-col items-center justify-center space-y-2 bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-700 hover:text-emerald-800"
+                    variant="outline"
+                    onClick={() => navigate('/admin/users')}
                   >
-                    <Users className="mr-2 h-4 w-4" />
-                    Manage Users
+                    <Users className="h-6 w-6" />
+                    <span className="text-xs font-medium text-center">Manage Users</span>
                   </Button>
+                  
                   <Button 
-                    variant="outline" 
-                    className="w-full border-[#FFB400] text-[#0D2C54] hover:bg-[#FFB400]/10"
-                    onClick={() => navigate('/admin')}
+                    className="h-20 p-3 flex flex-col items-center justify-center space-y-2 bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700 hover:text-blue-800"
+                    variant="outline"
+                    onClick={() => navigate('/admin/driver-approvals')}
                   >
-                    <Car className="mr-2 h-4 w-4" />
-                    Driver Approvals ({stats.pendingDrivers})
+                    <div className="relative">
+                      <Car className="h-6 w-6" />
+                      {stats.pendingDrivers > 0 && (
+                        <div className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                          {stats.pendingDrivers}
+                        </div>
+                      )}
+                    </div>
+                    <span className="text-xs font-medium text-center">Driver Approvals</span>
                   </Button>
+                  
                   <Button 
-                    variant="outline" 
-                    className="w-full border-[#0D2C54] text-[#0D2C54]"
-                    onClick={() => navigate('/admin')}
+                    className="h-20 p-3 flex flex-col items-center justify-center space-y-2 bg-orange-50 hover:bg-orange-100 border-orange-200 text-orange-700 hover:text-orange-800"
+                    variant="outline"
+                    onClick={() => navigate('/admin/assign-rides')}
                   >
-                    <MapPin className="mr-2 h-4 w-4" />
-                    Assign Rides ({stats.unassignedRides})
+                    <div className="relative">
+                      <MapPin className="h-6 w-6" />
+                      {stats.unassignedRides > 0 && (
+                        <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                          {stats.unassignedRides}
+                        </div>
+                      )}
+                    </div>
+                    <span className="text-xs font-medium text-center">Assign Rides</span>
                   </Button>
-                </CardContent>
-              </Card>
+                  
+                  <Button 
+                    className="h-20 p-3 flex flex-col items-center justify-center space-y-2 bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-700 hover:text-purple-800"
+                    variant="outline"
+                    onClick={() => navigate('/admin/all-requests')}
+                  >
+                    <BarChart3 className="h-6 w-6" />
+                    <span className="text-xs font-medium text-center">All Requests</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
 
               {/* Performance Overview Card */}
               <Card className="h-fit">
