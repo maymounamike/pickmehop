@@ -4,14 +4,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft, Car, Phone, Mail, Building2, Shield, Chrome, Facebook, Apple } from "lucide-react";
+import { Loader2, ArrowLeft, Car, User, Briefcase, Mail, Lock, Eye, EyeOff, Chrome, Facebook } from "lucide-react";
+
+type AuthFlow = 'signin' | 'signup' | 'role-selection' | 'complete-profile';
+type UserRole = 'user' | 'driver' | 'partner';
 
 const Auth = () => {
+  // Form state
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -19,90 +21,27 @@ const Auth = () => {
   const [phone, setPhone] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [businessType, setBusinessType] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  
+  // Flow state
+  const [currentFlow, setCurrentFlow] = useState<AuthFlow>('signin');
+  const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
   const [loading, setLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState<string | null>(null);
-  const [phoneLoading, setPhoneLoading] = useState(false);
-  const [verificationCode, setVerificationCode] = useState("");
-  const [phoneVerificationSent, setPhoneVerificationSent] = useState(false);
+  
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if user is already logged in and redirect to dashboard
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
-        // Redirect to dashboard router which will handle role-based routing
         navigate("/dashboard");
       }
     };
     checkUser();
   }, [navigate]);
 
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !password) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const redirectUrl = `${window.location.origin}/`;
-      
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: redirectUrl,
-          data: {
-            first_name: firstName,
-            last_name: lastName,
-          }
-        }
-      });
-
-      if (error) {
-        if (error.message.includes("already registered")) {
-          toast({
-            title: "Account exists",
-            description: "This email is already registered. Please sign in instead.",
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Error",
-            description: error.message,
-            variant: "destructive",
-          });
-        }
-      } else {
-        toast({
-          title: "Success",
-          description: "Account created! Please check your email to verify your account.",
-        });
-        // Clear form
-        setEmail("");
-        setPassword("");
-        setFirstName("");
-        setLastName("");
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Enhanced OAuth handlers
   const handleGoogleSignIn = async () => {
     setOauthLoading('google');
     try {
@@ -145,160 +84,6 @@ const Auth = () => {
     }
   };
 
-  const handleAppleSignIn = async () => {
-    setOauthLoading('apple');
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'apple',
-        options: {
-          redirectTo: `${window.location.origin}/dashboard`
-        }
-      });
-      if (error) throw error;
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setOauthLoading(null);
-    }
-  };
-
-  // Enhanced phone authentication
-  const handlePhoneSignIn = async () => {
-    if (!phone) {
-      toast({
-        title: "Error",
-        description: "Please enter your phone number",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setPhoneLoading(true);
-    try {
-      const { error } = await supabase.functions.invoke('send-phone-verification', {
-        body: { phone }
-      });
-
-      if (error) throw error;
-
-      setPhoneVerificationSent(true);
-      toast({
-        title: "Code sent",
-        description: "Check your phone for the verification code",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to send verification code",
-        variant: "destructive",
-      });
-    } finally {
-      setPhoneLoading(false);
-    }
-  };
-
-  const handleVerifyPhone = async () => {
-    setPhoneLoading(true);
-    try {
-      const { error } = await supabase.functions.invoke('verify-phone-code', {
-        body: { phone, code: verificationCode }
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Phone verified! Redirecting...",
-      });
-      navigate('/dashboard');
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Invalid verification code",
-        variant: "destructive",
-      });
-    } finally {
-      setPhoneLoading(false);
-    }
-  };
-
-  // Enhanced partner registration
-  const handlePartnerSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !password || !companyName || !businessType) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-          data: {
-            first_name: firstName,
-            last_name: lastName,
-            company_name: companyName,
-            business_type: businessType,
-            role: 'partner'
-          }
-        }
-      });
-
-      if (error) throw error;
-
-      // Create partner profile
-      if (data.user) {
-        const { error: profileError } = await supabase.from('partners').insert({
-          user_id: data.user.id,
-          company_name: companyName,
-          partnership_type: businessType,
-          is_active: false // Requires admin approval
-        });
-
-        const { error: roleError } = await supabase.from('user_roles').insert({
-          user_id: data.user.id,
-          role: 'partner'
-        });
-
-        if (profileError || roleError) {
-          console.error('Profile creation error:', profileError || roleError);
-        }
-      }
-
-      toast({
-        title: "Application submitted",
-        description: "Your partner application is under review. You'll receive an email once approved.",
-      });
-      
-      // Clear form
-      setEmail("");
-      setPassword("");
-      setFirstName("");
-      setLastName("");
-      setCompanyName("");
-      setBusinessType("");
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
@@ -312,17 +97,12 @@ const Auth = () => {
 
     setLoading(true);
     try {
-      console.log('Attempting to sign in with:', email);
-      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      console.log('Sign in result:', { data, error });
-
       if (error) {
-        console.error('Sign in error:', error);
         if (error.message.includes("Invalid login credentials")) {
           toast({
             title: "Error",
@@ -337,8 +117,6 @@ const Auth = () => {
           });
         }
       } else {
-        console.log('Sign in successful:', data);
-        
         // Get user role and redirect appropriately
         const { data: roleData } = await supabase
           .from('user_roles')
@@ -346,34 +124,29 @@ const Auth = () => {
           .eq('user_id', data.user.id)
           .order('role', { ascending: true });
 
-        let redirectPath = '/customer'; // Default for regular users
+        let redirectPath = '/customer';
         
         if (roleData && roleData.length > 0) {
           const roles = roleData.map(r => r.role);
-          // Prioritize admin > driver > partner > user
           if (roles.includes('admin')) {
             redirectPath = '/admin';
           } else if (roles.includes('driver')) {
             redirectPath = '/driver';
           } else if (roles.includes('partner')) {
             redirectPath = '/partner';
-          } else {
-            redirectPath = '/customer';
           }
         }
 
         toast({
-          title: "Welcome!",
+          title: "Welcome back!",
           description: "Redirecting to your dashboard...",
         });
         
-        // Small delay to show the toast before redirecting
         setTimeout(() => {
           navigate(redirectPath);
         }, 1000);
       }
     } catch (error) {
-      console.error('Unexpected error during sign in:', error);
       toast({
         title: "Error",
         description: "An unexpected error occurred",
@@ -384,381 +157,564 @@ const Auth = () => {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 flex items-center justify-center p-4">
-      {/* Back to Home Button */}
-      <Button
-        variant="ghost"
-        className="absolute top-4 left-4 text-muted-foreground hover:text-foreground"
-        onClick={() => navigate("/")}
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Back to Home
-      </Button>
+  const handleEmailSignUp = async () => {
+    if (!selectedRole) {
+      toast({
+        title: "Error",
+        description: "Please select how you'll use Pick Me Hop",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!email || !password || !firstName || !lastName) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (selectedRole === 'partner' && (!companyName || !businessType)) {
+      toast({
+        title: "Error",
+        description: "Please fill in company information",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+          data: {
+            first_name: firstName,
+            last_name: lastName,
+            ...(selectedRole === 'partner' && {
+              company_name: companyName,
+              business_type: businessType,
+            })
+          }
+        }
+      });
+
+      if (error) {
+        if (error.message.includes("already registered")) {
+          toast({
+            title: "Account exists",
+            description: "This email is already registered. Please sign in instead.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: error.message,
+            variant: "destructive",
+          });
+        }
+        return;
+      }
+
+      // Set user role
+      if (data.user) {
+        const { error: roleError } = await supabase.from('user_roles').insert({
+          user_id: data.user.id,
+          role: selectedRole
+        });
+
+        // Create role-specific profile
+        if (selectedRole === 'partner') {
+          await supabase.from('partners').insert({
+            user_id: data.user.id,
+            company_name: companyName,
+            partnership_type: businessType,
+            is_active: false
+          });
+        }
+
+        if (roleError) {
+          console.error('Role assignment error:', roleError);
+        }
+      }
+
+      toast({
+        title: "Account created!",
+        description: selectedRole === 'partner' 
+          ? "Your partner application is under review. Check your email to verify your account."
+          : "Please check your email to verify your account.",
+      });
       
-      <Card className="w-full max-w-lg">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Pick Me Hop Authentication</CardTitle>
-          <CardDescription>Choose your role to get started</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="customer" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="customer" className="text-xs">
-                <Mail className="h-3 w-3 mr-1" />
-                Customer
-              </TabsTrigger>
-              <TabsTrigger value="driver" className="text-xs">
-                <Car className="h-3 w-3 mr-1" />
-                Driver
-              </TabsTrigger>
-              <TabsTrigger value="partner" className="text-xs">
-                <Building2 className="h-3 w-3 mr-1" />
-                Partner
-              </TabsTrigger>
-              <TabsTrigger value="admin" className="text-xs">
-                <Shield className="h-3 w-3 mr-1" />
-                Admin
-              </TabsTrigger>
-            </TabsList>
-            
-            {/* Customer Authentication */}
-            <TabsContent value="customer" className="space-y-4">
-              <div className="text-center mb-4">
-                <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                  Customer Portal
-                </Badge>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Book rides, manage trips, and track your journey
-                </p>
-              </div>
+      // Reset form
+      setEmail("");
+      setPassword("");
+      setFirstName("");
+      setLastName("");
+      setCompanyName("");
+      setBusinessType("");
+      setCurrentFlow('signin');
+      setSelectedRole(null);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-              {/* Social Login Options */}
-              <div className="grid grid-cols-3 gap-2 mb-4">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleGoogleSignIn}
-                  disabled={oauthLoading === 'google'}
-                >
-                  {oauthLoading === 'google' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Chrome className="h-4 w-4" />}
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleFacebookSignIn}
-                  disabled={oauthLoading === 'facebook'}
-                >
-                  {oauthLoading === 'facebook' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Facebook className="h-4 w-4" />}
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleAppleSignIn}
-                  disabled={oauthLoading === 'apple'}
-                >
-                  {oauthLoading === 'apple' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Apple className="h-4 w-4" />}
-                </Button>
-              </div>
+  const handleSocialSignUp = async (provider: 'google' | 'facebook') => {
+    if (!selectedRole) {
+      toast({
+        title: "Error",
+        description: "Please select how you'll use Pick Me Hop first",
+        variant: "destructive",
+      });
+      return;
+    }
 
-              <Separator className="my-4" />
+    setOauthLoading(provider);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`,
+          queryParams: {
+            role: selectedRole
+          }
+        }
+      });
+      if (error) throw error;
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setOauthLoading(null);
+    }
+  };
 
-              {/* Phone Authentication */}
-              <div className="space-y-3">
-                <Label>Sign in with Phone</Label>
-                {!phoneVerificationSent ? (
-                  <div className="flex gap-2">
-                    <Input
-                      type="tel"
-                      placeholder="+33 6 12 34 56 78"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      className="flex-1"
-                    />
-                    <Button 
-                      onClick={handlePhoneSignIn} 
-                      disabled={phoneLoading}
-                      size="sm"
-                    >
-                      {phoneLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Phone className="h-4 w-4" />}
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex gap-2">
-                    <Input
-                      type="text"
-                      placeholder="Enter verification code"
-                      value={verificationCode}
-                      onChange={(e) => setVerificationCode(e.target.value)}
-                      className="flex-1"
-                    />
-                    <Button 
-                      onClick={handleVerifyPhone} 
-                      disabled={phoneLoading}
-                      size="sm"
-                    >
-                      Verify
-                    </Button>
-                  </div>
-                )}
-              </div>
+  const roleCards = [
+    {
+      id: 'user' as UserRole,
+      title: 'Customer',
+      description: 'Book rides',
+      icon: User,
+      color: 'bg-blue-50 border-blue-200 hover:bg-blue-100',
+      selectedColor: 'bg-blue-100 border-blue-500'
+    },
+    {
+      id: 'driver' as UserRole,
+      title: 'Driver',
+      description: 'Drive & earn',
+      icon: Car,
+      color: 'bg-green-50 border-green-200 hover:bg-green-100',
+      selectedColor: 'bg-green-100 border-green-500'
+    },
+    {
+      id: 'partner' as UserRole,
+      title: 'Partner',
+      description: 'Business account',
+      icon: Briefcase,
+      color: 'bg-purple-50 border-purple-200 hover:bg-purple-100',
+      selectedColor: 'bg-purple-100 border-purple-500'
+    }
+  ];
 
-              <Separator className="my-4" />
-
-              {/* Email/Password */}
-              <form onSubmit={handleSignIn} className="space-y-3">
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <Label htmlFor="first-name">First Name</Label>
-                    <Input
-                      id="first-name"
-                      placeholder="John"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="last-name">Last Name</Label>
-                    <Input
-                      id="last-name"
-                      placeholder="Doe"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="email">Email</Label>
+  if (currentFlow === 'signin') {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Button
+          variant="ghost"
+          className="absolute top-4 left-4 text-muted-foreground hover:text-foreground"
+          onClick={() => navigate("/")}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Home
+        </Button>
+        
+        <Card className="w-full max-w-md shadow-lg">
+          <CardHeader className="text-center space-y-2">
+            <CardTitle className="text-2xl font-semibold">Welcome to Pick Me Hop</CardTitle>
+            <p className="text-muted-foreground text-sm">Sign in to your account</p>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <form onSubmit={handleSignIn} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="email"
                     type="email"
-                    placeholder="john@example.com"
+                    placeholder="Enter your email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    className="pl-10"
                     required
                   />
                 </div>
-                <div>
-                  <Label htmlFor="password">Password</Label>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-sm font-medium">Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="password"
-                    type="password"
-                    placeholder="Your password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    className="pl-10 pr-10"
                     required
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <Button type="submit" disabled={loading} variant="outline">
-                    {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Mail className="mr-2 h-4 w-4" />}
-                    Sign In
-                  </Button>
-                  <Button type="button" onClick={handleSignUp} disabled={loading}>
-                    {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                    Sign Up
-                  </Button>
-                </div>
-              </form>
-            </TabsContent>
-
-            {/* Driver Authentication */}
-            <TabsContent value="driver" className="space-y-4">
-              <div className="text-center mb-4">
-                <Badge variant="secondary" className="bg-orange-100 text-orange-800">
-                  Driver Portal - Secure Access
-                </Badge>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Enhanced security for professional drivers
-                </p>
               </div>
 
-              <form onSubmit={handleSignIn} className="space-y-3">
-                <div>
-                  <Label htmlFor="driver-email">Email</Label>
+              <Button type="submit" className="w-full h-11" disabled={loading}>
+                {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                Sign In
+              </Button>
+            </form>
+
+            <div className="text-center">
+              <Button variant="link" className="text-sm text-muted-foreground p-0">
+                Forgot password?
+              </Button>
+            </div>
+
+            <div className="relative">
+              <Separator />
+              <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-xs text-muted-foreground">
+                OR
+              </span>
+            </div>
+
+            <div className="space-y-3">
+              <Button 
+                variant="outline" 
+                className="w-full h-11" 
+                onClick={handleGoogleSignIn}
+                disabled={oauthLoading === 'google'}
+              >
+                {oauthLoading === 'google' ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Chrome className="mr-2 h-4 w-4 text-blue-600" />
+                )}
+                Continue with Google
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                className="w-full h-11" 
+                onClick={handleFacebookSignIn}
+                disabled={oauthLoading === 'facebook'}
+              >
+                {oauthLoading === 'facebook' ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Facebook className="mr-2 h-4 w-4 text-blue-700" />
+                )}
+                Continue with Facebook
+              </Button>
+            </div>
+
+            <div className="text-center">
+              <span className="text-sm text-muted-foreground">Don't have an account? </span>
+              <Button 
+                variant="link" 
+                className="text-sm p-0 h-auto font-medium"
+                onClick={() => setCurrentFlow('signup')}
+              >
+                Sign up
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (currentFlow === 'signup') {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Button
+          variant="ghost"
+          className="absolute top-4 left-4 text-muted-foreground hover:text-foreground"
+          onClick={() => setCurrentFlow('signin')}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Sign In
+        </Button>
+        
+        <Card className="w-full max-w-md shadow-lg">
+          <CardHeader className="text-center space-y-2">
+            <CardTitle className="text-2xl font-semibold">Create Your Account</CardTitle>
+            <p className="text-muted-foreground text-sm">Choose how you'd like to get started</p>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-3">
+              <Button 
+                variant="outline" 
+                className="w-full h-11" 
+                onClick={handleGoogleSignIn}
+                disabled={oauthLoading === 'google'}
+              >
+                {oauthLoading === 'google' ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Chrome className="mr-2 h-4 w-4 text-blue-600" />
+                )}
+                Sign up with Google
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                className="w-full h-11" 
+                onClick={handleFacebookSignIn}
+                disabled={oauthLoading === 'facebook'}
+              >
+                {oauthLoading === 'facebook' ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Facebook className="mr-2 h-4 w-4 text-blue-700" />
+                )}
+                Sign up with Facebook
+              </Button>
+            </div>
+
+            <div className="relative">
+              <Separator />
+              <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-xs text-muted-foreground">
+                OR
+              </span>
+            </div>
+
+            <Button 
+              variant="default" 
+              className="w-full h-11" 
+              onClick={() => setCurrentFlow('role-selection')}
+            >
+              <Mail className="mr-2 h-4 w-4" />
+              Sign up with Email
+            </Button>
+
+            <div className="text-center">
+              <span className="text-sm text-muted-foreground">Already have an account? </span>
+              <Button 
+                variant="link" 
+                className="text-sm p-0 h-auto font-medium"
+                onClick={() => setCurrentFlow('signin')}
+              >
+                Sign in
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (currentFlow === 'role-selection') {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Button
+          variant="ghost"
+          className="absolute top-4 left-4 text-muted-foreground hover:text-foreground"
+          onClick={() => setCurrentFlow('signup')}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back
+        </Button>
+        
+        <Card className="w-full max-w-md shadow-lg">
+          <CardHeader className="text-center space-y-2">
+            <CardTitle className="text-2xl font-semibold">How will you use Pick Me Hop?</CardTitle>
+            <p className="text-muted-foreground text-sm">Select your account type to continue</p>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid gap-3">
+              {roleCards.map((role) => {
+                const Icon = role.icon;
+                const isSelected = selectedRole === role.id;
+                
+                return (
+                  <button
+                    key={role.id}
+                    onClick={() => setSelectedRole(role.id)}
+                    className={`p-4 rounded-lg border-2 text-left transition-all ${
+                      isSelected ? role.selectedColor : role.color
+                    }`}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <Icon className="h-6 w-6" />
+                      <div>
+                        <div className="font-medium">{role.title}</div>
+                        <div className="text-sm text-muted-foreground">{role.description}</div>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {selectedRole && (
+              <Button 
+                className="w-full h-11" 
+                onClick={() => setCurrentFlow('complete-profile')}
+              >
+                Continue
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (currentFlow === 'complete-profile') {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Button
+          variant="ghost"
+          className="absolute top-4 left-4 text-muted-foreground hover:text-foreground"
+          onClick={() => setCurrentFlow('role-selection')}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back
+        </Button>
+        
+        <Card className="w-full max-w-md shadow-lg">
+          <CardHeader className="text-center space-y-2">
+            <CardTitle className="text-2xl font-semibold">Complete Your Profile</CardTitle>
+            <p className="text-muted-foreground text-sm">
+              {selectedRole === 'partner' ? 'Business information required' : 'Just a few more details'}
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <form onSubmit={(e) => { e.preventDefault(); handleEmailSignUp(); }} className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName" className="text-sm font-medium">First Name</Label>
                   <Input
-                    id="driver-email"
-                    type="email"
-                    placeholder="driver@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    id="firstName"
+                    placeholder="John"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
                     required
                   />
                 </div>
-                <div>
-                  <Label htmlFor="driver-password">Password</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName" className="text-sm font-medium">Last Name</Label>
                   <Input
-                    id="driver-password"
-                    type="password"
-                    placeholder="Your secure password"
+                    id="lastName"
+                    placeholder="Doe"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="john@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-sm font-medium">Password</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Create a password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    className="pr-10"
                     required
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
-                <div>
-                  <Label htmlFor="driver-phone">Phone (Required for Security)</Label>
-                  <Input
-                    id="driver-phone"
-                    type="tel"
-                    placeholder="+33 6 12 34 56 78"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    required
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Car className="mr-2 h-4 w-4" />}
-                  Driver Sign In
-                </Button>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={() => navigate("/driver-signup")}
-                >
-                  Apply to Become a Driver
-                </Button>
-              </form>
-            </TabsContent>
-
-            {/* Partner Authentication */}
-            <TabsContent value="partner" className="space-y-4">
-              <div className="text-center mb-4">
-                <Badge variant="secondary" className="bg-green-100 text-green-800">
-                  Partner Portal
-                </Badge>
-                <p className="text-sm text-muted-foreground mt-2">
-                  For hotels, travel agencies, and business partners
-                </p>
               </div>
 
-              <form onSubmit={handlePartnerSignUp} className="space-y-3">
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <Label htmlFor="partner-first-name">First Name</Label>
+              <div className="space-y-2">
+                <Label htmlFor="phone" className="text-sm font-medium">Phone Number</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="+33 6 12 34 56 78"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
+              </div>
+
+              {selectedRole === 'partner' && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="companyName" className="text-sm font-medium">Company Name</Label>
                     <Input
-                      id="partner-first-name"
-                      placeholder="John"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
+                      id="companyName"
+                      placeholder="Your Company Ltd."
+                      value={companyName}
+                      onChange={(e) => setCompanyName(e.target.value)}
                       required
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="partner-last-name">Last Name</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="businessType" className="text-sm font-medium">Business Type</Label>
                     <Input
-                      id="partner-last-name"
-                      placeholder="Doe"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
+                      id="businessType"
+                      placeholder="Hotel, Travel Agency, etc."
+                      value={businessType}
+                      onChange={(e) => setBusinessType(e.target.value)}
                       required
                     />
                   </div>
-                </div>
-                <div>
-                  <Label htmlFor="company-name">Company Name</Label>
-                  <Input
-                    id="company-name"
-                    placeholder="Your Company Ltd."
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="business-type">Business Type</Label>
-                  <Input
-                    id="business-type"
-                    placeholder="Hotel, Travel Agency, etc."
-                    value={businessType}
-                    onChange={(e) => setBusinessType(e.target.value)}
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="partner-email">Business Email</Label>
-                  <Input
-                    id="partner-email"
-                    type="email"
-                    placeholder="contact@company.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="partner-password">Password</Label>
-                  <Input
-                    id="partner-password"
-                    type="password"
-                    placeholder="Secure password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <Button type="submit" disabled={loading} variant="outline">
-                    {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Mail className="mr-2 h-4 w-4" />}
-                    Sign In
-                  </Button>
-                  <Button type="button" onClick={handlePartnerSignUp} disabled={loading}>
-                    {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Building2 className="mr-2 h-4 w-4" />}
-                    Apply as Partner
-                  </Button>
-                </div>
-              </form>
-            </TabsContent>
+                </>
+              )}
 
-            {/* Admin Authentication */}
-            <TabsContent value="admin" className="space-y-4">
-              <div className="text-center mb-4">
-                <Badge variant="destructive" className="bg-red-100 text-red-800">
-                  Admin Portal - Maximum Security
-                </Badge>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Administrative access with 2FA required
-                </p>
-              </div>
+              <Button type="submit" className="w-full h-11" disabled={loading}>
+                {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                Create Account
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
-              <form onSubmit={handleSignIn} className="space-y-3">
-                <div>
-                  <Label htmlFor="admin-email">Admin Email</Label>
-                  <Input
-                    id="admin-email"
-                    type="email"
-                    placeholder="admin@pickmehop.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="admin-password">Password</Label>
-                  <Input
-                    id="admin-password"
-                    type="password"
-                    placeholder="Your admin password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Shield className="mr-2 h-4 w-4" />}
-                  Admin Sign In (2FA Required)
-                </Button>
-                <p className="text-xs text-muted-foreground text-center">
-                  Admin access requires two-factor authentication
-                </p>
-              </form>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
-    </div>
-  );
+  return null;
 };
 
 export default Auth;
