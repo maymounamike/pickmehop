@@ -1,4 +1,4 @@
-import { Car, Users, Luggage, Plane, MapPin, Clock, Shield } from "lucide-react";
+import { Car, Users, Luggage, Plane, MapPin, Clock, Shield, Bus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -153,7 +153,7 @@ const PricingSection = () => {
                         : 'border-border hover:border-primary/50 hover:shadow-sm'
                     }`}>
                       <div className="text-center mb-3">
-                        <Users className="w-8 h-8 mx-auto mb-2 text-primary" />
+                        <Bus className="w-8 h-8 mx-auto mb-2 text-primary" />
                         <h4 className="font-semibold text-foreground text-sm">MINIVAN</h4>
                       </div>
                       <div className="text-center">
