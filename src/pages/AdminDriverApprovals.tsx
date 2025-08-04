@@ -270,97 +270,83 @@ const AdminDriverApprovals = () => {
 
   if (loading) {
     return (
-      <SidebarProvider>
-        <div className="flex min-h-screen w-full">
-          <AdminSidebar 
-            activeTab="driver-approvals" 
-            onTabChange={(tab) => navigate(`/admin/${tab}`)}
-            stats={{ unassignedRides: 0, activeDrivers: 0, pendingDrivers: 0, totalBookings: 0 }}
-          />
-          <main className="flex-1 p-8">
-            <div className="animate-pulse space-y-4">
-              <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-            </div>
+      <div className="min-h-screen w-full bg-gray-50">
+        <main className="p-8">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+          </div>
         </main>
       </div>
     );
   }
 
   return (
-    <SidebarProvider>
-      <div className="flex min-h-screen w-full">
-        <AdminSidebar 
-          activeTab="driver-approvals" 
-          onTabChange={(tab) => navigate(`/admin/${tab}`)}
-          stats={{ unassignedRides: 0, activeDrivers: 0, pendingDrivers: pendingCount, totalBookings: 0 }}
-        />
-        
-        <main className="flex-1 p-8 bg-gray-50">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center space-x-3 mb-2">
-              <Car className="h-8 w-8 text-emerald-600" />
-              <h1 className="text-3xl font-bold text-gray-800">Driver Approvals</h1>
-              <Badge variant="secondary" className="text-sm">
-                {pendingCount} pending
-              </Badge>
-            </div>
-            <p className="text-gray-600">Review and approve driver applications</p>
+    <div className="min-h-screen w-full bg-gray-50">
+      <main className="p-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center space-x-3 mb-2">
+            <Car className="h-8 w-8 text-emerald-600" />
+            <h1 className="text-3xl font-bold text-gray-800">Driver Approvals</h1>
+            <Badge variant="secondary" className="text-sm">
+              {pendingCount} pending
+            </Badge>
           </div>
+          <p className="text-gray-600">Review and approve driver applications</p>
+        </div>
 
-          {/* Controls */}
-          <div className="mb-6 flex items-center justify-between">
-            <Tabs value={filterTab} onValueChange={setFilterTab}>
-              <TabsList>
-                <TabsTrigger value="pending">
-                  Pending Review
-                  {pendingCount > 0 && (
-                    <Badge variant="secondary" className="ml-2 text-xs">
-                      {pendingCount}
-                    </Badge>
-                  )}
-                </TabsTrigger>
-                <TabsTrigger value="approved">
-                  Approved
+        {/* Controls */}
+        <div className="mb-6 flex items-center justify-between">
+          <Tabs value={filterTab} onValueChange={setFilterTab}>
+            <TabsList>
+              <TabsTrigger value="pending">
+                Pending Review
+                {pendingCount > 0 && (
                   <Badge variant="secondary" className="ml-2 text-xs">
-                    {approvedCount}
+                    {pendingCount}
                   </Badge>
-                </TabsTrigger>
-                <TabsTrigger value="all">All Applications</TabsTrigger>
-              </TabsList>
-            </Tabs>
-            
-            <Select value={sortOption} onValueChange={setSortOption}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="newest">Newest First</SelectItem>
-                <SelectItem value="oldest">Oldest First</SelectItem>
-                <SelectItem value="name">Name A-Z</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="approved">
+                Approved
+                <Badge variant="secondary" className="ml-2 text-xs">
+                  {approvedCount}
+                </Badge>
+              </TabsTrigger>
+              <TabsTrigger value="all">All Applications</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          
+          <Select value={sortOption} onValueChange={setSortOption}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">Newest First</SelectItem>
+              <SelectItem value="oldest">Oldest First</SelectItem>
+              <SelectItem value="name">Name A-Z</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-          {/* Applications List */}
-          <div className="space-y-4">
-            {getFilteredApplications().length === 0 ? (
-              <Card>
-                <CardContent className="p-12 text-center">
-                  <Car className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-600 mb-2">No applications found</h3>
-                  <p className="text-gray-500">No driver applications match the current filter</p>
-                </CardContent>
-              </Card>
-            ) : (
-              getFilteredApplications().map((application) => (
-                <ApplicationCard key={application.id} application={application} />
-              ))
-            )}
-          </div>
-        </main>
-      </div>
+        {/* Applications List */}
+        <div className="space-y-4">
+          {getFilteredApplications().length === 0 ? (
+            <Card>
+              <CardContent className="p-12 text-center">
+                <Car className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-600 mb-2">No applications found</h3>
+                <p className="text-gray-500">No driver applications match the current filter</p>
+              </CardContent>
+            </Card>
+          ) : (
+            getFilteredApplications().map((application) => (
+              <ApplicationCard key={application.id} application={application} />
+            ))
+          )}
+        </div>
+      </main>
 
       {/* Action Dialog */}
       <Dialog open={selectedApp !== null} onOpenChange={() => setSelectedApp(null)}>
@@ -422,7 +408,7 @@ const AdminDriverApprovals = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </SidebarProvider>
+    </div>
   );
 };
 

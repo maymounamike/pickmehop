@@ -290,117 +290,103 @@ const AdminAssignRides = () => {
 
   if (loading) {
     return (
-      <SidebarProvider>
-        <div className="flex min-h-screen w-full">
-          <AdminSidebar 
-            activeTab="assign-rides" 
-            onTabChange={(tab) => navigate(`/admin/${tab}`)}
-            stats={{ unassignedRides: 0, activeDrivers: 0, pendingDrivers: 0, totalBookings: 0 }}
-          />
-          <main className="flex-1 p-8">
-            <div className="animate-pulse space-y-4">
-              <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-            </div>
+      <div className="min-h-screen w-full bg-gray-50">
+        <main className="p-8">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+          </div>
         </main>
       </div>
     );
   }
 
   return (
-    <SidebarProvider>
-      <div className="flex min-h-screen w-full">
-        <AdminSidebar 
-          activeTab="assign-rides" 
-          onTabChange={(tab) => navigate(`/admin/${tab}`)}
-          stats={{ unassignedRides: unassignedCount, activeDrivers: availableDrivers.length, pendingDrivers: 0, totalBookings: 0 }}
-        />
-        
-        <main className="flex-1 p-8 bg-gray-50">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center space-x-3 mb-2">
-              <Car className="h-8 w-8 text-emerald-600" />
-              <h1 className="text-3xl font-bold text-gray-800">Assign Rides</h1>
-              <Badge variant="secondary" className="text-sm">
-                {unassignedCount} unassigned
+    <div className="min-h-screen w-full bg-gray-50">
+      <main className="p-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center space-x-3 mb-2">
+            <Car className="h-8 w-8 text-emerald-600" />
+            <h1 className="text-3xl font-bold text-gray-800">Assign Rides</h1>
+            <Badge variant="secondary" className="text-sm">
+              {unassignedCount} unassigned
+            </Badge>
+            {urgentCount > 0 && (
+              <Badge className="bg-red-100 text-red-800">
+                <AlertTriangle className="h-3 w-3 mr-1" />
+                {urgentCount} urgent
               </Badge>
-              {urgentCount > 0 && (
-                <Badge className="bg-red-100 text-red-800">
-                  <AlertTriangle className="h-3 w-3 mr-1" />
-                  {urgentCount} urgent
-                </Badge>
-              )}
-            </div>
-            <p className="text-gray-600">Assign available drivers to ride requests</p>
+            )}
           </div>
+          <p className="text-gray-600">Assign available drivers to ride requests</p>
+        </div>
 
-          {/* Controls */}
-          <div className="mb-6 space-y-4">
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-              <div className="flex space-x-4">
-                <Select value={filterOption} onValueChange={setFilterOption}>
-                  <SelectTrigger className="w-[180px]">
-                    <Filter className="h-4 w-4 mr-2" />
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Unassigned</SelectItem>
-                    <SelectItem value="urgent">Urgent Only</SelectItem>
-                    <SelectItem value="scheduled">Scheduled</SelectItem>
-                    <SelectItem value="asap">ASAP Requests</SelectItem>
-                  </SelectContent>
-                </Select>
-                
-                <Select value={sortOption} onValueChange={setSortOption}>
-                  <SelectTrigger className="w-[160px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pickup-time">Pickup Time</SelectItem>
-                    <SelectItem value="request-time">Request Time</SelectItem>
-                    <SelectItem value="price">Price</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+        {/* Controls */}
+        <div className="mb-6 space-y-4">
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+            <div className="flex space-x-4">
+              <Select value={filterOption} onValueChange={setFilterOption}>
+                <SelectTrigger className="w-[180px]">
+                  <Filter className="h-4 w-4 mr-2" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Unassigned</SelectItem>
+                  <SelectItem value="urgent">Urgent Only</SelectItem>
+                  <SelectItem value="scheduled">Scheduled</SelectItem>
+                  <SelectItem value="asap">ASAP Requests</SelectItem>
+                </SelectContent>
+              </Select>
               
-              <div className="flex space-x-2">
-                <Button
-                  variant={viewMode === 'list' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setViewMode('list')}
-                >
-                  <List className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant={viewMode === 'map' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setViewMode('map')}
-                >
-                  <Map className="h-4 w-4" />
-                </Button>
-              </div>
+              <Select value={sortOption} onValueChange={setSortOption}>
+                <SelectTrigger className="w-[160px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pickup-time">Pickup Time</SelectItem>
+                  <SelectItem value="request-time">Request Time</SelectItem>
+                  <SelectItem value="price">Price</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="flex space-x-2">
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+              >
+                <List className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'map' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('map')}
+              >
+                <Map className="h-4 w-4" />
+              </Button>
             </div>
           </div>
+        </div>
 
-          {/* Ride Requests */}
-          {getFilteredRequests().length === 0 ? (
-            <Card>
-              <CardContent className="p-12 text-center">
-                <Car className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-600 mb-2">No unassigned rides</h3>
-                <p className="text-gray-500">All rides have been assigned to drivers</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {getFilteredRequests().map((request) => (
-                <RideRequestCard key={request.id} request={request} />
-              ))}
-            </div>
-          )}
-        </main>
-      </div>
+        {/* Ride Requests */}
+        {getFilteredRequests().length === 0 ? (
+          <Card>
+            <CardContent className="p-12 text-center">
+              <Car className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-600 mb-2">No unassigned rides</h3>
+              <p className="text-gray-500">All rides have been assigned to drivers</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {getFilteredRequests().map((request) => (
+              <RideRequestCard key={request.id} request={request} />
+            ))}
+          </div>
+        )}
+      </main>
 
       {/* Assignment Dialog */}
       <Dialog open={selectedRide !== null} onOpenChange={() => setSelectedRide(null)}>
@@ -487,7 +473,7 @@ const AdminAssignRides = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </SidebarProvider>
+    </div>
   );
 };
 
