@@ -117,8 +117,8 @@ const DriversQualitySection = () => {
             {vettingProcess.map((step, index) => (
               <div key={index} className="flex items-center">
                 <div className="text-center">
-                  <div className="w-16 h-16 bg-[#FFB400] rounded-2xl flex items-center justify-center mb-4 mx-auto shadow-lg">
-                    <step.icon className="w-8 h-8 text-[#0D2C54]" />
+                  <div className="w-16 h-16 bg-[#ffdfcc] rounded-full flex items-center justify-center mb-4 mx-auto shadow-lg">
+                    <step.icon className="w-8 h-8 text-[#ff6b35]" />
                   </div>
                   <h4 className="font-bold text-[#0D2C54] mb-1 text-sm">
                     {step.title}
@@ -145,8 +145,8 @@ const DriversQualitySection = () => {
           <div className="lg:hidden space-y-6">
             {vettingProcess.map((step, index) => (
               <div key={index} className="flex items-center gap-4 bg-white/50 rounded-xl p-4">
-                <div className="w-12 h-12 bg-[#FFB400] rounded-xl flex items-center justify-center flex-shrink-0">
-                  <step.icon className="w-6 h-6 text-[#0D2C54]" />
+                <div className="w-12 h-12 bg-[#ffdfcc] rounded-full flex items-center justify-center flex-shrink-0">
+                  <step.icon className="w-6 h-6 text-[#ff6b35]" />
                 </div>
                 <div className="flex-1">
                   <h4 className="font-bold text-[#0D2C54] mb-1">
