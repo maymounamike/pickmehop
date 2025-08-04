@@ -23,11 +23,11 @@ const ReliableSafeSection = () => {
           Reliable and safe
         </h2>
         
-        <div className="flex flex-col lg:flex-row justify-between items-start gap-10 lg:gap-8">
+        <div className="flex flex-row justify-between items-start gap-8 flex-wrap">
           {features.map((feature, index) => (
             <div key={index} className="flex items-center gap-5 flex-1 min-w-0">
-              <div className="w-15 h-15 bg-[#ffdfcc] rounded-full flex items-center justify-center flex-shrink-0">
-                <feature.icon className="w-6 h-6 text-[#ff6b35]" />
+              <div className="w-15 h-15 bg-[#c8f0e3] rounded-full flex items-center justify-center flex-shrink-0">
+                <feature.icon className="w-6 h-6 text-[#4a9c6d]" />
               </div>
               <p className="text-[#5a6c7d] text-base leading-relaxed">
                 {feature.text}
