@@ -23,7 +23,8 @@ const HeroSection = () => {
 
   return (
     <section 
-      className="relative min-h-screen lg:min-h-[140vh] flex items-center justify-center overflow-hidden pt-16 sm:pt-20 pb-20 sm:pb-32 bg-primary"
+      className="relative min-h-screen lg:min-h-[140vh] flex items-center justify-center overflow-hidden pt-16 sm:pt-20 pb-20 sm:pb-32"
+      style={{ backgroundColor: '#2d5d3d' }}
       aria-label="Book a ride service"
     >
       {/* Background Image - Hidden on mobile and tablet, visible on desktop */}
@@ -64,15 +65,15 @@ const HeroSection = () => {
           {/* Trust Indicators - Now above the form */}
           <div className="flex flex-wrap items-center justify-center gap-6 text-white text-sm font-medium mb-6">
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
+              <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: '#ff4444' }} />
               <span style={{ textShadow: '1px 1px 2px rgba(45, 52, 54, 0.6)' }}>Fixed Prices</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-highlight rounded-full animate-pulse delay-100" />
+              <div className="w-2 h-2 rounded-full animate-pulse delay-100" style={{ backgroundColor: '#ff4444' }} />
               <span style={{ textShadow: '1px 1px 2px rgba(45, 52, 54, 0.6)' }}>24/7 Support</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-primary rounded-full animate-pulse delay-200" />
+              <div className="w-2 h-2 rounded-full animate-pulse delay-200" style={{ backgroundColor: '#ff4444' }} />
               <span style={{ textShadow: '1px 1px 2px rgba(45, 52, 54, 0.6)' }}>Flight Tracking</span>
             </div>
           </div>
