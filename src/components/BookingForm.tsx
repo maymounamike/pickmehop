@@ -223,6 +223,93 @@ const BookingForm = () => {
     return R * c;
   };
 
+  // Function to calculate distance-based pricing for routes not in fixed pricing zones
+  const calculateDistanceBasedPricing = async (from: string, to: string, passengers: number, luggage: number) => {
+    try {
+      // Get Google Maps API key from cache or fetch it
+      let apiKey = googleMapsApiKey;
+      if (!apiKey) {
+        const { data: keyData, error: keyError } = await supabase.functions.invoke('get-google-maps-key');
+        if (keyError || !keyData?.key) {
+          console.error('Failed to get Google Maps API key:', keyError);
+          // Fallback to custom quote if API unavailable
+          return { price: null, isDisneyland: false, needsQuote: true, isBeauvaisParisRoute: false };
+        }
+        apiKey = keyData.key;
+        setGoogleMapsApiKey(apiKey);
+      }
+
+      // Load Google Maps API
+      const loader = new Loader({
+        apiKey: apiKey,
+        version: "weekly",
+        libraries: ["places", "geometry"]
+      });
+
+      await loader.load();
+
+      const service = new google.maps.DistanceMatrixService();
+      
+      const result = await new Promise<google.maps.DistanceMatrixResponse>((resolve, reject) => {
+        service.getDistanceMatrix({
+          origins: [from],
+          destinations: [to],
+          travelMode: google.maps.TravelMode.DRIVING,
+          avoidHighways: false,
+          avoidTolls: false
+        }, (response, status) => {
+          if (status === google.maps.DistanceMatrixStatus.OK && response) {
+            resolve(response);
+          } else {
+            reject(new Error(`Distance Matrix API error: ${status}`));
+          }
+        });
+      });
+
+      const distance = result.rows[0]?.elements[0]?.distance?.value;
+      if (!distance) {
+        // Fallback to custom quote if distance couldn't be calculated
+        return { price: null, isDisneyland: false, needsQuote: true, isBeauvaisParisRoute: false };
+      }
+
+      const distanceKm = distance / 1000; // Convert meters to kilometers
+
+      // Apply per-kilometer pricing rules
+      let basePrice: number;
+      let vehicleType: string;
+
+      if (passengers <= 4 && luggage <= 4) {
+        // Sedan pricing: 5€/km with 50€ minimum
+        basePrice = Math.max(distanceKm * 5, 50);
+        vehicleType = "sedan";
+      } else if (passengers <= 8 && luggage <= 8) {
+        // Minivan pricing: 8€/km with 80€ minimum
+        basePrice = Math.max(distanceKm * 8, 80);
+        vehicleType = "minivan";
+      } else {
+        // Exceeds capacity - fallback to custom quote
+        return { price: null, isDisneyland: false, needsQuote: true, isBeauvaisParisRoute: false };
+      }
+
+      // Round to nearest euro
+      const finalPrice = Math.round(basePrice);
+      
+      return { 
+        price: finalPrice, 
+        isDisneyland: false, 
+        needsQuote: false, 
+        isBeauvaisParisRoute: false,
+        distanceKm: Math.round(distanceKm * 10) / 10, // Round to 1 decimal
+        vehicleType
+      };
+
+    } catch (error) {
+      console.error('Error calculating distance-based pricing:', error);
+      // Fallback to custom quote if calculation fails
+      return { price: null, isDisneyland: false, needsQuote: true, isBeauvaisParisRoute: false };
+    }
+  };
+
   // Cache for geocoding results to prevent repeated API calls
   const geocodingCache = useMemo(() => new Map<string, boolean>(), []);
 
@@ -367,9 +454,11 @@ const BookingForm = () => {
     const isOriginInServiceArea = isOriginWithinDisneyGeofence || isCDGLocation(from) || isOrlyLocation(from) || isBeauvaisLocation(from);
     const isDestinationInServiceArea = isDestinationWithinDisneyGeofence || isCDGLocation(to) || isOrlyLocation(to) || isBeauvaisLocation(to);
     
-    // If neither origin nor destination is in our service area, require custom quote
+    // If neither origin nor destination is in our service area, use per-kilometer pricing
     if (!isOriginInServiceArea && !isDestinationInServiceArea) {
-      return { price: null, isDisneyland: false, needsQuote: true, isBeauvaisParisRoute: false };
+      // For routes not in our fixed pricing zones, calculate distance-based pricing
+      // This requires geocoding both locations to get coordinates
+      return await calculateDistanceBasedPricing(from, to, passengers, luggage);
     }
     
     const isDisneylandRoute = isOriginWithinDisneyGeofence || isDestinationWithinDisneyGeofence;
@@ -385,8 +474,8 @@ const BookingForm = () => {
       } else if (passengers <= 4 && luggage <= 4) {
         return { price: 200, isDisneyland: true, needsQuote: false, isBeauvaisParisRoute: false }; // Sedan Disneyland ↔ Beauvais
       } else {
-        // Outside capacity limits - needs custom quote
-        return { price: null, isDisneyland: true, needsQuote: true, isBeauvaisParisRoute: false };
+        // Outside capacity limits - use per-kilometer pricing
+        return await calculateDistanceBasedPricing(from, to, passengers, luggage);
       }
     }
     
@@ -411,8 +500,8 @@ const BookingForm = () => {
       } else if (passengers <= 4 && luggage <= 4) {
         return { price: 80, isDisneyland: true, needsQuote: false, isBeauvaisParisRoute: false }; // Sedan Disneyland ↔ Paris/CDG/Orly
       } else {
-        // Outside capacity limits - needs custom quote
-        return { price: null, isDisneyland: true, needsQuote: true, isBeauvaisParisRoute: false };
+        // Outside capacity limits - use per-kilometer pricing
+        return await calculateDistanceBasedPricing(from, to, passengers, luggage);
       }
     }
     
@@ -425,8 +514,8 @@ const BookingForm = () => {
       } else if (passengers <= 4 && luggage <= 4) {
         return { price: 200, isDisneyland: false, needsQuote: false, isBeauvaisParisRoute: true }; // Sedan for Beauvais-Paris routes
       } else {
-        // Outside capacity limits - needs custom quote
-        return { price: null, isDisneyland: false, needsQuote: true, isBeauvaisParisRoute: true };
+        // Outside capacity limits - use per-kilometer pricing
+        return await calculateDistanceBasedPricing(from, to, passengers, luggage);
       }
     }
     
@@ -471,8 +560,8 @@ const BookingForm = () => {
       }
     }
     
-    // If no special pricing applies, suggest custom quote
-    return { price: null, isDisneyland: false, needsQuote: true, isBeauvaisParisRoute: false };
+    // For any other routes, use per-kilometer pricing instead of custom quote
+    return await calculateDistanceBasedPricing(from, to, passengers, luggage);
   };
 
   // Watch form values to calculate price with debouncing
