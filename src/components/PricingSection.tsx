@@ -183,15 +183,6 @@ const PricingSection = () => {
           ))}
         </div>
 
-        {/* Selected Service Call to Action */}
-        {selectedService && (
-          <div className="text-center mb-8">
-            <Button onClick={handleBookNow} size="lg" className="px-8">
-              Book Now - {getSelectedServiceDetails()?.price}€
-            </Button>
-          </div>
-        )}
-
         {/* Bottom Section */}
         <div className="text-center">
           <p className="text-sm text-muted-foreground max-w-3xl mx-auto">
