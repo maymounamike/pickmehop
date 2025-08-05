@@ -183,6 +183,79 @@ const PricingSection = () => {
           ))}
         </div>
 
+        {/* Additional Pricing Rules */}
+        <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm max-w-4xl mx-auto mb-12">
+          <div className="bg-muted/40 px-6 py-4 text-center border-b border-border">
+            <div className="flex justify-center mb-2">
+              <MapPin className="w-8 h-8 text-primary" />
+            </div>
+            <h3 className="text-lg font-bold text-foreground">
+              Other Destinations
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Per-kilometer pricing for all other routes
+            </p>
+          </div>
+          
+          <div className="p-0">
+            {/* Sedan Option */}
+            <div className="p-4 border-b border-border">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Car className="h-5 w-5 text-primary" />
+                  <div>
+                    <h4 className="font-semibold text-foreground">SEDAN</h4>
+                  </div>
+                </div>
+                <div className="flex items-center gap-6">
+                  <div className="text-2xl font-bold text-primary">5€/km</div>
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Users className="h-4 w-4" />
+                      <span>1-4</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Luggage className="h-4 w-4" />
+                      <span>up to 4</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-2 text-sm text-muted-foreground">
+                Minimum order: 50€
+              </div>
+            </div>
+
+            {/* Minivan Option */}
+            <div className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Bus className="h-5 w-5 text-primary" />
+                  <div>
+                    <h4 className="font-semibold text-foreground">MINIVAN</h4>
+                  </div>
+                </div>
+                <div className="flex items-center gap-6">
+                  <div className="text-2xl font-bold text-primary">8€/km</div>
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Users className="h-4 w-4" />
+                      <span>5-8</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Luggage className="h-4 w-4" />
+                      <span>up to 8</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-2 text-sm text-muted-foreground">
+                Minimum order: 80€
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Bottom Section */}
         <div className="text-center">
           <p className="text-sm text-muted-foreground max-w-3xl mx-auto">
