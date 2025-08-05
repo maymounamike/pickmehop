@@ -84,7 +84,7 @@ const PricingSection = () => {
 
 
   return (
-    <section className="py-20 bg-background">
+    <section className="py-20 bg-muted/30">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-16">
@@ -96,79 +96,83 @@ const PricingSection = () => {
           </p>
         </div>
 
-        {/* Pricing Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto mb-12">
+        {/* Pricing Grid - Mobile-First Compact Design */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-12">
           {destinations.map((destination) => (
-            <div key={destination.id} className="bg-card border border-border rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
-              {/* Destination Header */}
-              <div className="bg-primary/5 px-6 py-5 text-center border-b border-border">
-                <div className="w-12 h-12 mx-auto mb-3 bg-primary/10 rounded-full flex items-center justify-center">
-                  <destination.destinationIcon className="w-6 h-6 text-primary" />
+            <div key={destination.id} className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
+              {/* Destination Header - Clean and Compact */}
+              <div className="bg-muted/40 px-6 py-4 text-center border-b border-border">
+                <div className="flex justify-center mb-2">
+                  <destination.destinationIcon className="w-8 h-8 text-primary" />
                 </div>
                 <h3 className="text-lg font-bold text-foreground">
                   {destination.destination.split(' (')[0]}
                 </h3>
-                <p className="text-sm text-muted-foreground font-medium">
+                <p className="text-sm text-muted-foreground">
                   {destination.destinationCode} - {destination.id === 'disney' ? 'To/From Paris/CDG/ORY' : 'To/From Paris'}
                 </p>
               </div>
               
-              {/* Vehicle Options */}
-              <div className="p-6">
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Sedan Card */}
-                  <div className="group cursor-pointer" onClick={() => setSelectedService(destination.sedan.id)}>
-                    <div className={`border-2 rounded-xl p-4 transition-all duration-300 ${
-                      selectedService === destination.sedan.id 
-                        ? 'border-primary bg-primary/5 shadow-md' 
-                        : 'border-border hover:border-primary/50 hover:shadow-sm'
-                    }`}>
-                      <div className="text-center mb-3">
-                        <Car className="w-8 h-8 mx-auto mb-2 text-primary" />
-                        <h4 className="font-semibold text-foreground text-sm">SEDAN</h4>
+              {/* Transport Options - Horizontal Layout */}
+              <div className="p-0">
+                {/* Sedan Option */}
+                <div 
+                  className={`p-4 border-b border-border cursor-pointer transition-all hover:bg-muted/20 ${
+                    selectedService === destination.sedan.id
+                      ? 'bg-primary/5 border-l-4 border-l-primary'
+                      : ''
+                  }`}
+                  onClick={() => setSelectedService(destination.sedan.id)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Car className="h-5 w-5 text-primary" />
+                      <div>
+                        <h4 className="font-semibold text-foreground">SEDAN</h4>
                       </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-primary mb-1">
-                          {destination.sedan.price} €
+                    </div>
+                    <div className="flex items-center gap-6">
+                      <div className="text-2xl font-bold text-primary">{destination.sedan.price} €</div>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Users className="h-4 w-4" />
+                          <span>{destination.sedan.passengers}</span>
                         </div>
-                        <div className="text-xs text-muted-foreground space-y-1">
-                          <div className="flex items-center justify-center gap-1">
-                            <Users className="w-3 h-3" />
-                            <span>{destination.sedan.passengers}</span>
-                          </div>
-                          <div className="flex items-center justify-center gap-1">
-                            <Luggage className="w-3 h-3" />
-                            <span>{destination.sedan.luggage}</span>
-                          </div>
+                        <div className="flex items-center gap-1">
+                          <Luggage className="h-4 w-4" />
+                          <span>{destination.sedan.luggage}</span>
                         </div>
                       </div>
                     </div>
                   </div>
+                </div>
 
-                  {/* Minivan Card */}
-                  <div className="group cursor-pointer" onClick={() => setSelectedService(destination.minivan.id)}>
-                    <div className={`border-2 rounded-xl p-4 transition-all duration-300 ${
-                      selectedService === destination.minivan.id 
-                        ? 'border-primary bg-primary/5 shadow-md' 
-                        : 'border-border hover:border-primary/50 hover:shadow-sm'
-                    }`}>
-                      <div className="text-center mb-3">
-                        <Bus className="w-8 h-8 mx-auto mb-2 text-primary" />
-                        <h4 className="font-semibold text-foreground text-sm">MINIVAN</h4>
+                {/* Minivan Option */}
+                <div 
+                  className={`p-4 cursor-pointer transition-all hover:bg-muted/20 ${
+                    selectedService === destination.minivan.id
+                      ? 'bg-primary/5 border-l-4 border-l-primary'
+                      : ''
+                  }`}
+                  onClick={() => setSelectedService(destination.minivan.id)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Bus className="h-5 w-5 text-primary" />
+                      <div>
+                        <h4 className="font-semibold text-foreground">MINIVAN</h4>
                       </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-primary mb-1">
-                          {destination.minivan.price} €
+                    </div>
+                    <div className="flex items-center gap-6">
+                      <div className="text-2xl font-bold text-primary">{destination.minivan.price} €</div>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Users className="h-4 w-4" />
+                          <span>{destination.minivan.passengers}</span>
                         </div>
-                        <div className="text-xs text-muted-foreground space-y-1">
-                          <div className="flex items-center justify-center gap-1">
-                            <Users className="w-3 h-3" />
-                            <span>{destination.minivan.passengers}</span>
-                          </div>
-                          <div className="flex items-center justify-center gap-1">
-                            <Luggage className="w-3 h-3" />
-                            <span>{destination.minivan.luggage}</span>
-                          </div>
+                        <div className="flex items-center gap-1">
+                          <Luggage className="h-4 w-4" />
+                          <span>{destination.minivan.luggage}</span>
                         </div>
                       </div>
                     </div>
@@ -178,6 +182,15 @@ const PricingSection = () => {
             </div>
           ))}
         </div>
+
+        {/* Selected Service Call to Action */}
+        {selectedService && (
+          <div className="text-center mb-8">
+            <Button onClick={handleBookNow} size="lg" className="px-8">
+              Book Now - {getSelectedServiceDetails()?.price}€
+            </Button>
+          </div>
+        )}
 
         {/* Bottom Section */}
         <div className="text-center">
