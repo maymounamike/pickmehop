@@ -229,14 +229,17 @@ const BookingForm = () => {
       // Get Google Maps API key from cache or fetch it
       let apiKey = googleMapsApiKey;
       if (!apiKey) {
+        console.log('Fetching Google Maps API key...');
         const { data: keyData, error: keyError } = await supabase.functions.invoke('get-google-maps-key');
+        console.log('API key response:', { keyData, keyError });
         if (keyError || !keyData?.apiKey) {
-          console.error('Failed to get Google Maps API key:', keyError);
+          console.error('Failed to get Google Maps API key:', keyError, keyData);
           // Fallback to custom quote if API unavailable
           return { price: null, isDisneyland: false, needsQuote: true, isBeauvaisParisRoute: false };
         }
         apiKey = keyData.apiKey;
         setGoogleMapsApiKey(apiKey);
+        console.log('Successfully retrieved API key');
       }
 
       // Load Google Maps API
@@ -356,8 +359,10 @@ const BookingForm = () => {
       // Get Google Maps API key from cache or fetch it
       let apiKey = googleMapsApiKey;
       if (!apiKey) {
+        console.log('Fetching Google Maps API key for geofence...');
         const { data: keyData, error: keyError } = await supabase.functions.invoke('get-google-maps-key');
-        if (!keyData?.apiKey || keyError) {
+        if (keyError || !keyData?.apiKey) {
+          console.error('Failed to get API key for geofence:', keyError);
           geocodingCache.set(cacheKey, false);
           return false;
         }
@@ -469,10 +474,11 @@ const BookingForm = () => {
     // If neither origin nor destination is in our service area, use per-kilometer pricing
     if (!isOriginInServiceArea && !isDestinationInServiceArea) {
       // For routes not in our fixed pricing zones, calculate distance-based pricing
-      // This requires geocoding both locations to get coordinates
+      console.log('Route not in service area, using distance-based pricing for:', from, 'to', to);
       return await calculateDistanceBasedPricing(from, to, passengers, luggage);
     }
     
+    console.log('Route is in service area, using fixed pricing');
     const isDisneylandRoute = isOriginWithinDisneyGeofence || isDestinationWithinDisneyGeofence;
     
     // Check for Beauvais Airport routes
@@ -573,6 +579,7 @@ const BookingForm = () => {
     }
     
     // For any other routes, use per-kilometer pricing instead of custom quote
+    console.log('No fixed pricing match found, using distance-based pricing for:', from, 'to', to);
     return await calculateDistanceBasedPricing(from, to, passengers, luggage);
   };
 
