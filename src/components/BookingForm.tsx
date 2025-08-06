@@ -230,12 +230,12 @@ const BookingForm = () => {
       let apiKey = googleMapsApiKey;
       if (!apiKey) {
         const { data: keyData, error: keyError } = await supabase.functions.invoke('get-google-maps-key');
-        if (keyError || !keyData?.key) {
+        if (keyError || !keyData?.apiKey) {
           console.error('Failed to get Google Maps API key:', keyError);
           // Fallback to custom quote if API unavailable
           return { price: null, isDisneyland: false, needsQuote: true, isBeauvaisParisRoute: false };
         }
-        apiKey = keyData.key;
+        apiKey = keyData.apiKey;
         setGoogleMapsApiKey(apiKey);
       }
 
@@ -274,17 +274,29 @@ const BookingForm = () => {
 
       const distanceKm = distance / 1000; // Convert meters to kilometers
 
-      // Apply per-kilometer pricing rules
+      // Apply new per-kilometer pricing rules
       let basePrice: number;
       let vehicleType: string;
 
       if (passengers <= 4 && luggage <= 4) {
-        // Sedan pricing: 5€/km with 50€ minimum
-        basePrice = Math.max(distanceKm * 5, 50);
+        // Sedan pricing with new rules
+        if (distanceKm <= 10) {
+          // Minimum order: 70€ for rides ≤ 10km
+          basePrice = 70;
+        } else {
+          // For rides > 10km: 70€ minimum + 5€ per extra kilometer
+          basePrice = 70 + (distanceKm - 10) * 5;
+        }
         vehicleType = "sedan";
       } else if (passengers <= 8 && luggage <= 8) {
-        // Minivan pricing: 8€/km with 80€ minimum
-        basePrice = Math.max(distanceKm * 8, 80);
+        // Minivan pricing with new rules
+        if (distanceKm <= 10) {
+          // Minimum order: 90€ for rides ≤ 10km
+          basePrice = 90;
+        } else {
+          // For rides > 10km: 90€ minimum + 8€ per extra kilometer
+          basePrice = 90 + (distanceKm - 10) * 8;
+        }
         vehicleType = "minivan";
       } else {
         // Exceeds capacity - fallback to custom quote
@@ -576,15 +588,12 @@ const BookingForm = () => {
   // Debounced price calculation to prevent excessive calls
   const debouncedUpdatePrice = useCallback(
     debounce(async (from: string, to: string, passengers: number, luggage: number) => {
-      // Reset states
-      setNeedsCustomQuote(false);
-      setIsDisneylandOrigin(false);
-      setIsBeauvaisParisRoute(false);
-      setEstimatedPrice(null);
-      
       // Only calculate if we have valid inputs
       if (!from || !to || from.length < 3 || to.length < 3) {
         setEstimatedPrice(null);
+        setNeedsCustomQuote(false);
+        setIsDisneylandOrigin(false);
+        setIsBeauvaisParisRoute(false);
         return;
       }
       
@@ -592,21 +601,31 @@ const BookingForm = () => {
         const result = await calculatePrice(from, to, passengers, luggage);
         
         if (result) {
-          setEstimatedPrice(result.price);
-          setIsDisneylandOrigin(result.isDisneyland);
-          setNeedsCustomQuote(result.needsQuote);
-          setIsBeauvaisParisRoute(result.isBeauvaisParisRoute);
+          // Batch state updates to prevent jittering
+          requestAnimationFrame(() => {
+            setEstimatedPrice(result.price);
+            setIsDisneylandOrigin(result.isDisneyland);
+            setNeedsCustomQuote(result.needsQuote);
+            setIsBeauvaisParisRoute(result.isBeauvaisParisRoute);
+          });
         } else {
-          setEstimatedPrice(null);
+          requestAnimationFrame(() => {
+            setEstimatedPrice(null);
+            setNeedsCustomQuote(false);
+            setIsDisneylandOrigin(false);
+            setIsBeauvaisParisRoute(false);
+          });
         }
       } catch (error) {
         console.error('Error calculating price:', error);
-        setEstimatedPrice(null);
-        setIsDisneylandOrigin(false);
-        setNeedsCustomQuote(false);
-        setIsBeauvaisParisRoute(false);
+        requestAnimationFrame(() => {
+          setEstimatedPrice(null);
+          setIsDisneylandOrigin(false);
+          setNeedsCustomQuote(false);
+          setIsBeauvaisParisRoute(false);
+        });
       }
-    }, 300), // 300ms debounce
+    }, 500), // Increased debounce to 500ms to reduce API calls
     []
   );
   
