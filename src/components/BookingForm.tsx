@@ -242,14 +242,17 @@ const BookingForm = () => {
         console.log('Successfully retrieved API key');
       }
 
-      // Load Google Maps API
-      const loader = new Loader({
-        apiKey: apiKey,
-        version: "weekly",
-        libraries: ["places", "geometry"]
-      });
-
-      await loader.load();
+      // Load Google Maps API with consistent configuration
+      // Check if Google Maps is already loaded to avoid conflicts
+      if (!window.google?.maps) {
+        const loader = new Loader({
+          apiKey: apiKey,
+          version: "weekly",
+          libraries: ["places", "geometry"],
+          id: "__googleMapsDistanceLoader"
+        });
+        await loader.load();
+      }
 
       const service = new google.maps.DistanceMatrixService();
       
@@ -370,15 +373,17 @@ const BookingForm = () => {
         setGoogleMapsApiKey(apiKey); // Cache the key
       }
 
-      // Load Google Maps API with timeout
-      const loader = new Loader({
-        apiKey: apiKey,
-        version: "weekly",
-        libraries: ["places"]
-      });
-
-      const google = await loader.load();
-      const geocoder = new google.maps.Geocoder();
+      // Load Google Maps API with timeout (use existing if available)
+      if (!window.google?.maps) {
+        const loader = new Loader({
+          apiKey: apiKey,
+          version: "weekly",
+          libraries: ["places"],
+          id: "__googleMapsGeocodeLoader"
+        });
+        await loader.load();
+      }
+      const geocoder = new window.google.maps.Geocoder();
 
       // Add timeout to prevent hanging
       const geocodePromise = new Promise<google.maps.GeocoderResult[]>((resolve, reject) => {
