@@ -352,59 +352,23 @@ const BookingForm = () => {
     const fromLower = from.toLowerCase();
     const toLower = to.toLowerCase();
     
-    // Major inter-city routes (much longer distances)
-    if ((fromLower.includes('paris') || fromLower.includes('75') || 
-         fromLower.includes('ville-du-bois') || fromLower.includes('91')) && 
-        (toLower.includes('le mans') || toLower.includes('72'))) {
-      estimatedDistanceKm = 217; // Paris area to Le Mans
-    } else if ((fromLower.includes('le mans') || fromLower.includes('72')) && 
-               (toLower.includes('paris') || toLower.includes('75') ||
-                fromLower.includes('ville-du-bois') || fromLower.includes('91'))) {
-      estimatedDistanceKm = 217; // Le Mans to Paris area
-    } else if ((fromLower.includes('paris') || fromLower.includes('75') ||
-                fromLower.includes('ville-du-bois') || fromLower.includes('91')) && 
-               (toLower.includes('lyon') || toLower.includes('69'))) {
-      estimatedDistanceKm = 465; // Paris area to Lyon
-    } else if ((fromLower.includes('paris') || fromLower.includes('75') ||
-                fromLower.includes('ville-du-bois') || fromLower.includes('91')) && 
-               (toLower.includes('marseille') || toLower.includes('13'))) {
-      estimatedDistanceKm = 775; // Paris area to Marseille
-    } else if ((fromLower.includes('paris') || fromLower.includes('75') ||
-                fromLower.includes('ville-du-bois') || fromLower.includes('91')) && 
-               (toLower.includes('lille') || toLower.includes('59'))) {
-      estimatedDistanceKm = 225; // Paris area to Lille
-    } else if ((fromLower.includes('paris') || fromLower.includes('75') ||
-                fromLower.includes('ville-du-bois') || fromLower.includes('91')) && 
-               (toLower.includes('strasbourg') || toLower.includes('67'))) {
-      estimatedDistanceKm = 490; // Paris area to Strasbourg
-    } else if ((fromLower.includes('paris') || fromLower.includes('75') ||
-                fromLower.includes('ville-du-bois') || fromLower.includes('91')) && 
-               (toLower.includes('nantes') || toLower.includes('44'))) {
-      estimatedDistanceKm = 385; // Paris area to Nantes
-    } else if ((fromLower.includes('paris') || fromLower.includes('75') ||
-                fromLower.includes('ville-du-bois') || fromLower.includes('91')) && 
-               (toLower.includes('bordeaux') || toLower.includes('33'))) {
-      estimatedDistanceKm = 580; // Paris area to Bordeaux
-    } else if ((fromLower.includes('paris') || fromLower.includes('75') ||
-                fromLower.includes('ville-du-bois') || fromLower.includes('91')) && 
-               (toLower.includes('toulouse') || toLower.includes('31'))) {
-      estimatedDistanceKm = 680; // Paris area to Toulouse
-    }
     // Airport routes typically longer
-    else if (fromLower.includes('airport') || toLower.includes('airport') ||
+    if (fromLower.includes('airport') || toLower.includes('airport') ||
         fromLower.includes('cdg') || toLower.includes('cdg') ||
         fromLower.includes('orly') || toLower.includes('orly') ||
         fromLower.includes('beauvais') || toLower.includes('beauvais')) {
       estimatedDistanceKm = 25; // Airports are typically farther
     }
+    
     // Cross-region routes
-    else if ((fromLower.includes('paris') && toLower.includes('94')) ||
+    if ((fromLower.includes('paris') && toLower.includes('94')) ||
         (fromLower.includes('75') && toLower.includes('95')) ||
         (fromLower.includes('92') && toLower.includes('77'))) {
       estimatedDistanceKm = 20; // Cross-department routes
     }
+    
     // Same area routes are typically shorter
-    else if ((fromLower.includes('paris') && toLower.includes('paris')) ||
+    if ((fromLower.includes('paris') && toLower.includes('paris')) ||
         (fromLower.includes('75') && toLower.includes('75'))) {
       estimatedDistanceKm = 8; // Within Paris
     }
