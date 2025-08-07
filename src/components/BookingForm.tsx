@@ -234,12 +234,20 @@ const BookingForm = () => {
         console.log('API key response:', { keyData, keyError });
         if (keyError || !keyData?.apiKey) {
           console.error('Failed to get Google Maps API key:', keyError, keyData);
+          console.log('API key error details:', { 
+            error: keyError, 
+            data: keyData, 
+            hasApiKey: !!keyData?.apiKey,
+            apiKeyLength: keyData?.apiKey?.length 
+          });
           // Fallback to custom quote if API unavailable
           return { price: null, isDisneyland: false, needsQuote: true, isBeauvaisParisRoute: false };
         }
         apiKey = keyData.apiKey;
         setGoogleMapsApiKey(apiKey);
-        console.log('Successfully retrieved API key');
+        console.log('Successfully retrieved API key, length:', apiKey.length);
+      } else {
+        console.log('Using cached API key, length:', apiKey.length);
       }
 
       // Load Google Maps API with consistent configuration
@@ -280,34 +288,38 @@ const BookingForm = () => {
 
       const distanceKm = distance / 1000; // Convert meters to kilometers
 
-      // Apply new per-kilometer pricing rules
+      // Apply new distance-based pricing rules
       let basePrice: number;
       let vehicleType: string;
+
+      console.log(`Distance calculation: ${distanceKm.toFixed(1)}km, ${passengers} passengers, ${luggage} luggage`);
 
       if (passengers <= 4 && luggage <= 4) {
         // Sedan pricing with new rules
         if (distanceKm <= 10) {
-          // Minimum order: 70€ for rides ≤ 10km
-          basePrice = 70;
+          // Flat rate: €60 for rides ≤ 10km
+          basePrice = 60;
         } else {
-          // For rides > 10km: 70€ minimum + 5€ per extra kilometer
-          basePrice = 70 + (distanceKm - 10) * 5;
+          // For rides > 10km: €60 + €2 per extra kilometer
+          basePrice = 60 + (distanceKm - 10) * 2;
         }
         vehicleType = "sedan";
       } else if (passengers <= 8 && luggage <= 8) {
         // Minivan pricing with new rules
         if (distanceKm <= 10) {
-          // Minimum order: 90€ for rides ≤ 10km
+          // Flat rate: €90 for rides ≤ 10km
           basePrice = 90;
         } else {
-          // For rides > 10km: 90€ minimum + 8€ per extra kilometer
-          basePrice = 90 + (distanceKm - 10) * 8;
+          // For rides > 10km: €90 + €4 per extra kilometer
+          basePrice = 90 + (distanceKm - 10) * 4;
         }
         vehicleType = "minivan";
       } else {
         // Exceeds capacity - fallback to custom quote
         return { price: null, isDisneyland: false, needsQuote: true, isBeauvaisParisRoute: false };
       }
+
+      console.log(`Pricing calculation: ${vehicleType}, base: €${basePrice}, distance: ${distanceKm.toFixed(1)}km`);
 
       // Round to nearest euro
       const finalPrice = Math.round(basePrice);
@@ -476,11 +488,28 @@ const BookingForm = () => {
     const isOriginInServiceArea = isOriginWithinDisneyGeofence || isCDGLocation(from) || isOrlyLocation(from) || isBeauvaisLocation(from);
     const isDestinationInServiceArea = isDestinationWithinDisneyGeofence || isCDGLocation(to) || isOrlyLocation(to) || isBeauvaisLocation(to);
     
+    console.log('Service area check:', {
+      from,
+      to,
+      isOriginInServiceArea,
+      isDestinationInServiceArea,
+      isOriginWithinDisneyGeofence,
+      isDestinationWithinDisneyGeofence,
+      isCDGFromOrigin: isCDGLocation(from),
+      isCDGToDestination: isCDGLocation(to),
+      isOrlyFromOrigin: isOrlyLocation(from),
+      isOrlyToDestination: isOrlyLocation(to),
+      isBeauvaisFromOrigin: isBeauvaisLocation(from),
+      isBeauvaisToDestination: isBeauvaisLocation(to)
+    });
+    
     // If neither origin nor destination is in our service area, use per-kilometer pricing
     if (!isOriginInServiceArea && !isDestinationInServiceArea) {
       // For routes not in our fixed pricing zones, calculate distance-based pricing
       console.log('Route not in service area, using distance-based pricing for:', from, 'to', to);
-      return await calculateDistanceBasedPricing(from, to, passengers, luggage);
+      const distanceResult = await calculateDistanceBasedPricing(from, to, passengers, luggage);
+      console.log('Distance-based pricing result:', distanceResult);
+      return distanceResult;
     }
     
     console.log('Route is in service area, using fixed pricing');
