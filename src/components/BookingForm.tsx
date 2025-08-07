@@ -240,8 +240,8 @@ const BookingForm = () => {
             hasApiKey: !!keyData?.apiKey,
             apiKeyLength: keyData?.apiKey?.length 
           });
-          // Fallback to custom quote if API unavailable
-          return { price: null, isDisneyland: false, needsQuote: true, isBeauvaisParisRoute: false };
+          // Fallback to approximate pricing based on location names instead of requiring custom quote
+          return calculateApproximateDistancePricing(from, to, passengers, luggage);
         }
         apiKey = keyData.apiKey;
         setGoogleMapsApiKey(apiKey);
@@ -282,8 +282,9 @@ const BookingForm = () => {
 
       const distance = result.rows[0]?.elements[0]?.distance?.value;
       if (!distance) {
-        // Fallback to custom quote if distance couldn't be calculated
-        return { price: null, isDisneyland: false, needsQuote: true, isBeauvaisParisRoute: false };
+        // Fallback to approximate pricing instead of custom quote
+        console.log('No distance returned, using approximate pricing');
+        return calculateApproximateDistancePricing(from, to, passengers, luggage);
       }
 
       const distanceKm = distance / 1000; // Convert meters to kilometers
@@ -315,8 +316,8 @@ const BookingForm = () => {
         }
         vehicleType = "minivan";
       } else {
-        // Exceeds capacity - fallback to custom quote
-        return { price: null, isDisneyland: false, needsQuote: true, isBeauvaisParisRoute: false };
+        // Exceeds capacity - fallback to approximate pricing
+        return calculateApproximateDistancePricing(from, to, passengers, luggage);
       }
 
       console.log(`Pricing calculation: ${vehicleType}, base: €${basePrice}, distance: ${distanceKm.toFixed(1)}km`);
@@ -335,9 +336,81 @@ const BookingForm = () => {
 
     } catch (error) {
       console.error('Error calculating distance-based pricing:', error);
-      // Fallback to custom quote if calculation fails
-      return { price: null, isDisneyland: false, needsQuote: true, isBeauvaisParisRoute: false };
+      // Fallback to approximate pricing instead of custom quote
+      return calculateApproximateDistancePricing(from, to, passengers, luggage);
     }
+  };
+
+  // Fallback pricing function that estimates distance without API calls
+  const calculateApproximateDistancePricing = (from: string, to: string, passengers: number, luggage: number) => {
+    console.log('Using approximate distance pricing for:', from, 'to', to);
+    
+    // Estimate distance based on typical route patterns
+    let estimatedDistanceKm = 15; // Default moderate distance
+    
+    // Check for patterns that suggest longer distances
+    const fromLower = from.toLowerCase();
+    const toLower = to.toLowerCase();
+    
+    // Airport routes typically longer
+    if (fromLower.includes('airport') || toLower.includes('airport') ||
+        fromLower.includes('cdg') || toLower.includes('cdg') ||
+        fromLower.includes('orly') || toLower.includes('orly') ||
+        fromLower.includes('beauvais') || toLower.includes('beauvais')) {
+      estimatedDistanceKm = 25; // Airports are typically farther
+    }
+    
+    // Cross-region routes
+    if ((fromLower.includes('paris') && toLower.includes('94')) ||
+        (fromLower.includes('75') && toLower.includes('95')) ||
+        (fromLower.includes('92') && toLower.includes('77'))) {
+      estimatedDistanceKm = 20; // Cross-department routes
+    }
+    
+    // Same area routes are typically shorter
+    if ((fromLower.includes('paris') && toLower.includes('paris')) ||
+        (fromLower.includes('75') && toLower.includes('75'))) {
+      estimatedDistanceKm = 8; // Within Paris
+    }
+
+    let basePrice: number;
+    let vehicleType: string;
+
+    if (passengers <= 4 && luggage <= 4) {
+      // Sedan pricing
+      if (estimatedDistanceKm <= 10) {
+        basePrice = 60;
+      } else {
+        basePrice = 60 + (estimatedDistanceKm - 10) * 2;
+      }
+      vehicleType = "sedan";
+    } else if (passengers <= 8 && luggage <= 8) {
+      // Minivan pricing
+      if (estimatedDistanceKm <= 10) {
+        basePrice = 90;
+      } else {
+        basePrice = 90 + (estimatedDistanceKm - 10) * 4;
+      }
+      vehicleType = "minivan";
+    } else {
+      // Exceeds normal capacity - use base pricing for large group
+      basePrice = 120; // Base price for oversized requests
+      vehicleType = "large_vehicle";
+    }
+
+    const finalPrice = Math.round(basePrice);
+    
+    console.log(`Approximate pricing: ${vehicleType}, estimated distance: ${estimatedDistanceKm}km, price: €${finalPrice}`);
+    
+    return { 
+      price: finalPrice, 
+      isDisneyland: false, 
+      needsQuote: false, 
+      isBeauvaisParisRoute: false,
+      distanceKm: estimatedDistanceKm,
+      vehicleType,
+      isApproximate: true
+    };
   };
 
   // Cache for geocoding results to prevent repeated API calls
