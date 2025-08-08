@@ -214,7 +214,16 @@ const Header = () => {
                 Sign Out
               </Button>
             </>
-          ) : null}
+          ) : (
+            <Button 
+              variant="ghost" 
+              className="font-medium transition-all duration-300 text-white hover:text-secondary hover:bg-white/10"
+              onClick={() => navigate("/auth")}
+            >
+              <User className="mr-2 h-4 w-4" />
+              Sign In
+            </Button>
+          )}
           
           <HelpDialog>
             <Button 

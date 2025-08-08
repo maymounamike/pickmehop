@@ -22,6 +22,7 @@ import {
   Menu
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import UserCreationDialog from "@/components/UserCreationDialog";
 
 interface AdminStats {
   totalUsers: number;
@@ -213,6 +214,7 @@ const AdminDashboard = () => {
             </div>
             
             <div className="flex items-center space-x-4">
+              <UserCreationDialog onUserCreated={loadDashboardStats} />
               <Button variant="ghost" className="text-white hover:bg-white/10 relative">
                 <Bell className="h-5 w-5" />
                 {stats.pendingDrivers > 0 && (
