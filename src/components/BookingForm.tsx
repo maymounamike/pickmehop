@@ -16,7 +16,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { CalendarIcon, MapPin, Minus, Plus, Users, Luggage, Loader2, Euro, Phone, Mail, CreditCard, DollarSign, Wallet, Baby, Accessibility, FileText, User, UserCheck, Car, Globe } from "lucide-react";
+import { CalendarIcon, MapPin, Minus, Plus, Users, Luggage, Loader2, Euro, Phone, Mail, CreditCard, DollarSign, Wallet, Baby, Accessibility, FileText, User, UserCheck, Car, Globe, CheckCircle, AlertCircle, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
@@ -105,6 +105,10 @@ const BookingForm = () => {
   const [isBeauvaisParisRoute, setIsBeauvaisParisRoute] = useState(false);
   const [googleMapsApiKey, setGoogleMapsApiKey] = useState<string | null>(null);
   const [toLocationValue, setToLocationValue] = useState('');
+  const [estimatedVehicleType, setEstimatedVehicleType] = useState<string | null>(null);
+  const [estimatedDistanceKm, setEstimatedDistanceKm] = useState<number | null>(null);
+  const [estimatedDurationMin, setEstimatedDurationMin] = useState<number | null>(null);
+  const [flightValidation, setFlightValidation] = useState<{status:'idle'|'checking'|'valid'|'invalid'; confirmed:boolean; manual?:boolean}>({ status: 'idle', confirmed: false });
   const rateLimit = new ClientRateLimit();
 
   // Country codes with USA and France first
@@ -200,6 +204,46 @@ const BookingForm = () => {
     return () => subscription.unsubscribe();
   }, [form]);
 
+  // Flight number validation (via Supabase Edge Function calling Aviationstack)
+  const debouncedValidateFlight = useCallback(
+    debounce(async (flightNum: string, dateValue: Date | undefined, isFromAirport: boolean) => {
+      if (!isFromAirport) return;
+      if (!flightNum || flightNum.trim().length < 3) {
+        setFlightValidation({ status: 'idle', confirmed: false });
+        return;
+      }
+      setFlightValidation((s) => ({ ...s, status: 'checking' }));
+      try {
+        const cleaned = flightNum.replace(/\s+/g, '').toUpperCase();
+        const flightDate = dateValue ? dateValue.toISOString().slice(0, 10) : undefined;
+        const { data, error } = await supabase.functions.invoke('verify-flight', {
+          body: { flightNumber: cleaned, date: flightDate }
+        });
+        if (error) throw error;
+        if (data?.valid) {
+          setFlightValidation({ status: 'valid', confirmed: true });
+        } else {
+          setFlightValidation({ status: 'invalid', confirmed: false });
+        }
+      } catch (err) {
+        console.error('Flight validation error:', err);
+        setFlightValidation({ status: 'invalid', confirmed: false });
+      }
+    }, 600),
+    []
+  );
+
+  useEffect(() => {
+    const sub = form.watch((values, { name }) => {
+      if (name === 'flightNumber' || name === 'date' || name === 'fromLocation') {
+        const fromVal = (values.fromLocation as string) || '';
+        const isFromAirport = fromVal.toLowerCase().includes('airport') || fromVal.toLowerCase().includes('cdg') || fromVal.toLowerCase().includes('orly') || fromVal.toLowerCase().includes('beauvais');
+        debouncedValidateFlight(values.flightNumber as string, values.date as Date | undefined, isFromAirport);
+      }
+    });
+    return () => sub.unsubscribe();
+  }, [form, debouncedValidateFlight]);
+
   const times = Array.from({ length: 24 * 4 }, (_, i) => {
     const hours = Math.floor(i / 4);
     const minutes = (i % 4) * 15;
@@ -288,6 +332,8 @@ const BookingForm = () => {
       }
 
       const distanceKm = distance / 1000; // Convert meters to kilometers
+      const durationSec = result.rows[0]?.elements[0]?.duration?.value;
+      const durationMin = durationSec ? Math.round(durationSec / 60) : undefined;
 
       // Apply new distance-based pricing rules
       let basePrice: number;
@@ -331,7 +377,8 @@ const BookingForm = () => {
         needsQuote: false, 
         isBeauvaisParisRoute: false,
         distanceKm: Math.round(distanceKm * 10) / 10, // Round to 1 decimal
-        vehicleType
+        vehicleType,
+        durationMin
       };
 
     } catch (error) {
@@ -399,6 +446,7 @@ const BookingForm = () => {
     }
 
     const finalPrice = Math.round(basePrice);
+    const approxDurationMin = Math.round((estimatedDistanceKm / 70) * 60); // ~70 km/h average
     
     console.log(`Approximate pricing: ${vehicleType}, estimated distance: ${estimatedDistanceKm}km, price: €${finalPrice}`);
     
@@ -409,7 +457,8 @@ const BookingForm = () => {
       isBeauvaisParisRoute: false,
       distanceKm: estimatedDistanceKm,
       vehicleType,
-      isApproximate: true
+      isApproximate: true,
+      durationMin: approxDurationMin
     };
   };
 
@@ -721,6 +770,9 @@ const BookingForm = () => {
             setIsDisneylandOrigin(result.isDisneyland);
             setNeedsCustomQuote(result.needsQuote);
             setIsBeauvaisParisRoute(result.isBeauvaisParisRoute);
+            setEstimatedVehicleType((result as any).vehicleType ?? null);
+            setEstimatedDistanceKm(typeof (result as any).distanceKm === 'number' ? Math.round((result as any).distanceKm * 10) / 10 : null);
+            setEstimatedDurationMin(typeof (result as any).durationMin === 'number' ? (result as any).durationMin : null);
           });
         } else {
           requestAnimationFrame(() => {
@@ -728,6 +780,9 @@ const BookingForm = () => {
             setNeedsCustomQuote(false);
             setIsDisneylandOrigin(false);
             setIsBeauvaisParisRoute(false);
+            setEstimatedVehicleType(null);
+            setEstimatedDistanceKm(null);
+            setEstimatedDurationMin(null);
           });
         }
       } catch (error) {
@@ -737,6 +792,9 @@ const BookingForm = () => {
           setIsDisneylandOrigin(false);
           setNeedsCustomQuote(false);
           setIsBeauvaisParisRoute(false);
+          setEstimatedVehicleType(null);
+          setEstimatedDistanceKm(null);
+          setEstimatedDurationMin(null);
         });
       }
     }, 500), // Increased debounce to 500ms to reduce API calls
@@ -1267,14 +1325,38 @@ const BookingForm = () => {
                              Flight Number <span className="text-destructive" aria-label="required">*</span>
                            </FormLabel>
                            <FormControl>
-                             <Input
-                               placeholder="e.g., AF1234, BA456"
-                               className="h-10 text-sm"
-                               {...field}
-                               aria-describedby={field.name + "-error"}
-                               aria-invalid={!!form.formState.errors.flightNumber}
-                             />
+                             <div className="relative">
+                               <Input
+                                 placeholder="e.g., AF1234, BA456"
+                                 className="h-10 text-sm pr-8"
+                                 {...field}
+                                 aria-describedby={field.name + "-error"}
+                                 aria-invalid={!!form.formState.errors.flightNumber}
+                                 onChange={(e) => {
+                                   const val = e.target.value.toUpperCase();
+                                   field.onChange(val);
+                                   if (flightValidation.status !== 'idle') {
+                                     setFlightValidation((s) => ({ ...s, confirmed: false }));
+                                   }
+                                 }}
+                               />
+                               {flightValidation.status === 'checking' && (
+                                 <Loader2 className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" aria-hidden="true" />
+                               )}
+                               {flightValidation.status === 'valid' && flightValidation.confirmed && (
+                                 <CheckCircle className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-success" aria-label="Flight verified" />
+                               )}
+                             </div>
                            </FormControl>
+                           {flightValidation.status === 'invalid' && (
+                             <div className="flex items-center gap-2 mt-1 text-xs">
+                               <AlertCircle className="h-3 w-3 text-warning" aria-hidden="true" />
+                               <span className="text-muted-foreground">We couldn't verify this flight. Are you sure?</span>
+                               <Button type="button" variant="secondary" size="sm" className="h-6 px-2" onClick={() => setFlightValidation({ status: 'valid', confirmed: true, manual: true })}>
+                                 Yes, continue
+                               </Button>
+                             </div>
+                           )}
                            <FormMessage id={field.name + "-error"} />
                          </FormItem>
                        )}
@@ -1416,6 +1498,40 @@ const BookingForm = () => {
                       </FormItem>
                     )}
                   />
+                </div>
+
+                {/* Mini order summary */}
+                <div className="mt-3 rounded-lg border bg-card text-card-foreground p-3 shadow-card">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Car className="h-4 w-4" />
+                      <span className="text-sm font-medium capitalize">
+                        {(estimatedVehicleType || ((form.watch('passengers') <= 4 && form.watch('luggage') <= 4) ? 'sedan' : 'minivan'))}
+                      </span>
+                    </div>
+                    {estimatedPrice !== null && (
+                      <div className="text-sm font-semibold">€{estimatedPrice}</div>
+                    )}
+                  </div>
+                  <div className="mt-2 space-y-1 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <MapPin className="h-3 w-3" />
+                      <span>{form.watch('fromLocation')} → {form.watch('toLocation')}</span>
+                    </div>
+                    {estimatedDistanceKm !== null && (
+                      <div className="flex items-center gap-2">
+                        <Globe className="h-3 w-3" />
+                        <span>~{estimatedDistanceKm} km</span>
+                        {estimatedDurationMin !== null && (
+                          <>
+                            <span>•</span>
+                            <Clock className="h-3 w-3" />
+                            <span>~{estimatedDurationMin} min</span>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <Button 
